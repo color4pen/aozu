@@ -10,7 +10,7 @@ aozu と他ツールの結合はリポジトリ内ファイルと本契約のみ
 request 文書中の設計要素引用を検証する。
 
 - **抽出**: 文書中のすべての `[[id]]`（形式仕様 §6 のコード除外規則を適用）
-- **検証**: (a) すべての引用が実在要素に解決される、(b) 引用要素の状態が designed または requested である（implemented のみを引用する request は設計 delta を経ていない疑い）。**(b) は loop 有効時のみ検出力を持つ**——state.json が無いプロファイルでは全要素が designed とみなされ常に通過する（段階縮退の帰結として仕様どおり）
+- **検証**: (a) すべての引用が実在要素に解決される、(b) 引用要素の状態が designed または requested である。implemented 要素の引用は**要素単位で不合格**とする（設計 delta を経ずに実装済み要素へ触る疑い）。request の引用は被覆の宣言であり（coverage と同一意味論、ADR-0012）、変更しない要素を文脈として引用する用途には使わない。**(b) は loop 有効時のみ検出力を持つ**——state.json が無いプロファイルでは全要素が designed とみなされ常に通過する（段階縮退の帰結として仕様どおり）
 - `--require-citation`: 引用が 0 件なら不合格にする。構造変更を含む request 型にこのフラグを付けるかは**呼び出し側の判断**（aozu は request の型体系を知らない）
 - **出力**: 1 行 1 診断のテキスト。`<LEVEL> <CODE> <id> <message>`
 - **exit code**: 0 = 合格 / 1 = 不合格 / 2 = 入力不正（ファイル不存在・design/ 不在）
@@ -19,9 +19,9 @@ request 文書中の設計要素引用を検証する。
 
 取り込み完了 hook から呼ばれ、要素状態を implemented へ遷移する。
 
-- state.json 中で `request` が `<slug>` に一致する requested 要素をすべて implemented に遷移し、`--pr <番号>` があれば記録する
+- state.json 中で `request` が `<slug>` に一致する要素のうち requested のものをすべて implemented に遷移し、`--pr <番号>` があれば記録する
 - **冪等**: 既に implemented の要素は no-op。再実行しても結果が変わらない
-- 該当要素が 0 件（未知の slug）は exit 1 と診断。部分適用状態を作らない（全遷移 or 全不変）
+- 「該当 0 件」の判定は **`request` の slug 一致で行い、要素の状態を問わない**: slug 一致が 1 件も無ければ未知の slug として exit 1、一致があり全件 implemented 済みなら no-op で exit 0（冪等の帰結）。部分適用状態を作らない（全遷移 or 全不変）
 - **exit code**: 0 = 遷移完了（no-op 含む）/ 1 = 未知の slug / 2 = 入力不正
 
 ## 3. `export rules [--verify]` — 出口ゲートの供給

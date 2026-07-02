@@ -49,7 +49,19 @@ enabled: static, domain, dynamic, loop, use-case
 ```
 
 - `enabled` は単一のリスト。層（static / domain / dynamic）、ループ（loop = topic・plan・state）、ビュー型を並べる
-- 型の前提関係（例: screen は use-case が前提、loop は static が前提）はツールが知っており、check が組み合わせの不正を検出する
+- 型の前提関係は次表を正とし、check（C7）が組み合わせの不正を検出する:
+
+| 型 | 前提 |
+|---|---|
+| static | なし（最小プロファイル） |
+| domain / dynamic / loop | static |
+| use-case | dynamic |
+| screen | use-case |
+| api / external / permission / deployment | static |
+| data | domain |
+| dataflow / event | dynamic |
+
+ビュー型の行は暫定であり、各ビューのスキーマ追補（§12）時に確定する。
 
 ## 4. ID 文法
 
@@ -219,8 +231,9 @@ topics: [[top-duplicate-slug]]
 
 - キーは要素 ID、**辞書順ソート・1 要素 1 行**で書く（並列作業時の merge 衝突を「同一要素を触った場合」だけに局所化する）
 - `state: designed | requested | implemented`（ADR-0005）。エントリが無い要素は designed とみなす
-- **人は編集しない**。coverage / mark / 設計 delta の merge がツール経由で書く
+- **人は編集しない**。coverage / mark / 設計 delta の merge がツール経由で書く。唯一の例外は次項の衝突裁定で、conflict marker の解消は人が直接行う
 - 同一要素への並行更新は git の衝突として表面化させ、機械的な後勝ち解決を行わない（同一要素の並行変更は設計上の真の衝突であり、人が裁く）
+- 削除された要素はエントリごと削除する（C8）。削除要素のトレース（request / PR 対応）は git 履歴が保持する — state.json が持つのは現在形のみ（ADR-0004 と同型の規約）
 
 ## 10. 閉包検証規則（check）
 
@@ -232,7 +245,7 @@ topics: [[top-duplicate-slug]]
 | C2 | ID がリポジトリ全体で一意 |
 | C3 | すべての `[[id]]` が有効な型の実在要素に解決される。ただし**参照元・参照先のどちらか**の型が無効な参照は評価しない（無効な型の義務は評価しない、の一貫適用）。縮退による評価除外は**既知だが無効な型**に限る——**未知の prefix**（§4 に無い型）を持つ参照は縮退の対象外で、常に違反として診断する（typo の fail-open を許さない） |
 | C4 | dependencies の辺の両端が mod 要素に解決される。この規則は static アーティファクトの構造義務であり **C3 の縮退スキップの対象外**（端点が mod 以外なら、その型の有効・無効によらず常に違反） |
-| C5 | seq の登場要素リストが空でなく、すべて mod または act に解決される |
+| C5 | seq の登場要素リストが空でなく（**非空義務は縮退に依らず常に評価する**）、すべてのエントリの prefix が mod または act である（prefix 適格性も常時評価）。エントリの**解決**は C3 に従う — domain 無効時の act 参照は既知だが無効な型として解決検証のみ縮退スキップされる。act のみの登場要素リストも非空義務を満たす |
 | C6 | ビューのリンク義務が充足される（uc→seq、scr→uc、api→mod、…型定義に従う） |
 | C7 | manifest の enabled 組み合わせが型の前提関係を満たす |
 | C8 | state.json の全キーが実在要素（削除要素の残骸検出） |

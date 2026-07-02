@@ -7,7 +7,7 @@
 v0 draft を起草済み（`spec/format.md`）。ID 文法・宣言/参照構文・型スキーマ・閉包規則 C1〜C11・state.json・rules export を含む。mod↔実装の対応付けは modules.md の `実装:` 行に決定済み。残り:
 
 - 業務系ドッグフーディング（論点 9）での実地修正
-- ビュー型のスキーマ詳細。方針: ツールの**能力**としては最終的に全 9 種（uc / scr / api / dat / flow / evt / ext / perm / dpl）を揃える。順序は、機構（宣言構文・リンク義務・scaffold・C6 結線）を最初の型で検証 → 残りを一括追補。加算的変更なので format-version は上げない。ただし**プロジェクトへの適用は消費者駆動**とする: ビューの記述・移行は「そのビューを読む機械（または強制力）」が特定できるときのみ実用であり（ADR-0004 の適用）、消費者不在の移行はセレモニーである。例: permission の消費者候補 = 認可整合テスト（マトリクス ↔ コードの権限定義の突合）、use-case = derive の引用の的、screen = 現時点で消費者未特定（人間向け文書のままが正解）
+- ビュー型のスキーマ詳細。方針: ビュー型の追補は**ツール能力としても需要駆動**とする — 機構（宣言構文・リンク義務・scaffold・C6 結線）は named consumer が最初に立つ型（permission が有力）で検証し、以後の型は named consumer を持つ実プロジェクトが現れた時点で個別に追補する（spec §12 のトリガと同一）。spec §4 の 9 種 prefix 列挙は名前空間の予約であり追補の約束ではない。加算的変更なので format-version は上げない。**プロジェクトへの適用も同じく消費者駆動**とする: ビューの記述・移行は「そのビューを読む機械（または強制力）」が特定できるときのみ実用であり（ADR-0004 の適用）、消費者不在の移行はセレモニーである。例: permission の消費者候補 = 認可整合テスト（マトリクス ↔ コードの権限定義の突合）、use-case = derive の引用の的、screen = 現時点で消費者未特定（人間向け文書のままが正解）
 
 ## 3. 要素の粒度
 
@@ -31,6 +31,7 @@ v0 draft を起草済み（`spec/format.md`）。ID 文法・宣言/参照構文
 - request 検証からの `check --request` 呼び出し（入口ゲート）
 - 取り込み完了時の `mark implemented` hook（出口の状態遷移）
 - request テンプレートへの設計要素引用欄の追加
+- パイプライン起点 topic の排出（ADR-0006 / ADR-0013 が前提とする機械排出。排出主体はパイプライン側 — レビューの構造指摘・スコープ外 finding を spec §8 の topic スキーマで `topics/` に落とす。交換面契約（spec/integration.md）への追補が要る）
 
 いずれ実装パイプライン側への変更 request として起票する。
 
@@ -44,10 +45,7 @@ v0 draft を起草済み（`spec/format.md`）。ID 文法・宣言/参照構文
 
 ## 7. 形式のバージョニングと移行
 
-方針決定済み（二軸分離）:
-
-- **ツール本体**: semver + release-please + conventional commits + npm publish（実装パイプラインと同じリリース基盤）。publish 前に CI（test + check + `export rules --verify` + release-please）の整備が必要
-- **format-version**: 形式仕様のバージョン（manifest に保持済み）。ツールの minor / patch では触れない。増分は破壊的な文法・スキーマ変更のときのみで、移行手段の提供とセット。形式は他リポジトリの正本を人質に取るため、ツールの都合より安定性を優先する
+方針は決定済み・ADR-0016 に記録（二軸分離: ツール本体 = semver + release-please + npm publish、format-version = 破壊的変更時のみ増分・移行手段とセット）。
 
 残る問い: 移行手段の具体（migrate コマンドか手順書か）、ツールが複数 format-version を読める後方互換の窓を持つか。いずれも format-version 1 への最初の破壊的変更が視野に入った時点で決める。
 
@@ -100,3 +98,22 @@ v0 draft を起草済み（`spec/format.md`）。ID 文法・宣言/参照構文
 4. **横断メカニズムの表現**（findings 5）: ドメインイベント・監査・認可が層をまたぎ、mod 分割で歪む
 5. **mod の粒度指針**（findings 6、論点 3 に反映済み）
 6. **brownfield の既存設計資産との二重管理**（findings 8、論点 6 と関連）: 方向は docs/adoption.md 原則 3 で示した（正本は型ごとに移管、既存文書の該当箇所はポインタ化、移行は需要駆動）。実地検証待ち
+
+## 12. 状態書き込みの所有者
+
+状態を書く動詞が決定済みなのは coverage（→ requested）と mark implemented（→ implemented）のみで、次の 3 つの書き込みに所有者が居ない（findings-takt #3 / #15 / #20）:
+
+1. **designed への戻り遷移**（ADR-0005「設計 delta の merge → designed（新規または戻り）」）。新規は「エントリ無し = designed」で自動だが、implemented からの戻りは state.json の書き換えを要する。案: (a) 設計 delta PR の merge hook が `mark designed --elements <ids>` を呼ぶ（mark implemented と対称）/ (b) 実装時の要素本文ハッシュを state.json に記録し、check / status が乖離を検出して designed 扱いに**計算で**縮退させる（書き込み自体を消す。ADR-0004「delta は計算物」と同型。整形だけの変更でも戻る保守性はあるが fail-closed 側に倒れる）
+2. **topic の open → addressed**。案: (a) `mark addressed <top-id>` を人または hook が呼ぶ / (b) frontmatter の status を廃し「ADR から引用されている top は addressed」を**計算で**導く（C9 が「ADR の top 引用 = その topic への決定」という意味論を既に固定している。ADR が文脈として topic に触れたいだけの引用は、この意味論の下では誤用となる）
+3. **plan の `request:` 行**（spec §8「derive 後にツールが記録」だが、derive はプロンプト動詞であり書き込まない — ADR-0008）。案: (a) coverage 合格時に plan にも書く（書き手が 2 面に増える）/ (b) `request:` 行を廃止し、要素 ↔ request 対応は state.json に一本化する
+
+いずれも loop 動詞（plan / coverage / derive / mark）の実装設計で確定する。方向感: 書き込みを増やすより、計算で導ける遷移は計算に寄せる（所有者問題と判断場面を同時に消す）。
+
+## 13. plan の寿命
+
+ADR-0006 は plan を「永続する横断アーティファクト」とするが、ADR-0004「過去形の記録は ADR のみが積層する」および C10（derived 済み plan の elements が後の再設計で削除されると恒久 fail し、通すには過去の記録を書き換えるしかない）と両立しない（findings-takt #9）。選択肢:
+
+- **A: plan は現在形の作業文書**。derived 後は削除してよい（過去の plan は git 履歴が保持 — living docs と同じ規約）。C10 は現存する plan にのみ働き、矛盾が消える。「なぜこの束で切ったか」は request 本文と ADR に残る。論点 12-3 の案 (b) と整合
+- **B: plan は永続**。C10 を `status: open` の plan に限定し、derived plan は凍結された過去形記録として ADR-0004 に例外を明記する
+
+推奨は A（原理の例外を増やさない）。ADR-0006 の決定の修正を要するため要判断。
