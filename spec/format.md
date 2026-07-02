@@ -73,6 +73,20 @@ slug    = [a-z0-9]+ ("-" [a-z0-9]+)*
 | `adr` | 決定記録 | 常時 |
 | `uc` / `scr` / `api` / `dat` / `flow` / `evt` / `ext` / `perm` / `dpl` | 各ビュー | views |
 
+ビュー型が manifest の `enabled` に現れるときの正準名と prefix の対応:
+
+| enabled 名 | prefix |
+|---|---|
+| `use-case` | `uc` |
+| `screen` | `scr` |
+| `api` | `api` |
+| `data` | `dat` |
+| `dataflow` | `flow` |
+| `event` | `evt` |
+| `external` | `ext` |
+| `permission` | `perm` |
+| `deployment` | `dpl` |
+
 ## 5. 宣言構文
 
 **見出し要素**（1 ファイルに複数置ける型: term / ent / inv / mod / uc 等）:
@@ -212,7 +226,7 @@ topics: [[top-duplicate-slug]]
 |---|---|
 | C1 | すべての ID が文法に適合する |
 | C2 | ID がリポジトリ全体で一意 |
-| C3 | すべての `[[id]]` が有効な型の実在要素に解決される |
+| C3 | すべての `[[id]]` が有効な型の実在要素に解決される。ただし**参照元・参照先のどちらか**の型が無効な参照は評価しない（無効な型の義務は評価しない、の一貫適用） |
 | C4 | dependencies の辺の両端が mod 要素に解決される |
 | C5 | seq の登場要素リストが空でなく、すべて mod に解決される |
 | C6 | ビューのリンク義務が充足される（uc→seq、scr→uc、api→mod、…型定義に従う） |

@@ -44,6 +44,7 @@ topic 起票
 | [0009](adr/0009-tech-stack.md) | 技術選定 — TypeScript + Bun、依存ゼロ |
 | [0010](adr/0010-adoption-gradient.md) | 導入の段階性 — 最小プロファイルは静的構造のみ（0002 を修正） |
 | [0012](adr/0012-consumer-agnostic-derive.md) | 導出の消費者非依存 — request テンプレートは設定で注入 |
+| [0013](adr/0013-escalation-triage.md) | escalation の分流 — 正本テスト（外に触るなら設計に返る） |
 
 未確定の論点は [docs/open-questions.md](docs/open-questions.md)。
 
