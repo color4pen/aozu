@@ -1,2 +1,4 @@
 node_modules/
 dist/
+.specrunner/*
+!.specrunner/config.json
