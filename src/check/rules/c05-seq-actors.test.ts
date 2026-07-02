@@ -31,7 +31,7 @@ describe("checkC5: seq actor lists", () => {
     expect(checkC5(graph)).toHaveLength(0);
   });
 
-  it("seq with empty actor list → C5 diagnostic", () => {
+  it("TC-012: seq with empty actor list → C5 diagnostic", () => {
     const graph = makeGraph(
       [{ id: "seq-order-intake", prefix: "seq", displayName: "Order Intake", file: "seq.md", line: 1 }],
       []  // no actors

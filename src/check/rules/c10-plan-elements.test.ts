@@ -34,7 +34,7 @@ describe("checkC10: plan element and grp references", () => {
     expect(checkC10(graph)).toHaveLength(0);
   });
 
-  it("unresolved element in elements: line → C10 diagnostic", () => {
+  it("TC-020: unresolved element in elements: line → C10 diagnostic", () => {
     const graph = makeGraph(
       [
         { id: "plan-rework", prefix: "plan", displayName: "Rework", file: "plans/rework.md", line: 1 },

@@ -31,7 +31,7 @@ describe("checkC9: ADR topic references", () => {
     expect(checkC9(graph)).toHaveLength(0);
   });
 
-  it("adr without topic reference → C9 diagnostic", () => {
+  it("TC-019: adr without topic reference → C9 diagnostic", () => {
     const graph = makeGraph(
       [{ id: "adr-0001-decision", prefix: "adr", displayName: "ADR 0001", file: "adr/0001.md", line: 1 }],
       []

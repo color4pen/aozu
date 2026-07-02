@@ -25,7 +25,7 @@ describe("checkC8: state.json key validation", () => {
     expect(checkC8(graph, ["mod-cli", "ent-order"])).toHaveLength(0);
   });
 
-  it("stale state key → C8 diagnostic", () => {
+  it("TC-017: stale state key → C8 diagnostic", () => {
     const graph = makeGraph([
       { id: "mod-cli", prefix: "mod", displayName: "CLI", file: "modules.md", line: 1 },
     ]);

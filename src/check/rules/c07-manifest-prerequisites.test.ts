@@ -13,14 +13,14 @@ describe("checkC7: manifest prerequisites", () => {
     expect(checkC7(manifest(["static"]))).toHaveLength(0);
   });
 
-  it("loop without static → C7 diagnostic", () => {
+  it("TC-016: loop without static → C7 diagnostic", () => {
     const diags = checkC7(manifest(["loop"]));
     expect(diags.length).toBeGreaterThan(0);
     expect(diags.some((d) => d.code === "C7")).toBe(true);
     expect(diags.some((d) => d.message.includes("static"))).toBe(true);
   });
 
-  it("dynamic without static → C7 diagnostic", () => {
+  it("TC-041: dynamic without static → C7 diagnostic", () => {
     const diags = checkC7(manifest(["dynamic"]));
     expect(diags.length).toBeGreaterThan(0);
     expect(diags[0]!.code).toBe("C7");

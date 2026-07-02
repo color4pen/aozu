@@ -62,7 +62,7 @@ describe("checkC11: cross-layer reference direction", () => {
     expect(checkC11(graph, STATIC_DOMAIN)).toHaveLength(0);
   });
 
-  it("static → seq reference → C11 diagnostic", () => {
+  it("TC-048: static → seq reference → C11 diagnostic", () => {
     const graph = makeGraph(
       [
         { id: "mod-cli", prefix: "mod", displayName: "CLI", file: "modules.md", line: 1 },

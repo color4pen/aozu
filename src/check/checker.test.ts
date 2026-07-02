@@ -35,7 +35,7 @@ describe("runCheck: aggregation and graceful degradation", () => {
     expect(diags).toHaveLength(0);
   });
 
-  it("multiple rule violations → all violations are reported (no fail-fast)", () => {
+  it("TC-051: multiple rule violations → all violations are reported (no fail-fast)", () => {
     // C1: invalid ID, C2: duplicate ID
     const graph = makeGraph({
       elements: [

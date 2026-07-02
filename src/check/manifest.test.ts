@@ -106,9 +106,14 @@ describe("getEnabledPrefixes", () => {
     expect(prefixes.has("inv")).toBe(true);
   });
 
-  it("dynamic → includes seq", () => {
+  it("TC-031: dynamic → includes seq (static, domain, dynamic covers all layer prefixes)", () => {
     const prefixes = getEnabledPrefixes(manifest(["static", "domain", "dynamic"]));
+    expect(prefixes.has("mod")).toBe(true);
+    expect(prefixes.has("term")).toBe(true);
+    expect(prefixes.has("ent")).toBe(true);
+    expect(prefixes.has("inv")).toBe(true);
     expect(prefixes.has("seq")).toBe(true);
+    expect(prefixes.has("adr")).toBe(true);
   });
 
   it("loop → includes top, plan, grp", () => {
@@ -118,7 +123,7 @@ describe("getEnabledPrefixes", () => {
     expect(prefixes.has("grp")).toBe(true);
   });
 
-  it("view type prefixes are NOT included even if view name is in enabled", () => {
+  it("TC-032: view type prefixes are NOT included even if view name is in enabled", () => {
     const prefixes = getEnabledPrefixes(manifest(["static", "use-case"]));
     // uc is the view prefix for use-case — should NOT be included
     expect(prefixes.has("uc")).toBe(false);

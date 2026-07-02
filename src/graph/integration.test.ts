@@ -46,7 +46,7 @@ describe("graph integration: design/", () => {
     expect(refs!.length).toBeGreaterThan(0);
   });
 
-  it("actorIds are populated from seq documents", async () => {
+  it("TC-027: actorIds are populated from seq documents", async () => {
     const files = await readMarkdownFiles(DESIGN_DIR);
     const parsed = parseFiles(files);
     const graph = buildGraph(parsed, MANIFEST_PATH);

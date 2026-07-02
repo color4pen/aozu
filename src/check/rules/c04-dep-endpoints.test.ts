@@ -59,7 +59,7 @@ describe("checkC4: dependency edge endpoints", () => {
     expect(diags[0]!.elementId).toBe("ent-order");
   });
 
-  it("unresolved from endpoint → C4 diagnostic", () => {
+  it("TC-038: unresolved from endpoint → C4 diagnostic", () => {
     const graph = makeGraph(
       [{ id: "mod-cli", prefix: "mod", displayName: "CLI", file: "modules.md", line: 1 }],
       [{ from: "mod-missing", to: "mod-cli", file: "dependencies.md", line: 1 }]
