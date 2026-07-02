@@ -73,3 +73,4 @@
 {"type":"step-attempt","step":"pr-create","sessionId":null,"outcome":{"verdict":"success","findingsPath":"specrunner/changes/cli-check-wiring/pr-create-result.md","error":null,"toolResult":null,"followUpAttempts":0},"startedAt":"2026-07-02T05:18:47.126Z","endedAt":"2026-07-02T05:18:48.810Z"}
 {"type":"lineage","step":"pr-create","ts":"2026-07-02T05:18:48.810Z","outputs":[{"path":"specrunner/changes/cli-check-wiring/pr-create-result.md","hash":"sha256:226562dc428fd43428804af915541c360fc724af2f363288db897240c786b1f5"}],"inputs":[{"path":"feat/cli-check-wiring-bb3dcf2e","hash":null}]}
 {"type":"transition","ts":"2026-07-02T05:18:48.819Z","step":"pipeline","status":"ok","message":"running → awaiting-archive: pipeline complete"}
+{"type":"transition","ts":"2026-07-02T05:37:22.704Z","step":"archive","status":"ok","message":"awaiting-archive → archived: change archived"}
