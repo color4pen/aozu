@@ -120,7 +120,22 @@ describe("checkC3: reference resolution", () => {
     expect(diags[0]!.code).toBe("C3");
     expect(diags[0]!.level).toBe("error");
     expect(diags[0]!.message).toContain("zzz-typo");
-    expect(diags[0]!.message).toContain("zzz");
+    expect(diags[0]!.message).toContain('(unknown prefix "zzz")');
+  });
+
+  // --- fail-closed: source with unknown prefix → degenerate skip not applied ---
+
+  it("reference from unknown-prefix source (zzz-bad) → degenerate skip NOT applied, C3 raised", () => {
+    // zzz is not in KNOWN_PREFIXES; source-side degenerate skip requires KNOWN prefix → skip is not triggered
+    const graph = makeGraph(
+      [{ id: "zzz-bad", prefix: "zzz", displayName: "Bad", file: "zzz.md", line: 1 }],
+      [{ targetId: "mod-nonexist", file: "zzz.md", line: 5 }]
+    );
+    const enabledStatic = new Set(["mod", "adr"]);
+    const diags = checkC3(graph, enabledStatic);
+    expect(diags).toHaveLength(1);
+    expect(diags[0]!.code).toBe("C3");
+    expect(diags[0]!.level).toBe("error");
   });
 
   // --- degenerate skip maintained: known but disabled prefix ---
