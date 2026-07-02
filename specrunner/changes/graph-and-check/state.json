@@ -2,7 +2,7 @@
   "version": 2,
   "jobId": "ada3c375-946b-41cd-8cb2-8ebdfa3f5688",
   "createdAt": "2026-07-02T03:22:44.323Z",
-  "updatedAt": "2026-07-02T03:46:49.629Z",
+  "updatedAt": "2026-07-02T03:52:51.132Z",
   "request": {
     "title": "参照グラフと閉包検証（C1〜C11）を実装する",
     "type": "new-feature",
@@ -12,18 +12,18 @@
     "owner": "color4pen",
     "name": "aozu"
   },
-  "step": "spec-review",
+  "step": "test-case-gen",
   "status": "running",
   "branch": "feat/graph-and-check-ada3c375",
   "error": null,
   "pipelineId": "standard",
   "resumePoint": null,
   "_journal": {
-    "historyCount": 15,
+    "historyCount": 19,
     "stepCounts": {
       "request-review": 1,
       "design": 1,
-      "spec-review": 1
+      "spec-review": 2
     }
   }
 }
