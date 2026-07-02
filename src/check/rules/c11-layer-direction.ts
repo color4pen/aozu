@@ -12,6 +12,7 @@ import type { Graph } from "../../graph/types.ts";
 import type { CheckDiagnostic } from "../types.ts";
 import { extractPrefix } from "../../graph/index.ts";
 import { LAYER_MAP } from "../manifest.ts";
+import { findOwningElement } from "../attribution.ts";
 
 /**
  * Allowed reference target prefixes per source layer.
@@ -35,8 +36,8 @@ export function checkC11(graph: Graph, enabledPrefixes: Set<string>): CheckDiagn
   for (const ref of graph.references.all) {
     const targetPrefix = extractPrefix(ref.targetId);
 
-    // Find the source element in the same file to determine source layer
-    const sourceElement = graph.rawElements.find((el) => el.file === ref.file);
+    // Find the source element owning this reference (nearest preceding declaration in the same file)
+    const sourceElement = findOwningElement(graph.rawElements, ref.file, ref.line);
     if (!sourceElement) continue;
 
     const sourcePrefix = extractPrefix(sourceElement.id);

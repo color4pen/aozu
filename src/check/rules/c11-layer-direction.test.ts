@@ -194,4 +194,23 @@ describe("checkC11: cross-layer reference direction", () => {
     );
     expect(checkC11(graph, ALL_PREFIXES)).toHaveLength(0);
   });
+
+  it("multiple elements in file: violation in second section is attributed to second element", () => {
+    // actors.md: act-sales at line 1, act-bad at line 10
+    // Reference at line 15 (inside act-bad's section) → violates C11 (domain→mod)
+    // Expected attribution: act-bad, NOT act-sales
+    const graph = makeGraph(
+      [
+        { id: "act-sales", prefix: "act", displayName: "Sales", file: "actors.md", line: 1 },
+        { id: "act-bad", prefix: "act", displayName: "Bad Actor", file: "actors.md", line: 10 },
+        { id: "mod-sales", prefix: "mod", displayName: "Sales Module", file: "modules.md", line: 1 },
+      ],
+      [{ targetId: "mod-sales", file: "actors.md", line: 15 }]
+    );
+    const diags = checkC11(graph, ALL_PREFIXES);
+    expect(diags).toHaveLength(1);
+    expect(diags[0]!.code).toBe("C11");
+    expect(diags[0]!.elementId).toBe("act-bad");
+    expect(diags[0]!.message).toContain("act-bad");
+  });
 });
