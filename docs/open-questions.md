@@ -33,7 +33,12 @@ v0 draft を起草済み（`spec/format.md`）。ID 文法・宣言/参照構文
 
 ## 7. 形式のバージョニングと移行
 
-strict プロファイルや manifest スキーマが変わったときの既存プロジェクトの移行手段。manifest にスキーマバージョンを持たせるか。
+方針決定済み（二軸分離）:
+
+- **ツール本体**: semver + release-please + conventional commits + npm publish（実装パイプラインと同じリリース基盤）。publish 前に CI（test + check + `export rules --verify` + release-please）の整備が必要
+- **format-version**: 形式仕様のバージョン（manifest に保持済み）。ツールの minor / patch では触れない。増分は破壊的な文法・スキーマ変更のときのみで、移行手段の提供とセット。形式は他リポジトリの正本を人質に取るため、ツールの都合より安定性を優先する
+
+残る問い: 移行手段の具体（migrate コマンドか手順書か）、ツールが複数 format-version を読める後方互換の窓を持つか。いずれも format-version 1 への最初の破壊的変更が視野に入った時点で決める。
 
 ## 8. プロンプト注入のスコープ規則
 
