@@ -11,6 +11,8 @@ export type {
   DependencyEdge,
   Diagnostic,
   ParseResult,
+  ActorId,
+  ElementItem,
 } from "./types.ts";
 
 export { parseFiles } from "./parser.ts";

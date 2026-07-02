@@ -38,6 +38,20 @@ export interface Diagnostic {
   line: number;
 }
 
+/** An actor ID entry from a seq document's `## 登場要素` section. */
+export interface ActorId {
+  id: string;
+  file: string;
+  line: number;
+}
+
+/** An element ID entry from a plan document's `elements:` line. */
+export interface ElementItem {
+  id: string;
+  file: string;
+  line: number;
+}
+
 /** Aggregated result of parsing one or more files. */
 export interface ParseResult {
   elements: Element[];
@@ -46,4 +60,8 @@ export interface ParseResult {
   diagnostics: Diagnostic[];
   /** Frontmatter records keyed by file path. */
   frontmatters: Map<string, Record<string, string | string[]>>;
+  /** Actor IDs from seq `## 登場要素` sections. */
+  actorIds: ActorId[];
+  /** Element IDs from plan `elements:` lines. */
+  elementItems: ElementItem[];
 }
