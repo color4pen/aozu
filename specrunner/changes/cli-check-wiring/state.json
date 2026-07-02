@@ -1,0 +1,27 @@
+{
+  "version": 2,
+  "jobId": "bb3dcf2e-834b-4da3-81c9-a824f20e01fb",
+  "createdAt": "2026-07-02T04:34:00.929Z",
+  "updatedAt": "2026-07-02T04:40:48.966Z",
+  "request": {
+    "title": "CLI を結線し check / check --request を交換面契約どおりに実装する",
+    "type": "new-feature",
+    "baseBranch": "main"
+  },
+  "repository": {
+    "owner": "color4pen",
+    "name": "aozu"
+  },
+  "step": "request-review",
+  "status": "running",
+  "branch": "feat/cli-check-wiring-bb3dcf2e",
+  "error": null,
+  "pipelineId": "standard",
+  "resumePoint": null,
+  "_journal": {
+    "historyCount": 6,
+    "stepCounts": {
+      "request-review": 1
+    }
+  }
+}
