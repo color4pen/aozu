@@ -27,6 +27,8 @@ export function parseFiles(files: FileInput[]): ParseResult {
     dependencyEdges: [],
     diagnostics: [],
     frontmatters: new Map(),
+    actorIds: [],
+    elementItems: [],
   };
 
   for (const file of files) {
@@ -57,6 +59,8 @@ export function parseFiles(files: FileInput[]): ParseResult {
     // 4. Structured lines
     const structured = extractStructuredLines(file.content, file.path);
     result.dependencyEdges.push(...structured.dependencyEdges);
+    result.actorIds.push(...structured.actorIds);
+    result.elementItems.push(...structured.elementItems);
   }
 
   return result;
