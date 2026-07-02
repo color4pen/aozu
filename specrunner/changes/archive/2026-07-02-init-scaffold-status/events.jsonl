@@ -80,3 +80,4 @@
 {"type":"step-attempt","step":"pr-create","sessionId":null,"outcome":{"verdict":"success","findingsPath":"specrunner/changes/init-scaffold-status/pr-create-result.md","error":null,"toolResult":null,"followUpAttempts":0},"startedAt":"2026-07-02T07:49:27.744Z","endedAt":"2026-07-02T07:49:29.859Z"}
 {"type":"lineage","step":"pr-create","ts":"2026-07-02T07:49:29.859Z","outputs":[{"path":"specrunner/changes/init-scaffold-status/pr-create-result.md","hash":"sha256:e20a722aa22d16f9dbb1d684b564e6c2370f124fb0e287f41593da892de774a7"}],"inputs":[{"path":"feat/init-scaffold-status-5bf843dc","hash":null}]}
 {"type":"transition","ts":"2026-07-02T07:49:29.868Z","step":"pipeline","status":"ok","message":"running → awaiting-archive: pipeline complete"}
+{"type":"transition","ts":"2026-07-02T08:00:24.756Z","step":"archive","status":"ok","message":"awaiting-archive → archived: change archived"}
