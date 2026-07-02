@@ -45,6 +45,7 @@ topic 起票
 | [0010](adr/0010-adoption-gradient.md) | 導入の段階性 — 最小プロファイルは静的構造のみ（0002 を修正） |
 | [0012](adr/0012-consumer-agnostic-derive.md) | 導出の消費者非依存 — request テンプレートは設定で注入 |
 | [0013](adr/0013-escalation-triage.md) | escalation の分流 — 正本テスト（外に触るなら設計に返る） |
+| [0014](adr/0014-directory-ownership.md) | ディレクトリの所有権 — 正本にツール名を冠しない |
 
 未確定の論点は [docs/open-questions.md](docs/open-questions.md)。
 
