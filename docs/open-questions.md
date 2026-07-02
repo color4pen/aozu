@@ -73,7 +73,7 @@ v0 draft を起草済み（`spec/format.md`）。ID 文法・宣言/参照構文
 
 正本は docs/findings/clearflow-2026-07-02.md（全 11 件）。設計判断が要るものを抽出:
 
-1. **アクターの表現**（findings 1・最重要）: seq の登場要素が mod 限定で、シナリオの主語（ロール・承認者）が形式から抜ける。act 型の新設 vs ビュー前提 vs 混在許可。実地の証拠は「act 型が先」に傾いている
+1. ~~**アクターの表現**~~ — **解決済み**（ADR-0015 / PR #6）。act 型を domain 層に追加し C5 を mod|act に改訂。clearflow で実地検収済み: actors.md（5 アクター）+ seq 4 本に主語を追記し、check exit 0・74 要素に到達
 2. **業務系ビュー 4 種の需要**（findings 2・3・11）: permission（権限マトリクス、最強の需要）、use-case / screen（既存設計資産の取り込み先）、data（非正規化・DB 制約の置き場）
 3. **read-model の語彙**（findings 4）: 属性を持たず計算で構成される読み取り専用ドメインが ent に馴染まない
 4. **横断メカニズムの表現**（findings 5）: ドメインイベント・監査・認可が層をまたぎ、mod 分割で歪む
