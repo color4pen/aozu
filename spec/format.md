@@ -24,6 +24,7 @@ design/
     glossary.md        # term 要素
     model.md           # ent 要素
     invariants.md      # inv 要素
+    actors.md          # act 要素（任意）
   dynamic/
     <slug>.md          # 1 ファイル 1 seq 要素
   topics/<slug>.md     # top 要素
@@ -66,6 +67,7 @@ slug    = [a-z0-9]+ ("-" [a-z0-9]+)*
 | `term` | 用語 | domain |
 | `ent` | エンティティ | domain |
 | `inv` | 不変条件 | domain |
+| `act` | アクター（ロール・主体） | domain |
 | `seq` | シーケンス | dynamic |
 | `top` | topic | loop |
 | `plan` | plan | loop |
@@ -142,9 +144,10 @@ id: seq-order-intake
 
 ### domain/glossary.md — term / model.md — ent / invariants.md — inv
 
-- term: 見出し + 定義本文。**ent の見出しは用語定義を兼ねる**ため、glossary には構造を持たない語彙のみを置く（同じ概念を term と ent の両方に書かない）
+- term: 見出し + 定義本文。**ent / act の見出しは用語定義を兼ねる**ため、glossary には構造を持たない語彙のみを置く（同じ概念を複数の型に書かない）
 - ent: 見出し + 本文（属性の箇条書き、関係は `[[ent-*]]` 参照で表す）
 - inv: **1 見出し 1 本**。個別引用される粒度（粒度仮説「引用される最小単位」より）
+- act: 見出し + 本文（誰であるか・何に責任を持つかの散文）。シナリオ（seq）の主語として登場要素から参照される。**操作権限の詳細（act × 操作のマトリクス）は permission ビューの領分**であり、act はその土台となる宣言のみ
 
 ### dynamic/<slug>.md — seq
 
@@ -228,13 +231,13 @@ topics: [[top-duplicate-slug]]
 | C2 | ID がリポジトリ全体で一意 |
 | C3 | すべての `[[id]]` が有効な型の実在要素に解決される。ただし**参照元・参照先のどちらか**の型が無効な参照は評価しない（無効な型の義務は評価しない、の一貫適用） |
 | C4 | dependencies の辺の両端が mod 要素に解決される |
-| C5 | seq の登場要素リストが空でなく、すべて mod に解決される |
+| C5 | seq の登場要素リストが空でなく、すべて mod または act に解決される |
 | C6 | ビューのリンク義務が充足される（uc→seq、scr→uc、api→mod、…型定義に従う） |
 | C7 | manifest の enabled 組み合わせが型の前提関係を満たす |
 | C8 | state.json の全キーが実在要素（削除要素の残骸検出） |
 | C9 | adr が top を引用している（loop 有効時） |
 | C10 | plan の elements がすべて実在し、after の grp が実在する |
-| C11 | 層間参照方向: domain の要素は domain（term / ent / inv）のみを参照できる。static は static と domain、dynamic は dynamic・static・domain を参照できる。loop と adr は制限なし |
+| C11 | 層間参照方向: domain の要素は domain（term / ent / inv / act）のみを参照できる。static は static と domain、dynamic は dynamic・static・domain を参照できる。loop と adr は制限なし |
 
 ## 11. rules export
 

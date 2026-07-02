@@ -46,6 +46,7 @@ topic 起票
 | [0012](adr/0012-consumer-agnostic-derive.md) | 導出の消費者非依存 — request テンプレートは設定で注入 |
 | [0013](adr/0013-escalation-triage.md) | escalation の分流 — 正本テスト（外に触るなら設計に返る） |
 | [0014](adr/0014-directory-ownership.md) | ディレクトリの所有権 — 正本にツール名を冠しない |
+| [0015](adr/0015-actor-as-core-type.md) | アクターの一級化 — act 型をコアの domain 層に追加（C5 改訂） |
 
 未確定の論点は [docs/open-questions.md](docs/open-questions.md)。
 
