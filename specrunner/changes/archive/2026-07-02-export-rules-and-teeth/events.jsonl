@@ -56,3 +56,4 @@
 {"type":"step-attempt","step":"pr-create","sessionId":null,"outcome":{"verdict":"success","findingsPath":"specrunner/changes/export-rules-and-teeth/pr-create-result.md","error":null,"toolResult":null,"followUpAttempts":0},"startedAt":"2026-07-02T06:32:54.524Z","endedAt":"2026-07-02T06:32:56.175Z"}
 {"type":"lineage","step":"pr-create","ts":"2026-07-02T06:32:56.175Z","outputs":[{"path":"specrunner/changes/export-rules-and-teeth/pr-create-result.md","hash":"sha256:951b44f54d7aa84868a7d33ec3e46b933740432d0aa3b087ed14e10cc6535630"}],"inputs":[{"path":"feat/export-rules-and-teeth-99fc1740","hash":null}]}
 {"type":"transition","ts":"2026-07-02T06:32:56.185Z","step":"pipeline","status":"ok","message":"running → awaiting-archive: pipeline complete"}
+{"type":"transition","ts":"2026-07-02T06:39:35.525Z","step":"archive","status":"ok","message":"awaiting-archive → archived: change archived"}
