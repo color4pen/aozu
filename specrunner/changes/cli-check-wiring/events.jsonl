@@ -22,3 +22,8 @@
 {"type":"transition","ts":"2026-07-02T04:55:39.576Z","step":"spec-review","status":"ok","message":"spec-review iteration 1 completed with verdict: approved"}
 {"type":"transition","ts":"2026-07-02T04:55:39.576Z","step":"step-transition","status":"ok","message":"spec-review → test-case-gen"}
 {"type":"transition","ts":"2026-07-02T04:55:39.578Z","step":"test-case-gen-started","status":"started","message":"Starting test-case-gen step"}
+{"type":"transition","ts":"2026-07-02T04:59:55.268Z","step":"test-case-gen-verdict","status":"ok","message":"test-case-gen verdict: success"}
+{"type":"step-attempt","step":"test-case-gen","sessionId":"5c36360d-ddad-4286-9386-937752f36eb5","outcome":{"verdict":"success","findingsPath":null,"error":null,"toolResult":{"ok":true,"status":"success"},"followUpAttempts":1,"transientRetryAttempts":0},"startedAt":"2026-07-02T04:55:39.590Z","endedAt":"2026-07-02T04:59:54.022Z"}
+{"type":"lineage","step":"test-case-gen","ts":"2026-07-02T04:59:54.022Z","outputs":[{"path":"specrunner/changes/cli-check-wiring/test-cases.md","hash":"sha256:31b0de7c5f60ebee6f6d29464c574688f6aa1c2c71a1e80823e686cd0ef81c8d"}],"inputs":[{"path":"specrunner/changes/cli-check-wiring/design.md","hash":"sha256:b7ab8cf14a43d212dc34888264fa7a0a3d6e7bbde8047297c5b8470aecc5db9e"},{"path":"specrunner/changes/cli-check-wiring/tasks.md","hash":"sha256:a120c426e9247833a7852b5ef37837b4a41dc3a6aa3beb40f73eb96ea49c9971"}]}
+{"type":"transition","ts":"2026-07-02T04:59:55.275Z","step":"step-transition","status":"ok","message":"spec-review complete → implementer (iter 1)"}
+{"type":"transition","ts":"2026-07-02T04:59:55.277Z","step":"implementer-started","status":"started","message":"Starting implementer step"}
