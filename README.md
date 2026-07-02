@@ -46,6 +46,12 @@ topic 起票
 
 未確定の論点は [docs/open-questions.md](docs/open-questions.md)。
 
+## 仕様
+
+- [形式仕様 v0](spec/format.md) — ID 文法・宣言/参照構文・型スキーマ・閉包規則 C1〜C11・state.json・rules export
+- [交換面契約 v0](spec/integration.md) — `check --request` / `mark implemented` / `export rules` の CLI 契約
+- [design/](design/) — sd 自身の設計（本形式による自己記述）
+
 ## ステータス
 
-設計段階。コードはまだない。次の作業は形式仕様（ID 文法・見出し規約・manifest スキーマ）の起草。
+設計段階。コードはまだない。形式仕様 v0 は自己記述ドッグフードで検証済み。次は業務システムでの粒度検証と、実装着手の判断。
