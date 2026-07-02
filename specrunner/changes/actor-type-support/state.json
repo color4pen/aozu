@@ -2,7 +2,7 @@
   "version": 2,
   "jobId": "3315197d-a464-4df6-9591-40e2c35d63bd",
   "createdAt": "2026-07-02T09:08:25.144Z",
-  "updatedAt": "2026-07-02T09:51:31.549Z",
+  "updatedAt": "2026-07-02T09:54:45.605Z",
   "request": {
     "title": "act 型（アクター）をコアに実装し、C5 を mod|act に改訂する",
     "type": "spec-change",
@@ -12,22 +12,23 @@
     "owner": "color4pen",
     "name": "aozu"
   },
-  "step": "conformance",
+  "step": "adr-gen",
   "status": "running",
   "branch": "change/actor-type-support-3315197d",
   "error": null,
   "pipelineId": "standard",
   "_journal": {
-    "historyCount": 41,
+    "historyCount": 50,
     "stepCounts": {
       "request-review": 1,
       "design": 1,
       "spec-review": 1,
       "test-case-gen": 1,
       "implementer": 1,
-      "verification": 1,
+      "verification": 2,
       "code-review": 2,
-      "code-fixer": 2
+      "code-fixer": 2,
+      "conformance": 1
     }
   }
 }
