@@ -19,7 +19,7 @@ docs/open-questions.md 論点 8 の戦略 2 の運用実体。**網羅の主張�
 | adr/0002-artifact-model.md | takt 2026-07-02 | 30411f193017 | 検証済 |
 | adr/0003-id-reference-grammar.md | takt 2026-07-02 | 258dde38d754 | 要再検証（分流修正で変更） |
 | adr/0004-living-docs-computed-delta.md | takt 2026-07-02 | 9081a0496987 | 検証済 |
-| adr/0005-element-state-machine.md | takt 2026-07-02 | 063137b39247 | 検証済 |
+| adr/0005-element-state-machine.md | takt 2026-07-02 | 063137b39247 | 要再検証（ADR-0018 反映で変更） |
 | adr/0006-input-ladder.md | takt 2026-07-02 | 76404e10b84d | 要再検証（分流修正で変更） |
 | adr/0007-gates.md | takt 2026-07-02 | eb6b046ae939 | 要再検証（分流修正で変更） |
 | adr/0008-verb-cli.md | takt 2026-07-02 | e87411173d19 | 検証済 |
@@ -30,6 +30,8 @@ docs/open-questions.md 論点 8 の戦略 2 の運用実体。**網羅の主張�
 | adr/0014-directory-ownership.md | takt 2026-07-02 | d6acb36648b1 | 検証済 |
 | adr/0015-actor-as-core-type.md | takt 2026-07-02 | c361f432ba06 | 検証済 |
 | adr/0016-versioning-and-release.md | — | — | 未走査（分流で新設） |
+| adr/0017-granularity-by-citation-context.md | — | — | 未走査（新設） |
+| adr/0018-loop-write-semantics.md | — | — | 未走査（新設） |
 | spec/format.md | takt 2026-07-02 | ece0028a83c2 | 要再検証（C3 訂正・分流修正で変更） |
 | spec/integration.md | takt 2026-07-02 | 14581b39d1eb | 要再検証（分流修正で変更） |
 | docs/open-questions.md | takt 2026-07-02 | 18d1b2c5cf65 | 要再検証（分流修正で変更） |

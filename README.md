@@ -15,7 +15,7 @@
 3. **機械強制できるのは順序ではなく整合**（ADR-0007）。強制する不変条件は design-not-later-than-merge であり、入口ゲート（request の引用検証）と出口ゲート（rules export → architecture test）で挟む
 4. **fail-closed**。列挙されない依存は禁止、未知の prefix は違反、マップされないソースは違反。縮退（段階導入）が免除するのは「既知だが無効な型」に限る
 5. **判断場面を消す**（ADR-0007）。規律を文化・習慣で守らせない。人の判断は topic / plan / ADR という置き場に集約し、それ以外は決定的処理にする
-6. **粒度 = 引用される最小単位**（作業仮説。検証中 — docs/open-questions.md 論点 3）
+6. **粒度は型ごとに、その型の主たる引用文脈で決める**（ADR-0017。基底ヒューリスティックは「引用される最小単位」）
 
 ## 成果物の階段
 
@@ -70,6 +70,8 @@ topic 起票
 | [0014](adr/0014-directory-ownership.md) | ディレクトリの所有権 — 正本にツール名を冠しない |
 | [0015](adr/0015-actor-as-core-type.md) | アクターの一級化 — act 型をコアの domain 層に追加（C5 改訂） |
 | [0016](adr/0016-versioning-and-release.md) | バージョニング — ツール semver と format-version の二軸分離 |
+| [0017](adr/0017-granularity-by-citation-context.md) | 要素の粒度 — 型ごとの主たる引用文脈で決める |
+| [0018](adr/0018-loop-write-semantics.md) | loop の書き込み意味論 — 書き手の最小化と計算される遷移（0006 を修正） |
 
 未確定の論点は [docs/open-questions.md](docs/open-questions.md)。
 

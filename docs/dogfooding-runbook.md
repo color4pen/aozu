@@ -10,7 +10,7 @@
 
 1. `spec/format.md` — 形式仕様。書くものの定義
 2. `design/` — 本ツール自身の自己記述。実例として参照する
-3. `docs/open-questions.md` の「要素の粒度」— 粒度の作業仮説「引用される最小単位」
+3. `adr/0017-granularity-by-citation-context.md` — 粒度の決定（型ごとの主たる引用文脈）と型別の粒度表
 
 ## 手順
 

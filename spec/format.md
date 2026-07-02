@@ -144,6 +144,7 @@ id: seq-order-intake
 ```
 
 - 責務 1 行を必須とする（`責務:` で始まる行）
+- 粒度は seam（レイヤ / ディレクトリ境界）とする。個別関数を mod にしない — 細粒度の言及は seq の流れの散文に書く（ADR-0017）
 - `実装:` 行（実装ディレクトリのカンマ区切り）は任意。ただし rules export はすべての mod に `実装:` を要求する（欠けていれば export 不合格）。設計と実装の接地は設計情報であり、外部の設定ファイルに出さない
 
 ### static/dependencies.md — 許可依存
@@ -159,7 +160,7 @@ id: seq-order-intake
 
 - term: 見出し + 定義本文。**ent / act の見出しは用語定義を兼ねる**ため、glossary には構造を持たない語彙のみを置く（同じ概念を複数の型に書かない）
 - ent: 見出し + 本文（属性の箇条書き、関係は `[[ent-*]]` 参照で表す）
-- inv: **1 見出し 1 本**。個別引用される粒度（粒度仮説「引用される最小単位」より）
+- inv: **1 見出し 1 本**。個別引用される粒度（ADR-0017 — inv の主たる引用文脈は個別引用）
 - act: 見出し + 本文（誰であるか・何に責任を持つかの散文）。シナリオ（seq）の主語として登場要素から参照される。**操作権限の詳細（act × 操作のマトリクス）は permission ビューの領分**であり、act はその土台となる宣言のみ
 
 ### dynamic/<slug>.md — seq
@@ -185,13 +186,12 @@ id: seq-order-intake
 ```markdown
 ---
 id: top-duplicate-slug
-status: open
 source: gh#708
 ---
 （症状・動機。意図を書いてよいが提案であって決定ではない）
 ```
 
-`status: open | addressed`。`source` は任意。
+`source` は任意。addressed の状態は frontmatter に持たず、**計算で導く**: ADR から `topics:` で引用された top は addressed とみなす（ADR-0018。ADR の top 引用はその topic への決定の宣言であり、決定しない topic の文脈引用は誤用）。open topic のフロンティアは status コマンドが計算表示する。
 
 ### plans/<slug>.md — plan
 
@@ -204,10 +204,9 @@ status: open
 - elements: [[ent-order]], [[inv-3]]
 - after: （順序制約。grp 参照、任意）
 - parallel: no
-- request: （derive 後にツールが記録）
 ```
 
-`status: open | derived`。グループは見出し要素、`elements:` 行が被覆の正本。
+`status: open | derived`。グループは見出し要素、`elements:` 行が被覆の正本。plan は**現在形の作業文書**であり、derive を終えたら削除してよい（過去の plan は git 履歴が保持する。ADR-0018）。要素 ↔ request の対応は state.json が正本であり、plan には記録しない。
 
 ### adr/NNNN-<slug>.md — adr
 

@@ -33,4 +33,4 @@ designed（設計済・未起票） → requested（request 起票済） → imp
 
 - 「設計レイヤの次にやること」が 1 コマンドで出る。これが設計を継続する運用の実体になる
 - 実装パイプライン側に hook 1 本の受け口が必要（取り込み完了時に `mark implemented` を呼ぶ）
-- 並列 request 実行時の状態マップの merge 衝突の扱いは形式仕様側で詰める（open-questions 参照）
+- 並列 request の重なりは「要素は同時に 1 request にのみ属する」（coverage が既 requested 要素を拒否 — ADR-0018）で封じ、同一要素への並行編集は git 衝突として人が裁く（spec §9）

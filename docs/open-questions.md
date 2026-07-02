@@ -9,23 +9,6 @@ v0 draft を起草済み（`spec/format.md`）。ID 文法・宣言/参照構文
 - 業務系ドッグフーディング（論点 9）での実地修正
 - ビュー型のスキーマ詳細。方針: ビュー型の追補は**ツール能力としても需要駆動**とする — 機構（宣言構文・リンク義務・scaffold・C6 結線）は named consumer が最初に立つ型（permission が有力）で検証し、以後の型は named consumer を持つ実プロジェクトが現れた時点で個別に追補する（spec §12 のトリガと同一）。spec §4 の 9 種 prefix 列挙は名前空間の予約であり追補の約束ではない。加算的変更なので format-version は上げない。**プロジェクトへの適用も同じく消費者駆動**とする: ビューの記述・移行は「そのビューを読む機械（または強制力）」が特定できるときのみ実用であり（ADR-0004 の適用）、消費者不在の移行はセレモニーである。例: permission の消費者候補 = 認可整合テスト（マトリクス ↔ コードの権限定義の突合）、use-case = derive の引用の的、screen = 現時点で消費者未特定（人間向け文書のままが正解）
 
-## 3. 要素の粒度
-
-何に ID を振るか（エンティティ単位か属性単位か、不変条件 1 本ごとか、シーケンス単位かステップ単位か）。細かすぎると官僚制、粗すぎるとトレースが無意味。**実プロジェクト適用でしか決まらない**ため、ドッグフーディング（論点 9）とセットで決める。
-
-作業仮説: **粒度 = 引用される最小単位**。
-
-業務系ドッグフーディング（clearflow、docs/findings/clearflow-2026-07-02.md）での検証結果 — **型に依存して支持と反証が分かれた**:
-
-- **支持**: inv（23 本すべて 1 見出し 1 本で個別引用に耐えた）、値オブジェクト（単独引用されないため親 ent に畳めて迷いなし）
-- **反証**: mod。seq の登場要素は個別 usecase 関数を引用したがる（細分化圧）一方、許可依存は 130+ 関数の個別 mod 化で官僚制爆発（粗大化圧）。同一型でも引用元の用途によって「引用される最小単位」が食い違う
-
-改訂候補: 「粒度は型ごとに、その型の**主たる引用文脈**で決める」。mod の主たる引用文脈は依存統制なので seam 粒度で固定し、細粒度の言及は seq 本文の散文に逃がす（実施者の回避策と同じ）。この改訂の採否は要判断。
-
-## 4. mark implemented の並列意味論
-
-`mark implemented` は「全遷移 or 全不変」（integration.md §2）だが、並列 request が要素集合の重なる slug で異なるタイミングに mark を呼ぶ場合の上書き規則（後勝ちか・拒否か・要素単位か）が未定義。state.json の git 衝突規則（spec §9: 人が裁く）は同時編集のケースのみを覆う。ADR-0005 の留保に対応する残課題。
-
 ## 5. 実装パイプライン側の受け口
 
 - request 検証からの `check --request` 呼び出し（入口ゲート）
@@ -75,7 +58,7 @@ v0 draft を起草済み（`spec/format.md`）。ID 文法・宣言/参照構文
 | 対象 | 検証するもの | 位置づけ |
 |---|---|---|
 | 本ツール自身 | 文法が回るか（ID・参照・check・self-hosting の閉包） | **完了**: `design/` に static + domain + dynamic を自己記述（初版 25 要素、mod-fsread 追加で現在 26）。閉包検証の成立を確認。発見（コード内参照の除外・term/ent 重複・層間参照方向 C11・アクター問題）は仕様 v0 に還流済み |
-| 業務 SaaS（ドメイン・画面・ユースケース・権限を持つ Web アプリ。実装パイプライン適用済み） | 粒度（論点 3）とフルループ（topic → 設計 → plan → request → run → implemented）の一周 | **書き起こしは完了**（2026-07-02、経緯ゼロの別 agent が実施）: 69 要素・check exit 0。findings 11 件は docs/findings/clearflow-2026-07-02.md。**フルループの一周は未検証**（loop 動詞が未実装のため） |
+| 業務 SaaS（ドメイン・画面・ユースケース・権限を持つ Web アプリ。実装パイプライン適用済み） | 粒度（ADR-0017 で決着）とフルループ（topic → 設計 → plan → request → run → implemented）の一周 | **書き起こしは完了**（2026-07-02、経緯ゼロの別 agent が実施）: 69 要素・check exit 0。findings 11 件は docs/findings/clearflow-2026-07-02.md。**フルループの一周は未検証**（loop 動詞が未実装のため） |
 | 実装パイプラインプロジェクト自身 | 段階①の in-place 形式化（ADR-0010）。architecture フォルダへの ID 付与と rules export への差し替え | 最小プロファイルの検証。範囲が小さいので時期は柔軟 |
 
 残: 実装パイプラインプロジェクトでの段階①検証と、loop 動詞実装後のフルループ一周検証。
@@ -96,24 +79,11 @@ v0 draft を起草済み（`spec/format.md`）。ID 文法・宣言/参照構文
 2. **業務系ビュー 4 種の需要**（findings 2・3・11）: permission（権限マトリクス、最強の需要）、use-case / screen（既存設計資産の取り込み先）、data（非正規化・DB 制約の置き場）
 3. **read-model の語彙**（findings 4）: 属性を持たず計算で構成される読み取り専用ドメインが ent に馴染まない
 4. **横断メカニズムの表現**（findings 5）: ドメインイベント・監査・認可が層をまたぎ、mod 分割で歪む
-5. **mod の粒度指針**（findings 6、論点 3 に反映済み）
+5. ~~**mod の粒度指針**~~（findings 6） — **解決済み**（ADR-0017: 粒度は型ごとの主たる引用文脈で決める。mod は seam 粒度で固定）
 6. **brownfield の既存設計資産との二重管理**（findings 8、論点 6 と関連）: 方向は docs/adoption.md 原則 3 で示した（正本は型ごとに移管、既存文書の該当箇所はポインタ化、移行は需要駆動）。実地検証待ち
 
-## 12. 状態書き込みの所有者
+## 12. designed への戻り遷移の機構
 
-状態を書く動詞が決定済みなのは coverage（→ requested）と mark implemented（→ implemented）のみで、次の 3 つの書き込みに所有者が居ない（findings-takt #3 / #15 / #20）:
+状態書き込みの所有者問題（findings-takt #3 / #15 / #20）のうち 2 件は ADR-0018 で決着した（topic の addressed = 計算導出、plan の `request:` 行 = 廃止）。残るのは **designed への戻り**（ADR-0005「設計 delta の merge → designed（新規または戻り）」の「戻り」）の機構のみ。
 
-1. **designed への戻り遷移**（ADR-0005「設計 delta の merge → designed（新規または戻り）」）。新規は「エントリ無し = designed」で自動だが、implemented からの戻りは state.json の書き換えを要する。案: (a) 設計 delta PR の merge hook が `mark designed --elements <ids>` を呼ぶ（mark implemented と対称）/ (b) 実装時の要素本文ハッシュを state.json に記録し、check / status が乖離を検出して designed 扱いに**計算で**縮退させる（書き込み自体を消す。ADR-0004「delta は計算物」と同型。整形だけの変更でも戻る保守性はあるが fail-closed 側に倒れる）
-2. **topic の open → addressed**。案: (a) `mark addressed <top-id>` を人または hook が呼ぶ / (b) frontmatter の status を廃し「ADR から引用されている top は addressed」を**計算で**導く（C9 が「ADR の top 引用 = その topic への決定」という意味論を既に固定している。ADR が文脈として topic に触れたいだけの引用は、この意味論の下では誤用となる）
-3. **plan の `request:` 行**（spec §8「derive 後にツールが記録」だが、derive はプロンプト動詞であり書き込まない — ADR-0008）。案: (a) coverage 合格時に plan にも書く（書き手が 2 面に増える）/ (b) `request:` 行を廃止し、要素 ↔ request 対応は state.json に一本化する
-
-いずれも loop 動詞（plan / coverage / derive / mark）の実装設計で確定する。方向感: 書き込みを増やすより、計算で導ける遷移は計算に寄せる（所有者問題と判断場面を同時に消す）。
-
-## 13. plan の寿命
-
-ADR-0006 は plan を「永続する横断アーティファクト」とするが、ADR-0004「過去形の記録は ADR のみが積層する」および C10（derived 済み plan の elements が後の再設計で削除されると恒久 fail し、通すには過去の記録を書き換えるしかない）と両立しない（findings-takt #9）。選択肢:
-
-- **A: plan は現在形の作業文書**。derived 後は削除してよい（過去の plan は git 履歴が保持 — living docs と同じ規約）。C10 は現存する plan にのみ働き、矛盾が消える。「なぜこの束で切ったか」は request 本文と ADR に残る。論点 12-3 の案 (b) と整合
-- **B: plan は永続**。C10 を `status: open` の plan に限定し、derived plan は凍結された過去形記録として ADR-0004 に例外を明記する
-
-推奨は A（原理の例外を増やさない）。ADR-0006 の決定の修正を要するため要判断。
+方向は計算優先で決定済み（ADR-0018-5）: 実装時の要素本文ハッシュを state.json に記録し、check / status が現物との乖離を検出して designed 扱いに縮退させる。ただし整形だけの変更でも戻る（fail-closed 側に倒れるがノイズになる）トレードオフがあり、ハッシュの正規化（空白・整形の扱い）を含め loop 動詞の実装設計で確定する。

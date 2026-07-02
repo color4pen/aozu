@@ -1,6 +1,6 @@
 # ADR-0006: 入力の階段 topic → design → plan → request
 
-- Status: accepted（本文中のファイル名例 `design/topics/<id>.md` は形式仕様の確定により `topics/<slug>.md`（slug 基準）に統一された。命名は spec/format.md §2 が正）
+- Status: accepted（本文中のファイル名例 `design/topics/<id>.md` は形式仕様の確定により `topics/<slug>.md`（slug 基準）に統一された。命名は spec/format.md §2 が正。plan の永続性と topic の `status` frontmatter は ADR-0018 で修正された）
 - Date: 2026-07-02
 
 ## Context
