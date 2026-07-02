@@ -135,6 +135,17 @@ describe("checkC11: cross-layer reference direction", () => {
     expect(checkC11(graph, loopPrefixes)).toHaveLength(0);
   });
 
+  it("TC-008: domain (term) → act reference → no diagnostics", () => {
+    const graph = makeGraph(
+      [
+        { id: "term-order", prefix: "term", displayName: "Order", file: "glossary.md", line: 1 },
+        { id: "act-approver", prefix: "act", displayName: "Approver", file: "actors.md", line: 1 },
+      ],
+      [{ targetId: "act-approver", file: "glossary.md", line: 3 }]
+    );
+    expect(checkC11(graph, ALL_PREFIXES)).toHaveLength(0);
+  });
+
   it("domain (act) → domain (term) reference → no diagnostics", () => {
     const graph = makeGraph(
       [

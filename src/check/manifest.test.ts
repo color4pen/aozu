@@ -106,6 +106,16 @@ describe("getEnabledPrefixes", () => {
     expect(prefixes.has("inv")).toBe(true);
   });
 
+  it("TC-015: domain enabled → getEnabledPrefixes includes act", () => {
+    const prefixes = getEnabledPrefixes(manifest(["static", "domain"]));
+    expect(prefixes.has("act")).toBe(true);
+  });
+
+  it("TC-016: domain disabled → getEnabledPrefixes excludes act", () => {
+    const prefixes = getEnabledPrefixes(manifest(["static"]));
+    expect(prefixes.has("act")).toBe(false);
+  });
+
   it("TC-031: dynamic → includes seq (static, domain, dynamic covers all layer prefixes)", () => {
     const prefixes = getEnabledPrefixes(manifest(["static", "domain", "dynamic"]));
     expect(prefixes.has("mod")).toBe(true);
