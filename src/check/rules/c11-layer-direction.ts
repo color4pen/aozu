@@ -2,7 +2,7 @@
  * C11: Cross-layer references SHALL follow the allowed direction.
  *
  * spec/format.md §10 C11:
- * - domain (term/ent/inv): may only reference domain elements
+ * - domain (term/ent/inv/act): may only reference domain elements
  * - static (mod): may reference static and domain elements
  * - dynamic (seq): may reference dynamic, static, and domain elements
  * - loop (top/plan/grp) and adr: no restriction
@@ -18,9 +18,9 @@ import { LAYER_MAP } from "../manifest.ts";
  * Unlisted layers (loop, adr, views) have no restriction.
  */
 const LAYER_ALLOWED_TARGET_PREFIXES: Record<string, Set<string>> = {
-  domain: new Set(["term", "ent", "inv"]),
-  static: new Set(["mod", "term", "ent", "inv"]),
-  dynamic: new Set(["seq", "mod", "term", "ent", "inv"]),
+  domain: new Set(["term", "ent", "inv", "act"]),
+  static: new Set(["mod", "term", "ent", "inv", "act"]),
+  dynamic: new Set(["seq", "mod", "term", "ent", "inv", "act"]),
 };
 
 /**

@@ -20,7 +20,7 @@ function makeGraph(
   return buildGraph(parsed);
 }
 
-const ALL_PREFIXES = new Set(["mod", "term", "ent", "inv", "seq", "top", "plan", "grp", "adr"]);
+const ALL_PREFIXES = new Set(["mod", "term", "ent", "inv", "act", "seq", "top", "plan", "grp", "adr"]);
 const STATIC_ONLY = new Set(["mod", "adr"]);
 
 describe("checkC3: reference resolution", () => {
@@ -76,6 +76,32 @@ describe("checkC3: reference resolution", () => {
     const graph = makeGraph(
       [{ id: "mod-cli", prefix: "mod", displayName: "CLI", file: "modules.md", line: 1 }],
       []
+    );
+    expect(checkC3(graph, ALL_PREFIXES)).toHaveLength(0);
+  });
+
+  it("unresolved act reference → C3 diagnostic", () => {
+    const graph = makeGraph(
+      [
+        { id: "mod-workflow", prefix: "mod", displayName: "Workflow", file: "modules.md", line: 1 },
+        // act-approver is NOT declared
+      ],
+      [{ targetId: "act-nonexistent", file: "modules.md", line: 3 }]
+    );
+    const diags = checkC3(graph, ALL_PREFIXES);
+    expect(diags).toHaveLength(1);
+    expect(diags[0]!.code).toBe("C3");
+    expect(diags[0]!.elementId).toBe("act-nonexistent");
+    expect(diags[0]!.level).toBe("error");
+  });
+
+  it("resolved act reference → no C3 diagnostic", () => {
+    const graph = makeGraph(
+      [
+        { id: "mod-workflow", prefix: "mod", displayName: "Workflow", file: "modules.md", line: 1 },
+        { id: "act-approver", prefix: "act", displayName: "Approver", file: "actors.md", line: 1 },
+      ],
+      [{ targetId: "act-approver", file: "modules.md", line: 3 }]
     );
     expect(checkC3(graph, ALL_PREFIXES)).toHaveLength(0);
   });

@@ -6,6 +6,7 @@ import {
   isLayerEnabled,
   VIEW_TYPE_NAMES,
   LAYER_ENABLED_NAMES,
+  LAYER_MAP,
 } from "./manifest.ts";
 import type { ParseResult } from "../parse/types.ts";
 import type { Manifest } from "../graph/types.ts";
@@ -106,6 +107,16 @@ describe("getEnabledPrefixes", () => {
     expect(prefixes.has("inv")).toBe(true);
   });
 
+  it("TC-015: domain enabled → getEnabledPrefixes includes act", () => {
+    const prefixes = getEnabledPrefixes(manifest(["static", "domain"]));
+    expect(prefixes.has("act")).toBe(true);
+  });
+
+  it("TC-016: domain disabled → getEnabledPrefixes excludes act", () => {
+    const prefixes = getEnabledPrefixes(manifest(["static"]));
+    expect(prefixes.has("act")).toBe(false);
+  });
+
   it("TC-031: dynamic → includes seq (static, domain, dynamic covers all layer prefixes)", () => {
     const prefixes = getEnabledPrefixes(manifest(["static", "domain", "dynamic"]));
     expect(prefixes.has("mod")).toBe(true);
@@ -146,6 +157,12 @@ describe("isLayerEnabled", () => {
   it("returns false for disabled layer", () => {
     expect(isLayerEnabled("dynamic", manifest(["static"]))).toBe(false);
     expect(isLayerEnabled("loop", manifest(["static"]))).toBe(false);
+  });
+});
+
+describe("LAYER_MAP", () => {
+  it("TC-003: LAYER_MAP[\"act\"] === \"domain\"", () => {
+    expect(LAYER_MAP["act"]).toBe("domain");
   });
 });
 

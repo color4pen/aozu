@@ -148,6 +148,45 @@ describe("T-19: degradation — enabled: static only", () => {
 });
 
 // ---------------------------------------------------------------------------
+// act degradation tests
+// ---------------------------------------------------------------------------
+
+describe("act degradation — domain disabled", () => {
+  it("act reference with domain disabled → no C3 diagnostic", () => {
+    // mod-workflow references act-approver, but domain is not enabled
+    const graph = makeGraph({
+      elements: [
+        { id: "mod-workflow", prefix: "mod", displayName: "Workflow", file: "modules.md", line: 1 },
+        { id: "act-approver", prefix: "act", displayName: "Approver", file: "actors.md", line: 1 },
+      ],
+      references: [
+        // Reference from enabled (mod) to disabled (act) — should be skipped
+        { targetId: "act-approver", file: "modules.md", line: 3 },
+      ],
+    });
+    const diags = runCheck(graph, manifest(["static"]));
+    // act prefix not in enabled prefixes → no C3 for that reference
+    expect(diags.map((d) => d.code)).not.toContain("C3");
+  });
+
+  it("act actor in seq with domain disabled → no C5 diagnostic for act prefix", () => {
+    // seq element has act in actor list, but dynamic (and domain) are disabled
+    // C5 itself is not evaluated when dynamic is disabled
+    const graph = makeGraph({
+      elements: [
+        { id: "mod-workflow", prefix: "mod", displayName: "Workflow", file: "modules.md", line: 1 },
+        { id: "seq-approval", prefix: "seq", displayName: "Approval", file: "dynamic/approval.md", line: 1 },
+      ],
+      actorIds: [
+        { id: "act-approver", file: "dynamic/approval.md", line: 5 },
+      ],
+    });
+    const diags = runCheck(graph, manifest(["static"]));
+    expect(diags.map((d) => d.code)).not.toContain("C5");
+  });
+});
+
+// ---------------------------------------------------------------------------
 // T-20: View type fail-closed
 // ---------------------------------------------------------------------------
 

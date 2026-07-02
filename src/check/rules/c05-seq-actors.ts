@@ -1,17 +1,20 @@
 /**
- * C5: Sequence actor lists SHALL be non-empty and resolve to mod elements.
+ * C5: Sequence actor lists SHALL be non-empty and resolve to mod or act elements.
  *
- * spec/format.md §10 C5: seq の登場要素リストが空でなく、すべて mod に解決される
+ * spec/format.md §10 C5: seq の登場要素リストが空でなく、すべて mod または act に解決される
  */
 
 import type { Graph } from "../../graph/types.ts";
 import type { CheckDiagnostic } from "../types.ts";
 import { extractPrefix } from "../../graph/index.ts";
 
+/** Prefixes allowed in the ## 登場要素 section of a seq element. */
+const ALLOWED_ACTOR_PREFIXES = new Set(["mod", "act"]);
+
 /**
  * Check C5: For every seq element, verify:
  * - Its `## 登場要素` section contains at least one entry.
- * - All entries have prefix `mod`.
+ * - All entries have prefix `mod` or `act`.
  */
 export function checkC5(graph: Graph): CheckDiagnostic[] {
   const diagnostics: CheckDiagnostic[] = [];
@@ -36,12 +39,12 @@ export function checkC5(graph: Graph): CheckDiagnostic[] {
     }
 
     for (const actor of actors) {
-      if (extractPrefix(actor.id) !== "mod") {
+      if (!ALLOWED_ACTOR_PREFIXES.has(extractPrefix(actor.id))) {
         diagnostics.push({
           level: "error",
           code: "C5",
           elementId: seqEl.id,
-          message: `seq element "${seqEl.id}" actor "${actor.id}" is not a mod element (prefix: "${extractPrefix(actor.id)}")`,
+          message: `seq element "${seqEl.id}" actor "${actor.id}" is not a mod or act element (prefix: "${extractPrefix(actor.id)}")`,
           file: actor.file,
           line: actor.line,
         });

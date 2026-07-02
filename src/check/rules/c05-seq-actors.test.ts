@@ -82,4 +82,41 @@ describe("checkC5: seq actor lists", () => {
     expect(diags).toHaveLength(1);
     expect(diags[0]!.elementId).toBe("seq-b");
   });
+
+  it("seq with act-only actors → no diagnostics", () => {
+    const graph = makeGraph(
+      [{ id: "seq-approval", prefix: "seq", displayName: "Approval", file: "seq.md", line: 1 }],
+      [
+        { id: "act-approver", file: "seq.md", line: 5 },
+        { id: "act-reviewer", file: "seq.md", line: 6 },
+      ]
+    );
+    expect(checkC5(graph)).toHaveLength(0);
+  });
+
+  it("seq with mixed mod and act actors → no diagnostics", () => {
+    const graph = makeGraph(
+      [{ id: "seq-order-approval", prefix: "seq", displayName: "Order Approval", file: "seq.md", line: 1 }],
+      [
+        { id: "mod-workflow", file: "seq.md", line: 5 },
+        { id: "act-approver", file: "seq.md", line: 6 },
+      ]
+    );
+    expect(checkC5(graph)).toHaveLength(0);
+  });
+
+  it("seq with act and ent actors → C5 diagnostic for ent only", () => {
+    const graph = makeGraph(
+      [{ id: "seq-process", prefix: "seq", displayName: "Process", file: "seq.md", line: 1 }],
+      [
+        { id: "act-approver", file: "seq.md", line: 5 },
+        { id: "ent-order", file: "seq.md", line: 6 },
+      ]
+    );
+    const diags = checkC5(graph);
+    expect(diags).toHaveLength(1);
+    expect(diags[0]!.code).toBe("C5");
+    expect(diags[0]!.elementId).toBe("seq-process");
+    expect(diags[0]!.message).toContain("ent-order");
+  });
 });
