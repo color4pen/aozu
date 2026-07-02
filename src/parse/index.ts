@@ -1,0 +1,21 @@
+/**
+ * Public API for the parse module.
+ *
+ * Re-exports all types and the main `parseFiles` function.
+ */
+
+export type {
+  FileInput,
+  Element,
+  Reference,
+  DependencyEdge,
+  Diagnostic,
+  ParseResult,
+} from "./types.ts";
+
+export { parseFiles } from "./parser.ts";
+export { validateId, extractPrefix, KNOWN_PREFIXES } from "./id.ts";
+export { parseFrontmatter } from "./frontmatter.ts";
+export { extractReferences, extractRefsFromLine, stripInlineCode } from "./references.ts";
+export { extractDeclarations } from "./declarations.ts";
+export { extractStructuredLines } from "./structured-lines.ts";
