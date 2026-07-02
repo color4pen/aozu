@@ -2,7 +2,7 @@
   "version": 2,
   "jobId": "ada3c375-946b-41cd-8cb2-8ebdfa3f5688",
   "createdAt": "2026-07-02T03:22:44.323Z",
-  "updatedAt": "2026-07-02T04:23:52.429Z",
+  "updatedAt": "2026-07-02T04:24:19.086Z",
   "request": {
     "title": "参照グラフと閉包検証（C1〜C11）を実装する",
     "type": "new-feature",
@@ -12,14 +12,19 @@
     "owner": "color4pen",
     "name": "aozu"
   },
-  "step": "adr-gen",
-  "status": "running",
+  "step": "pr-create",
+  "status": "awaiting-archive",
   "branch": "feat/graph-and-check-ada3c375",
   "error": null,
   "pipelineId": "standard",
   "resumePoint": null,
+  "pullRequest": {
+    "url": "https://github.com/color4pen/aozu/pull/2",
+    "number": 2,
+    "createdAt": "2026-07-02T04:24:19.077Z"
+  },
   "_journal": {
-    "historyCount": 56,
+    "historyCount": 61,
     "stepCounts": {
       "request-review": 1,
       "design": 1,
@@ -30,7 +35,9 @@
       "build-fixer": 1,
       "code-review": 1,
       "code-fixer": 1,
-      "conformance": 1
+      "conformance": 1,
+      "adr-gen": 1,
+      "pr-create": 1
     }
   }
 }
