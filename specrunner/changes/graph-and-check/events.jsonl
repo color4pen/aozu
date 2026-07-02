@@ -61,3 +61,9 @@
 {"type":"transition","ts":"2026-07-02T04:19:17.617Z","step":"code-review","status":"ok","message":"code-review iteration 1 completed with verdict: approved"}
 {"type":"transition","ts":"2026-07-02T04:19:17.618Z","step":"step-transition","status":"ok","message":"code-review → code-fixer"}
 {"type":"transition","ts":"2026-07-02T04:19:17.621Z","step":"code-fixer-started","status":"started","message":"Starting code-fixer step"}
+{"type":"transition","ts":"2026-07-02T04:19:47.919Z","step":"code-fixer-verdict","status":"ok","message":"code-fixer verdict: approved"}
+{"type":"step-attempt","step":"code-fixer","sessionId":"2f3b6f09-a563-48be-a5b1-19035aaf4f9b","outcome":{"verdict":"approved","findingsPath":null,"error":null,"toolResult":{"ok":true,"status":"success"},"followUpAttempts":1,"transientRetryAttempts":0},"startedAt":"2026-07-02T04:19:17.633Z","endedAt":"2026-07-02T04:19:46.677Z"}
+{"type":"lineage","step":"code-fixer","ts":"2026-07-02T04:19:46.677Z","outputs":[{"path":"specrunner/changes/graph-and-check","hash":null}],"inputs":[{"path":"specrunner/changes/graph-and-check/review-feedback-001.md","hash":"sha256:b7c6b5dd26ad6134f252fe00d2ea2af27b11283972cb6aef51357446782dda49"}]}
+{"type":"transition","ts":"2026-07-02T04:19:47.926Z","step":"step-transition","status":"ok","message":"code-fixer → conformance"}
+{"type":"transition","ts":"2026-07-02T04:19:47.927Z","step":"conformance","status":"started","message":"conformance iteration 1 started"}
+{"type":"transition","ts":"2026-07-02T04:19:47.929Z","step":"conformance-started","status":"started","message":"Starting conformance step"}
