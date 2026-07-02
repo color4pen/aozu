@@ -2,7 +2,7 @@
   "version": 2,
   "jobId": "99fc1740-a8ad-4c84-a092-f2b85e2d75f5",
   "createdAt": "2026-07-02T05:43:18.535Z",
-  "updatedAt": "2026-07-02T06:32:35.193Z",
+  "updatedAt": "2026-07-02T06:32:56.185Z",
   "request": {
     "title": "rules export と aozu 自身の歯（architecture test）を実装する",
     "type": "new-feature",
@@ -12,13 +12,18 @@
     "owner": "color4pen",
     "name": "aozu"
   },
-  "step": "adr-gen",
-  "status": "running",
+  "step": "pr-create",
+  "status": "awaiting-archive",
   "branch": "feat/export-rules-and-teeth-99fc1740",
   "error": null,
   "pipelineId": "standard",
+  "pullRequest": {
+    "url": "https://github.com/color4pen/aozu/pull/4",
+    "number": 4,
+    "createdAt": "2026-07-02T06:32:56.173Z"
+  },
   "_journal": {
-    "historyCount": 34,
+    "historyCount": 39,
     "stepCounts": {
       "request-review": 1,
       "design": 1,
@@ -27,7 +32,9 @@
       "implementer": 1,
       "verification": 1,
       "code-review": 1,
-      "conformance": 1
+      "conformance": 1,
+      "adr-gen": 1,
+      "pr-create": 1
     }
   }
 }
