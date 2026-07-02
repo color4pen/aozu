@@ -18,7 +18,7 @@
 2. **manifest**: `enabled` は最小から始める（まず `static`、必要になったら `domain` / `dynamic` を足す。ADR-0010 の段階に従う）
 3. **static**: `modules.md`（責務 1 行 + `実装:` 行）と `dependencies.md`（許可依存。列挙外は禁止の前提で書く）
 4. **domain / dynamic**: 有効化した場合のみ。ent の見出しは用語定義を兼ねる。seq の登場要素は mod に解決されること
-5. **検証**: `tools/check.sh <design ディレクトリ>` を実行する（本実装が立つまでの暫定チェッカ。C1〜C5 と C11 の一部を検査する）
+5. **検証**: `bun <aozu リポジトリ>/src/cli/main.ts check --dir <対象>/design` を実行する（閉包規則 C1〜C11 の本実装。exit 0 = 閉包成立、診断は stderr）
 6. **摩擦の記録**: `findings-<日付>.md` に 1 件 1 見出しで記録する。各件に「仕様のどの節か / 何が書けなかった・曖昧だったか / どう回避したか」を含める
 
 ## 規律
@@ -29,5 +29,5 @@
 
 ## 完了条件
 
-- `tools/check.sh` が OK を返す
+- `aozu check` が exit 0 を返す
 - findings に最低 1 件の具体的な記録がある（ゼロ件は「発見できなかった」ではなく「見ていない」を疑う）
