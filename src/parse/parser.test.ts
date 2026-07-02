@@ -70,6 +70,28 @@ describe("parseFiles", () => {
     expect(result.dependencyEdges[0]!.to).toBe("mod-parse");
   });
 
+  it("propagates implementations from 実装: lines to ParseResult", () => {
+    const file: FileInput = {
+      path: "test/modules.md",
+      content: [
+        "## CLI {#mod-cli}",
+        "責務: コマンド解釈",
+        "実装: src/cli/",
+        "",
+        "## Parser {#mod-parse}",
+        "責務: パース",
+        "実装: src/parse/, src/extra/",
+      ].join("\n"),
+    };
+    const result = parseFiles([file]);
+    expect(result.implementations).toHaveLength(2);
+    expect(result.implementations[0]!.paths).toEqual(["src/cli/"]);
+    expect(result.implementations[0]!.file).toBe("test/modules.md");
+    expect(result.implementations[0]!.line).toBe(3);
+    expect(result.implementations[1]!.paths).toEqual(["src/parse/", "src/extra/"]);
+    expect(result.implementations[1]!.line).toBe(7);
+  });
+
   it("collects diagnostics from all files", () => {
     const files: FileInput[] = [
       {

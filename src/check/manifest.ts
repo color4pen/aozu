@@ -5,7 +5,7 @@
  * layer / prefix helpers for graceful degradation.
  */
 
-import type { ParseResult } from "../parse/types.ts";
+import type { ParseResult } from "../graph/index.ts";
 import type { Manifest } from "../graph/types.ts";
 
 // ---------------------------------------------------------------------------

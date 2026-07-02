@@ -29,6 +29,7 @@ export function parseFiles(files: FileInput[]): ParseResult {
     frontmatters: new Map(),
     actorIds: [],
     elementItems: [],
+    implementations: [],
   };
 
   for (const file of files) {
@@ -61,6 +62,7 @@ export function parseFiles(files: FileInput[]): ParseResult {
     result.dependencyEdges.push(...structured.dependencyEdges);
     result.actorIds.push(...structured.actorIds);
     result.elementItems.push(...structured.elementItems);
+    result.implementations.push(...structured.implementations);
   }
 
   return result;

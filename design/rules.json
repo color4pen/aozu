@@ -1,0 +1,125 @@
+{
+  "format-version": 0,
+  "modules": [
+    "mod-check",
+    "mod-cli",
+    "mod-diff",
+    "mod-export",
+    "mod-fsread",
+    "mod-gitread",
+    "mod-graph",
+    "mod-parse",
+    "mod-plan",
+    "mod-prompt",
+    "mod-state"
+  ],
+  "paths": {
+    "mod-check": [
+      "src/check/"
+    ],
+    "mod-cli": [
+      "src/cli/"
+    ],
+    "mod-diff": [
+      "src/diff/"
+    ],
+    "mod-export": [
+      "src/export/"
+    ],
+    "mod-fsread": [
+      "src/fs/"
+    ],
+    "mod-gitread": [
+      "src/gitread/"
+    ],
+    "mod-graph": [
+      "src/graph/"
+    ],
+    "mod-parse": [
+      "src/parse/"
+    ],
+    "mod-plan": [
+      "src/plan/"
+    ],
+    "mod-prompt": [
+      "src/prompt/"
+    ],
+    "mod-state": [
+      "src/state/"
+    ]
+  },
+  "allowed": [
+    [
+      "mod-check",
+      "mod-graph"
+    ],
+    [
+      "mod-cli",
+      "mod-check"
+    ],
+    [
+      "mod-cli",
+      "mod-diff"
+    ],
+    [
+      "mod-cli",
+      "mod-export"
+    ],
+    [
+      "mod-cli",
+      "mod-fsread"
+    ],
+    [
+      "mod-cli",
+      "mod-graph"
+    ],
+    [
+      "mod-cli",
+      "mod-parse"
+    ],
+    [
+      "mod-cli",
+      "mod-plan"
+    ],
+    [
+      "mod-cli",
+      "mod-prompt"
+    ],
+    [
+      "mod-cli",
+      "mod-state"
+    ],
+    [
+      "mod-diff",
+      "mod-gitread"
+    ],
+    [
+      "mod-diff",
+      "mod-parse"
+    ],
+    [
+      "mod-export",
+      "mod-graph"
+    ],
+    [
+      "mod-fsread",
+      "mod-parse"
+    ],
+    [
+      "mod-graph",
+      "mod-parse"
+    ],
+    [
+      "mod-plan",
+      "mod-graph"
+    ],
+    [
+      "mod-plan",
+      "mod-state"
+    ],
+    [
+      "mod-prompt",
+      "mod-graph"
+    ]
+  ]
+}

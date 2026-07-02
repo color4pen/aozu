@@ -17,3 +17,4 @@
 - [[mod-plan]] -> [[mod-state]]
 - [[mod-prompt]] -> [[mod-graph]]
 - [[mod-export]] -> [[mod-graph]]
+- [[mod-fsread]] -> [[mod-parse]]

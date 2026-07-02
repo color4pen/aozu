@@ -102,12 +102,12 @@ describe("design/ integration", () => {
     expect(ids).not.toContain("id");
   });
 
-  it("TC-007 TC-035: design/static/dependencies.md yields exactly 17 dependency edges", async () => {
+  it("TC-007 TC-035: design/static/dependencies.md yields exactly 18 dependency edges", async () => {
     const files = await readMarkdownFiles(DESIGN_DIR);
     const result = parseFiles(files);
     const depsEdges = result.dependencyEdges.filter((e) =>
       e.file.includes("dependencies.md")
     );
-    expect(depsEdges).toHaveLength(17);
+    expect(depsEdges).toHaveLength(18);
   });
 });

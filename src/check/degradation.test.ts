@@ -20,6 +20,7 @@ function makeGraph(overrides: Partial<ParseResult> = {}) {
     frontmatters: new Map(),
     actorIds: [],
     elementItems: [],
+    implementations: [],
     ...overrides,
   };
   return buildGraph(parsed);
