@@ -10,5 +10,8 @@
     "@types/bun": "^1.3.14",
     "typescript": "^6.0.3"
   },
-  "scripts": {}
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "bun test"
+  }
 }
