@@ -52,6 +52,16 @@ export interface ElementItem {
   line: number;
 }
 
+/** An implementation path entry from a `実装:` line. */
+export interface ImplementationEntry {
+  /** Comma-split paths from the `実装:` line. */
+  paths: string[];
+  /** File the `実装:` line was found in. */
+  file: string;
+  /** 1-based line number of the `実装:` line. */
+  line: number;
+}
+
 /** Aggregated result of parsing one or more files. */
 export interface ParseResult {
   elements: Element[];
@@ -64,4 +74,6 @@ export interface ParseResult {
   actorIds: ActorId[];
   /** Element IDs from plan `elements:` lines. */
   elementItems: ElementItem[];
+  /** Implementation path entries from `実装:` lines. */
+  implementations: ImplementationEntry[];
 }

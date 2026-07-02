@@ -15,6 +15,7 @@ function makeGraph(
     frontmatters: new Map(),
     actorIds,
     elementItems: [],
+    implementations: [],
   };
   return buildGraph(parsed);
 }

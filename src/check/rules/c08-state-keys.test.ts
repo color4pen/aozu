@@ -12,6 +12,7 @@ function makeGraph(elements: ParseResult["elements"]) {
     frontmatters: new Map(),
     actorIds: [],
     elementItems: [],
+    implementations: [],
   };
   return buildGraph(parsed);
 }

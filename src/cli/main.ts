@@ -9,9 +9,11 @@
 
 import { createRegistry, register, dispatch, helpText } from "./registry.ts";
 import { handleCheck } from "./commands/check.ts";
+import { handleExport } from "./commands/export.ts";
 
 const registry = createRegistry();
 register(registry, "check", handleCheck, "run closure checks on design directory");
+register(registry, "export", handleExport, "export design artifacts");
 
 const argv = process.argv.slice(2); // strip [bun, script.ts]
 const commandName = argv[0];

@@ -10,3 +10,6 @@ export { buildGraph, resolveId } from "./builder.ts";
 
 // Re-export ID utilities from parse so check can use them via graph
 export { validateId, extractPrefix, KNOWN_PREFIXES } from "../parse/id.ts";
+
+// Re-export parse types so consumers can import via graph without depending on parse directly
+export type { ParseResult, Element, FileInput } from "../parse/types.ts";

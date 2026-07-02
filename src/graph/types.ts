@@ -5,7 +5,7 @@
  * providing efficient ID resolution and reference lookup for the check module.
  */
 
-import type { Element, Reference, DependencyEdge, ParseResult } from "../parse/types.ts";
+import type { Element, Reference, DependencyEdge, ParseResult, ImplementationEntry } from "../parse/types.ts";
 
 /** Map from element ID to Element. Built from ParseResult.elements. */
 export type ElementTable = Map<string, Element>;
@@ -45,6 +45,8 @@ export interface Graph {
   actorIds: ParseResult["actorIds"];
   /** Element IDs from plan `elements:` lines. */
   elementItems: ParseResult["elementItems"];
+  /** Implementation path entries from `実装:` lines. */
+  implementations: ImplementationEntry[];
   /** Path to the manifest file, or null if not found. */
   manifestPath: string | null;
 }

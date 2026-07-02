@@ -11,6 +11,7 @@ function makeEmptyParseResult(): ParseResult {
     frontmatters: new Map(),
     actorIds: [],
     elementItems: [],
+    implementations: [],
   };
 }
 
@@ -89,6 +90,20 @@ describe("buildGraph", () => {
     expect(refsFromA).toHaveLength(2);
     const refsFromB = graph.references.bySource.get("b.md");
     expect(refsFromB).toHaveLength(1);
+  });
+
+  it("copies implementations from ParseResult to Graph", () => {
+    const parsed = makeEmptyParseResult();
+    parsed.implementations.push(
+      { paths: ["src/cli/"], file: "modules.md", line: 3 },
+      { paths: ["src/parse/", "src/extra/"], file: "modules.md", line: 7 }
+    );
+    const graph = buildGraph(parsed);
+    expect(graph.implementations).toHaveLength(2);
+    expect(graph.implementations[0]!.paths).toEqual(["src/cli/"]);
+    expect(graph.implementations[1]!.paths).toEqual(["src/parse/", "src/extra/"]);
+    // Ensure shallow copy (not same reference)
+    expect(graph.implementations).not.toBe(parsed.implementations);
   });
 
   it("rawElements preserves duplicates for C2 detection", () => {

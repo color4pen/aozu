@@ -51,6 +51,7 @@ export function buildGraph(parsed: ParseResult, manifestPath: string | null = nu
     dependencyEdges: [...parsed.dependencyEdges],
     actorIds: [...parsed.actorIds],
     elementItems: [...parsed.elementItems],
+    implementations: [...(parsed.implementations ?? [])],
     manifestPath,
   };
 }
