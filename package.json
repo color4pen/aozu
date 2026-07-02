@@ -2,7 +2,16 @@
   "name": "aozu",
   "version": "0.0.0",
   "private": true,
+  "bin": {
+    "aozu": "./src/cli/main.ts"
+  },
+  "dependencies": {},
   "devDependencies": {
+    "@types/bun": "^1.3.14",
     "typescript": "^6.0.3"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "bun test"
   }
 }
