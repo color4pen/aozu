@@ -21,8 +21,8 @@
   - `ElementTable`: `Map<string, Element>` の型エイリアス（ID → Element）
   - `ReferenceIndex`: `{ bySource: Map<string, Reference[]>; byTarget: Map<string, Reference[]>; all: Reference[] }`
   - `Manifest`: `{ formatVersion: string; enabled: string[] }`
-  - `Graph`: `{ elements: ElementTable; references: ReferenceIndex; dependencyEdges: DependencyEdge[]; actorIds: ParseResult["actorIds"]; elementItems: ParseResult["elementItems"]; manifestPath: string | null }`
-- [ ] `src/graph/index.ts` を作成し re-export
+  - `Graph`: `{ elements: ElementTable; rawElements: Element[]; references: ReferenceIndex; dependencyEdges: DependencyEdge[]; actorIds: ParseResult["actorIds"]; elementItems: ParseResult["elementItems"]; manifestPath: string | null }`（`rawElements` は宣言順の生配列。Map 構築で重複 ID が消失するため C2 の走査対象）
+- [ ] `src/graph/index.ts` を作成し re-export。あわせて `validateId` / `KNOWN_PREFIXES` を `src/parse/` から re-export する（check は parse を直接 import せず、この経由で参照する）
 
 **Acceptance Criteria**:
 - 全型が `src/graph/index.ts` から import 可能
@@ -33,6 +33,7 @@
 - [ ] `src/graph/builder.ts` を作成
 - [ ] `buildGraph(parsed: ParseResult, manifestPath: string): Graph` を実装:
   - `parsed.elements` から `ElementTable`（Map<string, Element>）を構築
+  - `parsed.elements` をそのまま `rawElements` として格納（順序・重複を保存）
   - `parsed.references` から `ReferenceIndex` を構築（bySource / byTarget の索引）
   - `parsed.dependencyEdges`, `parsed.actorIds`, `parsed.elementItems` をそのまま格納
   - `manifestPath` を格納（manifest ファイルの特定に使用）
@@ -72,11 +73,11 @@
 - [ ] `src/check/manifest.ts` を作成:
   - `LAYER_MAP`: prefix → layer のマッピング定数（`mod→static`, `term/ent/inv→domain`, `seq→dynamic`, `top/plan/grp→loop`, `adr→always`, ビュー prefix → `views`）
   - `LAYER_PREREQUISITES`: layer → 前提 layer[] のマッピング定数
-  - `VIEW_TYPE_NAMES`: ビュー型名の Set（`use-case`, `screen` 等 — `enabled` リストに現れうる値）
+  - `VIEW_ENABLED_NAME_TO_PREFIX`: `Record<string, string>` — `enabled` に現れるビュー型名 → prefix の全列挙（`use-case→uc`, `screen→scr`, `api→api`, `data→dat`, `dataflow→flow`, `event→evt`, `external→ext`, `permission→perm`, `deployment→dpl`）。`VIEW_TYPE_NAMES` はこの Record のキー集合として導出する
   - `LAYER_ENABLED_NAMES`: 層名の Set（`static`, `domain`, `dynamic`, `loop`）
   - `parseManifest(frontmatters: ParseResult["frontmatters"], manifestPath: string): Manifest` — frontmatter から `enabled` リストを抽出
   - `getEnabledLayers(manifest: Manifest): Set<string>` — 有効な層を返す
-  - `getEnabledPrefixes(manifest: Manifest): Set<string>` — 有効な層に属する prefix の集合を返す
+  - `getEnabledPrefixes(manifest: Manifest): Set<string>` — 有効な層に属する prefix の集合を返す。**ビュー型の prefix は含めない**（ビュー型は未対応で C6 が fail-closed 診断を出すため、参照解決を無言で許さない）。`adr` prefix は常時含める
   - `isLayerEnabled(layer: string, manifest: Manifest): boolean`
 - [ ] `src/check/manifest.test.ts` を作成:
   - `enabled: static, domain, dynamic` → layers `{static, domain, dynamic}` が有効
@@ -94,7 +95,7 @@
 ## T-06: C1（ID 文法）の実装
 
 - [ ] `src/check/rules/c01-id-grammar.ts` を作成
-- [ ] `checkC1(graph: Graph): CheckDiagnostic[]` を実装: 全要素の ID を `validateId` で検証し、不合格なら `code: "C1"` の診断を返す
+- [ ] `checkC1(graph: Graph): CheckDiagnostic[]` を実装: 全要素の ID を `validateId` で検証し、不合格なら `code: "C1"` の診断を返す。`validateId` / `KNOWN_PREFIXES` は `src/graph/` の re-export 経由で import する（`src/check/` から `src/parse/` を直接 import しない — 許可依存 `mod-check → mod-graph → mod-parse` に従う）
 - [ ] `src/check/rules/c01-id-grammar.test.ts` を作成:
   - 正常 ID のみの Graph → 診断 0 件
   - 大文字 ID を含む Graph → C1 診断が返る
@@ -108,7 +109,7 @@
 ## T-07: C2（ID 一意性）の実装
 
 - [ ] `src/check/rules/c02-id-unique.ts` を作成
-- [ ] `checkC2(graph: Graph, elements: Element[]): CheckDiagnostic[]` を実装: elements 配列（Graph 構築前の生配列）を走査し、同一 ID が複数回宣言されていれば `code: "C2"` の診断を返す（2 番目以降の宣言に対して診断）
+- [ ] `checkC2(graph: Graph): CheckDiagnostic[]` を実装: `graph.rawElements`（宣言順の生配列）を走査し、同一 ID が複数回宣言されていれば `code: "C2"` の診断を返す（2 番目以降の宣言に対して診断）
 - [ ] `src/check/rules/c02-id-unique.test.ts` を作成:
   - 一意な ID のみ → 診断 0 件
   - 重複 ID あり → C2 診断が返る（2 番目の宣言の位置情報つき）
@@ -124,10 +125,12 @@
 - [ ] `checkC3(graph: Graph, enabledPrefixes: Set<string>): CheckDiagnostic[]` を実装:
   - 全参照を走査し、参照先が ElementTable に存在しない場合は `code: "C3"` の診断
   - ただし、参照先 ID の prefix が有効な prefix に含まれない場合（disabled type への参照）はスキップ
+  - **参照元の要素の prefix が無効な層に属する場合もスキップ**（無効層の文書の義務は評価しない、の一貫適用。例: `enabled: static` のとき seq 文書内の未解決 mod 参照は診断しない）
 - [ ] `src/check/rules/c03-ref-resolved.test.ts` を作成:
   - 全参照が解決 → 診断 0 件
   - 未解決参照あり → C3 診断が返る
   - disabled type への参照 → C3 診断が出ない
+  - disabled 層の要素**から**の未解決参照 → C3 診断が出ない
 
 **Acceptance Criteria**:
 - 未解決参照が C3 として検出される
@@ -310,6 +313,7 @@
   - C8, C9, C10（loop）の診断が出ないこと
   - C4（static 依存辺）は評価されること
 - [ ] `enabled: static` の fixture に domain の参照を含めても C3 / C11 で domain 側のエラーが出ないことを確認
+- [ ] 無効層の要素（例: seq）からの未解決参照が C3 診断を出さないケースの fixture とアサーションを追加
 
 **Acceptance Criteria**:
 - `enabled: static` で domain/dynamic/loop の規則がスキップされる

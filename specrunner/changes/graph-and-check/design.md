@@ -57,7 +57,9 @@ ReferenceIndex: {
 }
 ```
 
-`buildGraph(parsed: ParseResult): Graph` が公開 API。`Graph` は `ElementTable` + `ReferenceIndex` + `DependencyEdge[]` + `actorIds` + `elementItems` + `manifest` を束ねる構造。
+`buildGraph(parsed: ParseResult): Graph` が公開 API。`Graph` は `ElementTable` + `rawElements: Element[]`（宣言順の生配列。Map 構築時に重複 ID が上書き消失するため、C2 の重複検出はこちらを走査する）+ `ReferenceIndex` + `DependencyEdge[]` + `actorIds` + `elementItems` + `manifestPath: string | null` を束ねる構造。解析済み `Manifest` オブジェクトは含まない — `parseManifest()` で別途生成し `runCheck` に渡す。
+
+また `src/graph/index.ts` は `validateId` / `KNOWN_PREFIXES` を `src/parse/` から re-export する。check の C1 はこの re-export を経由して参照し、`src/check/` から `src/parse/` への直接 import を作らない（許可依存は `mod-check → mod-graph → mod-parse` の経路のみ）。
 
 **Rationale**: check の各規則が「ID で要素を引く」「特定 ID への参照を列挙する」「全参照を走査する」の 3 パターンでアクセスする。索引を事前構築することで規則評価が O(1) / O(n) になる。
 
@@ -84,7 +86,13 @@ LAYER_ALLOWED_REFS: layer → 参照可能な prefix[]
   static → [mod, term, ent, inv]
   dynamic → [seq, mod, term, ent, inv]
   loop, adr → 制限なし（全 prefix）
+
+VIEW_ENABLED_NAME_TO_PREFIX: enabled に現れるビュー型名 → prefix
+  use-case → uc, screen → scr, api → api, data → dat, dataflow → flow,
+  event → evt, external → ext, permission → perm, deployment → dpl
 ```
+
+ビュー型は本 request 時点で未対応（C6 が fail-closed 診断を出す）ため、`getEnabledPrefixes` はビュー型の prefix を **enabledPrefixes に含めない**。ビュー要素の参照解決を無言で許すと C6 の診断と矛盾するためである。
 
 **Rationale**: ADR-0002「型はツールの知識であり、設定可能にすると閉包の意味が揺れる」に従い、宣言的テーブルをソースに埋め込む。テーブルの変更は仕様変更であり、コード変更として追跡される。
 
@@ -114,9 +122,9 @@ src/check/
   index.ts          # re-export
 ```
 
-各規則関数のシグネチャ: `(graph: Graph, manifest: Manifest) => CheckDiagnostic[]`
+各規則関数は**必要な入力のみを取り、共通シグネチャを強制しない**（C2 は `graph` のみで `graph.rawElements` を走査、C3・C11 は `enabledPrefixes: Set<string>` を追加で取る、C6・C7 は `manifest` のみ、C8 は `stateKeys: string[]` を取る、等。正確なシグネチャは tasks.md の各タスク定義に従う）。
 
-`checker.ts` の `runCheck(graph, manifest)` が段階縮退を適用し、有効な規則のみを呼び出して全診断を集約する。
+`checker.ts` の `runCheck(graph, manifest, stateKeys?)` が段階縮退を適用し、有効な規則のみを規則ごとの必要引数で呼び出して全診断を集約する。
 
 **Rationale**: 規則ごとにファイルを分離することで、テストが規則単位で書ける。集約関数が段階縮退を制御するため、各規則は「自分が呼ばれたなら評価する」だけでよい。
 
@@ -147,7 +155,8 @@ CheckDiagnostic {
 
 | 規則 | 評価条件 |
 |------|---------|
-| C1, C2, C3 | 常時（ただし C3 は有効な型の要素にのみ解決を要求） |
+| C1, C2 | 常時 |
+| C3 | 常時。ただし**参照元・参照先のどちらか**の prefix が無効な型に属する参照は診断しない |
 | C4 | static 有効時 |
 | C5 | dynamic 有効時 |
 | C6 | ビュー型が enabled に含まれる場合（現在は fail-closed） |
@@ -155,7 +164,7 @@ CheckDiagnostic {
 | C8, C9, C10 | loop 有効時 |
 | C11 | 有効な層に属する要素のみ対象 |
 
-**Rationale**: 「無効な型の義務は評価しない」という段階縮退の原則に基づく。C3 については、参照先が無効な型に属する要素である場合は未解決として扱わない（その型自体が評価対象外のため）。
+**Rationale**: 「無効な型の義務は評価しない」という段階縮退の原則に基づく。C3 については、参照先が無効な型に属する場合（その型自体が評価対象外）に加え、**参照元の要素が無効な型に属する場合**も診断しない — 無効層の文書が持つ義務を評価しないという原則の一貫した適用である。
 
 ### D7: C11 層間参照方向の詳細ルール
 
