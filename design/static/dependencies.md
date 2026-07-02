@@ -8,6 +8,7 @@
 - [[mod-cli]] -> [[mod-plan]]
 - [[mod-cli]] -> [[mod-prompt]]
 - [[mod-cli]] -> [[mod-export]]
+- [[mod-cli]] -> [[mod-fsread]]
 - [[mod-check]] -> [[mod-graph]]
 - [[mod-graph]] -> [[mod-parse]]
 - [[mod-diff]] -> [[mod-parse]]
