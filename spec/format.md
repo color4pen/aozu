@@ -111,9 +111,11 @@ id: seq-order-intake
 ```markdown
 ## CLI 層 {#mod-cli}
 責務: コマンド解釈と入出力。ドメイン判断を持たない。
+実装: src/cli/
 ```
 
-責務 1 行を必須とする（`責務:` で始まる行）。
+- 責務 1 行を必須とする（`責務:` で始まる行）
+- `実装:` 行（実装ディレクトリのカンマ区切り）は任意。ただし rules export はすべての mod に `実装:` を要求する（欠けていれば export 不合格）。設計と実装の接地は設計情報であり、外部の設定ファイルに出さない
 
 ### static/dependencies.md — 許可依存
 
@@ -200,6 +202,7 @@ topics: [[top-duplicate-slug]]
 - キーは要素 ID、**辞書順ソート・1 要素 1 行**で書く（並列作業時の merge 衝突を「同一要素を触った場合」だけに局所化する）
 - `state: designed | requested | implemented`（ADR-0005）。エントリが無い要素は designed とみなす
 - **人は編集しない**。coverage / mark / 設計 delta の merge がツール経由で書く
+- 同一要素への並行更新は git の衝突として表面化させ、機械的な後勝ち解決を行わない（同一要素の並行変更は設計上の真の衝突であり、人が裁く）
 
 ## 10. 閉包検証規則（check）
 
@@ -225,6 +228,7 @@ topics: [[top-duplicate-slug]]
 {
   "format-version": 0,
   "modules": ["mod-cli", "mod-core"],
+  "paths": { "mod-cli": ["src/cli/"], "mod-core": ["src/core/"] },
   "allowed": [["mod-cli", "mod-core"]]
 }
 ```
@@ -233,7 +237,6 @@ topics: [[top-duplicate-slug]]
 
 ## 12. 本仕様内の未決
 
-- mod と実装ディレクトリの対応付け（rules export に mapping を含めるか、実装側の設定か）
 - **seq の登場要素にアクター・外部システムを含める扱い**。CLI ツールの設計では mod だけで足りるが、業務システムではアクター（人・ロール）と外部系が必ず登場する。act 型の新設か、ext / perm ビューの有効化を前提にするか。業務系ドッグフーディングで決める
 - ビュー型それぞれのスキーマ詳細（有効化する実プロジェクトが現れた時点で追補）
 - `format-version` の互換性ポリシー（v1 で確定）
