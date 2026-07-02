@@ -1,0 +1,42 @@
+{
+  "version": 2,
+  "jobId": "5bf843dc-c4be-4491-88ad-904845e9fb87",
+  "createdAt": "2026-07-02T06:42:27.836Z",
+  "updatedAt": "2026-07-02T08:00:24.756Z",
+  "request": {
+    "title": "init / scaffold / status を実装し、導入体験とフロンティア表示を立てる",
+    "type": "new-feature",
+    "baseBranch": "main"
+  },
+  "repository": {
+    "owner": "color4pen",
+    "name": "aozu"
+  },
+  "step": "pr-create",
+  "status": "archived",
+  "branch": "feat/init-scaffold-status-5bf843dc",
+  "error": null,
+  "pipelineId": "standard",
+  "pullRequest": {
+    "url": "https://github.com/color4pen/aozu/pull/5",
+    "number": 5,
+    "createdAt": "2026-07-02T07:49:29.857Z"
+  },
+  "_journal": {
+    "historyCount": 56,
+    "stepCounts": {
+      "request-review": 1,
+      "design": 1,
+      "spec-review": 1,
+      "test-case-gen": 1,
+      "implementer": 1,
+      "verification": 3,
+      "build-fixer": 1,
+      "code-review": 1,
+      "code-fixer": 1,
+      "conformance": 1,
+      "adr-gen": 1,
+      "pr-create": 1
+    }
+  }
+}
