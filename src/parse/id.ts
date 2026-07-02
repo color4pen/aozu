@@ -12,6 +12,7 @@ export const KNOWN_PREFIXES = new Set([
   "term",
   "ent",
   "inv",
+  "act",
   "seq",
   "top",
   "plan",

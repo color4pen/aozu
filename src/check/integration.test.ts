@@ -11,6 +11,8 @@ import { readMarkdownFiles } from "../fs/reader.ts";
 import { parseFiles } from "../parse/parser.ts";
 import { buildGraph } from "../graph/builder.ts";
 import { parseManifest, runCheck } from "./index.ts";
+import type { ParseResult } from "../parse/types.ts";
+import type { Manifest } from "../graph/types.ts";
 
 const DESIGN_DIR = join(import.meta.dir, "../../design");
 const MANIFEST_PATH = join(DESIGN_DIR, "manifest.md");
@@ -44,5 +46,42 @@ describe("check integration: design/ passes with zero violations (equivalent to 
     expect(manifest.enabled).toContain("domain");
     expect(manifest.enabled).toContain("dynamic");
     expect(manifest.enabled).not.toContain("loop");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// T-09: act element + seq with act actor → check exit 0
+// ---------------------------------------------------------------------------
+
+describe("check integration: act elements with seq actors", () => {
+  it("actors.md (act element) + seq with act actor → zero diagnostics", () => {
+    // Build in-memory ParseResult:
+    // - mod-workflow (static layer)
+    // - act-approver (domain layer, in actors.md)
+    // - seq-approval (dynamic layer, actors: mod-workflow + act-approver)
+    // - manifest: enabled static, domain, dynamic
+    const parsed: ParseResult = {
+      elements: [
+        { id: "mod-workflow", prefix: "mod", displayName: "Workflow", file: "static/modules.md", line: 1 },
+        { id: "act-approver", prefix: "act", displayName: "Approver", file: "domain/actors.md", line: 1 },
+        { id: "seq-approval-flow", prefix: "seq", displayName: "Approval Flow", file: "dynamic/approval.md", line: 1 },
+      ],
+      references: [],
+      dependencyEdges: [],
+      diagnostics: [],
+      frontmatters: new Map(),
+      actorIds: [
+        { id: "mod-workflow", file: "dynamic/approval.md", line: 5 },
+        { id: "act-approver", file: "dynamic/approval.md", line: 6 },
+      ],
+      elementItems: [],
+      implementations: [],
+    };
+
+    const graph = buildGraph(parsed);
+    const manifest: Manifest = { formatVersion: "0", enabled: ["static", "domain", "dynamic"] };
+
+    const diagnostics = runCheck(graph, manifest);
+    expect(diagnostics).toHaveLength(0);
   });
 });
