@@ -10,10 +10,16 @@
 import { createRegistry, register, dispatch, helpText } from "./registry.ts";
 import { handleCheck } from "./commands/check.ts";
 import { handleExport } from "./commands/export.ts";
+import { handleInit } from "./commands/init.ts";
+import { handleScaffold } from "./commands/scaffold.ts";
+import { handleStatus } from "./commands/status.ts";
 
 const registry = createRegistry();
 register(registry, "check", handleCheck, "run closure checks on design directory");
 register(registry, "export", handleExport, "export design artifacts");
+register(registry, "init", handleInit, "initialize a design directory");
+register(registry, "scaffold", handleScaffold, "create a new design document from template");
+register(registry, "status", handleStatus, "show design frontiers and summary");
 
 const argv = process.argv.slice(2); // strip [bun, script.ts]
 const commandName = argv[0];
