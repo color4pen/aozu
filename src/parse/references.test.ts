@@ -24,7 +24,7 @@ describe("extractRefsFromLine", () => {
     expect(extractRefsFromLine("see [[mod-parse]]")).toEqual(["mod-parse"]);
   });
 
-  it("extracts multiple references from one line", () => {
+  it("TC-021: multiple [[id]] references on the same line are all extracted", () => {
     const refs = extractRefsFromLine("[[mod-cli]] calls [[mod-parse]] via [[mod-graph]]");
     expect(refs).toEqual(["mod-cli", "mod-parse", "mod-graph"]);
   });
@@ -33,7 +33,7 @@ describe("extractRefsFromLine", () => {
     expect(extractRefsFromLine("use `[[mod-parse]]` syntax")).toEqual([]);
   });
 
-  it("extracts reference outside inline code when mixed", () => {
+  it("TC-022: inline code and normal reference coexist correctly on the same line", () => {
     const refs = extractRefsFromLine("see `[[mod-parse]]` and [[mod-cli]]");
     expect(refs).toEqual(["mod-cli"]);
   });
@@ -48,7 +48,7 @@ describe("extractReferences", () => {
     expect(refs[1]).toEqual({ targetId: "mod-cli", file: "test.md", line: 2 });
   });
 
-  it("excludes references inside code fences", () => {
+  it("TC-006: code fence exclusion suppresses [[id]] extraction", () => {
     const content = [
       "Normal [[mod-cli]] reference.",
       "```",

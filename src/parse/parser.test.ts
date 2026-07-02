@@ -12,7 +12,7 @@ describe("parseFiles", () => {
     expect(result.frontmatters.size).toBe(0);
   });
 
-  it("parses a single file and returns all fields", () => {
+  it("TC-011: parser API accepts in-memory input without file I/O", () => {
     const file: FileInput = {
       path: "test/modules.md",
       content: [
@@ -29,7 +29,7 @@ describe("parseFiles", () => {
     expect(result.frontmatters.has("test/modules.md")).toBe(true);
   });
 
-  it("merges results from multiple files", () => {
+  it("TC-030: multiple file parse results are correctly merged into a single ParseResult", () => {
     const files: FileInput[] = [
       {
         path: "a.md",

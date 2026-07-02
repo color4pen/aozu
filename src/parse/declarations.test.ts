@@ -2,7 +2,7 @@ import { describe, expect, it } from "bun:test";
 import { extractDeclarations } from "./declarations.ts";
 
 describe("extractDeclarations", () => {
-  it("extracts h2 heading element", () => {
+  it("TC-002: extracts h2 heading element", () => {
     const content = "## パーサ {#mod-parse}\n責務: strict プロファイルのパース";
     const result = extractDeclarations(content, "modules.md");
     expect(result.elements).toHaveLength(1);
@@ -14,7 +14,7 @@ describe("extractDeclarations", () => {
     expect(el.line).toBe(1);
   });
 
-  it("extracts h3 heading element", () => {
+  it("TC-024: h3 heading (###) is extracted as an element declaration", () => {
     const content = "## Parent {#mod-parent}\n### Child {#inv-foo}\n";
     const result = extractDeclarations(content, "test.md");
     const ids = result.elements.map((e) => e.id);
@@ -22,7 +22,7 @@ describe("extractDeclarations", () => {
     expect(ids).toContain("inv-foo");
   });
 
-  it("does not extract h1 heading as element", () => {
+  it("TC-025: h1 heading (#) is NOT extracted as an element declaration", () => {
     const content = "# Title {#mod-title}\n## Sub {#mod-sub}";
     const result = extractDeclarations(content, "test.md");
     const ids = result.elements.map((e) => e.id);
@@ -30,7 +30,7 @@ describe("extractDeclarations", () => {
     expect(ids).toContain("mod-sub");
   });
 
-  it("extracts document element from frontmatter id:", () => {
+  it("TC-003: document element extraction via frontmatter id field", () => {
     const content = `---
 id: seq-closure-check
 ---
@@ -43,7 +43,7 @@ id: seq-closure-check
     expect(el.displayName).toBe("閉包検証の流れ");
   });
 
-  it("reports diagnostic for invalid ID (uppercase) in heading", () => {
+  it("TC-026: invalid ID in heading yields element record AND diagnostic (no exception)", () => {
     const content = "## Foo {#Mod-Parse}\n";
     const result = extractDeclarations(content, "test.md");
     // Element is still emitted but diagnostic is added

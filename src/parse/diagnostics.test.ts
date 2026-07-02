@@ -12,7 +12,7 @@ import { parseFiles } from "./parser.ts";
 const DESIGN_DIR = join(import.meta.dir, "../../design");
 
 describe("diagnostics — ID grammar violations", () => {
-  it("reports diagnostic for ID with uppercase letters in heading", () => {
+  it("TC-008: uppercase ID produces positioned diagnostic", () => {
     const result = parseFiles([
       { path: "test.md", content: "## Foo {#Mod-Parse}\n" },
     ]);
@@ -24,7 +24,7 @@ describe("diagnostics — ID grammar violations", () => {
     expect(d.message).toMatch(/[Ii]nvalid/i);
   });
 
-  it("reports diagnostic for ID with invalid character (underscore)", () => {
+  it("TC-009: invalid character in ID produces positioned diagnostic", () => {
     const result = parseFiles([
       { path: "test.md", content: "## Foo {#mod_parse}\n" },
     ]);
@@ -73,7 +73,7 @@ describe("diagnostics — non-flat frontmatter", () => {
 });
 
 describe("diagnostics — design/ correctness", () => {
-  it("produces zero diagnostics for the current design/ files", async () => {
+  it("TC-036: normal design/ parse produces zero diagnostics", async () => {
     const files = await readMarkdownFiles(DESIGN_DIR);
     const result = parseFiles(files);
     if (result.diagnostics.length > 0) {

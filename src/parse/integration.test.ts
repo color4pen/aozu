@@ -11,13 +11,13 @@ import { parseFiles } from "./parser.ts";
 const DESIGN_DIR = join(import.meta.dir, "../../design");
 
 describe("design/ integration", () => {
-  it("extracts exactly 25 declared elements", async () => {
+  it("TC-001: extracts exactly 25 declared elements", async () => {
     const files = await readMarkdownFiles(DESIGN_DIR);
     const result = parseFiles(files);
     expect(result.elements).toHaveLength(25);
   });
 
-  it("matches the expected 25 element IDs", async () => {
+  it("TC-033: exact 25-element ID regression list matches expected IDs", async () => {
     const files = await readMarkdownFiles(DESIGN_DIR);
     const result = parseFiles(files);
     const ids = result.elements.map((e) => e.id).sort();
@@ -53,14 +53,14 @@ describe("design/ integration", () => {
     expect(ids).toEqual(expected);
   });
 
-  it("extracts exactly 15 unique reference target IDs", async () => {
+  it("TC-004: extracts exactly 15 unique reference target IDs", async () => {
     const files = await readMarkdownFiles(DESIGN_DIR);
     const result = parseFiles(files);
     const uniqueTargets = [...new Set(result.references.map((r) => r.targetId))].sort();
     expect(uniqueTargets).toHaveLength(15);
   });
 
-  it("matches the expected 15 unique reference target IDs", async () => {
+  it("TC-034: exact 15 reference target ID regression list matches expected IDs", async () => {
     const files = await readMarkdownFiles(DESIGN_DIR);
     const result = parseFiles(files);
     const uniqueTargets = [...new Set(result.references.map((r) => r.targetId))].sort();
@@ -86,7 +86,7 @@ describe("design/ integration", () => {
     expect(uniqueTargets).toEqual(expected);
   });
 
-  it("does not include inline-code [[id]] from design/domain/invariants.md as references", async () => {
+  it("TC-005: inline code exclusion validated against invariants.md fixture", async () => {
     const files = await readMarkdownFiles(DESIGN_DIR);
     const result = parseFiles(files);
 
@@ -100,7 +100,7 @@ describe("design/ integration", () => {
     expect(ids).not.toContain("id");
   });
 
-  it("extracts exactly 16 dependency edges from design/static/dependencies.md", async () => {
+  it("TC-007 TC-035: design/static/dependencies.md yields exactly 16 dependency edges", async () => {
     const files = await readMarkdownFiles(DESIGN_DIR);
     const result = parseFiles(files);
     const depsEdges = result.dependencyEdges.filter((e) =>

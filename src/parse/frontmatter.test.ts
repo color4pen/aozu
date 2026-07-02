@@ -15,7 +15,7 @@ status: open
     expect(result.bodyStart).toBe(4);
   });
 
-  it("converts comma-separated value to string array", () => {
+  it("TC-018: comma-separated frontmatter values are converted to string array", () => {
     const content = `---
 enabled: static, domain, dynamic
 ---`;
@@ -34,7 +34,7 @@ Some content.`;
     expect(result.bodyStart).toBe(0);
   });
 
-  it("reports diagnostic for indented (non-flat) line", () => {
+  it("TC-010: nested frontmatter produces positioned diagnostic", () => {
     const content = `---
 key:
   nested: value

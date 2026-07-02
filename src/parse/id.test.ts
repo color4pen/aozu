@@ -2,7 +2,7 @@ import { describe, expect, it } from "bun:test";
 import { validateId, extractPrefix, KNOWN_PREFIXES } from "./id.ts";
 
 describe("validateId", () => {
-  it("accepts a simple valid ID", () => {
+  it("TC-015: valid IDs are accepted by ID validation function", () => {
     expect(validateId("mod-parse").valid).toBe(true);
   });
 
