@@ -104,3 +104,4 @@
 {"type":"step-attempt","step":"pr-create","sessionId":null,"outcome":{"verdict":"success","findingsPath":"specrunner/changes/skeleton-and-parser/pr-create-result.md","error":null,"toolResult":null,"followUpAttempts":0},"startedAt":"2026-07-02T03:14:34.242Z","endedAt":"2026-07-02T03:14:35.783Z"}
 {"type":"lineage","step":"pr-create","ts":"2026-07-02T03:14:35.783Z","outputs":[{"path":"specrunner/changes/skeleton-and-parser/pr-create-result.md","hash":"sha256:5f2f6f31bf3d6fd3c2fb22060dd88ed0cd30c70e7df441cbb8426bff6b557578"}],"inputs":[{"path":"feat/skeleton-and-parser-beb2cc14","hash":null}]}
 {"type":"transition","ts":"2026-07-02T03:14:35.791Z","step":"pipeline","status":"ok","message":"running → awaiting-archive: pipeline complete"}
+{"type":"transition","ts":"2026-07-02T03:19:31.647Z","step":"archive","status":"ok","message":"awaiting-archive → archived: change archived"}

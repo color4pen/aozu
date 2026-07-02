@@ -2,7 +2,7 @@
   "version": 2,
   "jobId": "beb2cc14-a63f-4a18-8b38-e8c8b04c3a2f",
   "createdAt": "2026-07-02T02:21:44.242Z",
-  "updatedAt": "2026-07-02T03:14:35.791Z",
+  "updatedAt": "2026-07-02T03:19:31.647Z",
   "request": {
     "title": "プロジェクト骨格と strict プロファイルパーサを確立する",
     "type": "new-feature",
@@ -13,7 +13,7 @@
     "name": "aozu"
   },
   "step": "pr-create",
-  "status": "awaiting-archive",
+  "status": "archived",
   "branch": "feat/skeleton-and-parser-beb2cc14",
   "error": null,
   "pipelineId": "standard",
@@ -23,7 +23,7 @@
     "createdAt": "2026-07-02T03:14:35.782Z"
   },
   "_journal": {
-    "historyCount": 71,
+    "historyCount": 72,
     "stepCounts": {
       "request-review": 1,
       "design": 1,
