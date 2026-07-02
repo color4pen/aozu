@@ -1,0 +1,18 @@
+# 許可依存
+
+- [[mod-cli]] -> [[mod-parse]]
+- [[mod-cli]] -> [[mod-graph]]
+- [[mod-cli]] -> [[mod-check]]
+- [[mod-cli]] -> [[mod-diff]]
+- [[mod-cli]] -> [[mod-state]]
+- [[mod-cli]] -> [[mod-plan]]
+- [[mod-cli]] -> [[mod-prompt]]
+- [[mod-cli]] -> [[mod-export]]
+- [[mod-check]] -> [[mod-graph]]
+- [[mod-graph]] -> [[mod-parse]]
+- [[mod-diff]] -> [[mod-parse]]
+- [[mod-diff]] -> [[mod-gitread]]
+- [[mod-plan]] -> [[mod-graph]]
+- [[mod-plan]] -> [[mod-state]]
+- [[mod-prompt]] -> [[mod-graph]]
+- [[mod-export]] -> [[mod-graph]]

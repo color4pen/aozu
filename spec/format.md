@@ -91,9 +91,13 @@ id: seq-order-intake
 ---
 ```
 
+文書要素の表示名は、ファイル先頭の `# 見出し` とする。
+
 ## 6. 参照構文
 
 本文中の `[[id]]` がすべて。リンク義務の充足・トレース・引用はこの一文法に還元される。
+
+**コードフェンス（``` で囲まれた範囲）およびインラインコード（バッククォート内）の `[[id]]` は参照ではない**。文法自体への言及を可能にするための除外であり、行指向処理（フェンスのトグル + インラインコードの除去）で判定できる。
 
 ## 7. frontmatter 規約
 
@@ -122,9 +126,9 @@ id: seq-order-intake
 
 ### domain/glossary.md — term / model.md — ent / invariants.md — inv
 
-- term: 見出し + 定義本文
+- term: 見出し + 定義本文。**ent の見出しは用語定義を兼ねる**ため、glossary には構造を持たない語彙のみを置く（同じ概念を term と ent の両方に書かない）
 - ent: 見出し + 本文（属性の箇条書き、関係は `[[ent-*]]` 参照で表す）
-- inv: **1 見出し 1 本**。番号で個別引用される粒度（粒度仮説「引用される最小単位」より）
+- inv: **1 見出し 1 本**。個別引用される粒度（粒度仮説「引用される最小単位」より）
 
 ### dynamic/<slug>.md — seq
 
@@ -213,6 +217,7 @@ topics: [[top-duplicate-slug]]
 | C8 | state.json の全キーが実在要素（削除要素の残骸検出） |
 | C9 | adr が top を引用している（loop 有効時） |
 | C10 | plan の elements がすべて実在し、after の grp が実在する |
+| C11 | 層間参照方向: domain の要素は domain（term / ent / inv）のみを参照できる。static は static と domain、dynamic は dynamic・static・domain を参照できる。loop と adr は制限なし |
 
 ## 11. rules export
 
@@ -229,5 +234,6 @@ topics: [[top-duplicate-slug]]
 ## 12. 本仕様内の未決
 
 - mod と実装ディレクトリの対応付け（rules export に mapping を含めるか、実装側の設定か）
+- **seq の登場要素にアクター・外部システムを含める扱い**。CLI ツールの設計では mod だけで足りるが、業務システムではアクター（人・ロール）と外部系が必ず登場する。act 型の新設か、ext / perm ビューの有効化を前提にするか。業務系ドッグフーディングで決める
 - ビュー型それぞれのスキーマ詳細（有効化する実プロジェクトが現れた時点で追補）
 - `format-version` の互換性ポリシー（v1 で確定）
