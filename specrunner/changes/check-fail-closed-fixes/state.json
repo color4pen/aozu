@@ -2,7 +2,7 @@
   "version": 2,
   "jobId": "15b0f7ca-8d74-44d5-b65f-813e89e55c7c",
   "createdAt": "2026-07-02T11:21:34.928Z",
-  "updatedAt": "2026-07-02T11:50:22.033Z",
+  "updatedAt": "2026-07-02T11:50:56.603Z",
   "request": {
     "title": "check の fail-open（未知 prefix 素通り）と C11 診断の誤帰属を修正する",
     "type": "bug-fix",
@@ -12,7 +12,7 @@
     "owner": "color4pen",
     "name": "aozu"
   },
-  "step": "code-fixer",
+  "step": "regression-gate",
   "status": "running",
   "branch": "fix/check-fail-closed-fixes-15b0f7ca",
   "error": null,
@@ -33,8 +33,22 @@
       ]
     }
   ],
+  "reviewerStatuses": [
+    {
+      "name": "adversarial-consistency",
+      "status": "skipped",
+      "approvedAtCommit": null,
+      "activationPaths": [
+        "adr/**",
+        "spec/**",
+        "design/**",
+        "docs/open-questions.md"
+      ],
+      "invalidatedByCommit": null
+    }
+  ],
   "_journal": {
-    "historyCount": 29,
+    "historyCount": 38,
     "stepCounts": {
       "request-review": 1,
       "design": 1,
@@ -42,7 +56,10 @@
       "test-case-gen": 1,
       "implementer": 1,
       "verification": 1,
-      "code-review": 1
+      "code-review": 1,
+      "code-fixer": 1,
+      "adversarial-consistency": 1,
+      "custom-reviewers": 1
     }
   }
 }
