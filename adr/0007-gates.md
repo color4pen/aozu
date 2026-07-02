@@ -1,0 +1,25 @@
+# ADR-0007: ゲート — design-not-later-than-merge の機械強制
+
+- Status: accepted
+- Date: 2026-07-02
+
+## Context
+
+「変更は必ず設計から先に行う」という規律を文化・習慣で守らせるのは、「判断場面を消す」という原則の真逆であり、破られる。また字義通りの「設計が**先**」は機械強制できない — コードで考え始めることは止められない。
+
+機械強制できるのは順序ではなく整合である。
+
+## Decision
+
+強制する不変条件を **design-not-later-than-merge**（設計と実装が乖離したまま merge できない）とし、チョークポイント 2 つで機械強制する:
+
+- **入口ゲート**: 構造変更を含む request（spec-change / new-feature 型）は設計要素 ID の引用を必須とする。実装パイプラインの request 検証が `check --request <path>` を呼び、引用 ID の実在と状態を検証する。bug-fix 型は免除
+- **出口ゲート**: 静的構造の許可依存から `export rules` で中立な ruleset（JSON）を生成し、実装リポジトリの architecture test が消費する。設計と実装の依存構造が乖離したら CI が赤くなり merge できない。`--verify` でコミット済み ruleset と設計文書の同期も CI 検証する
+
+入口の型は自己申告でよい。bug-fix と偽って構造を変えても出口ゲートが fail-closed で捕まえるため、入口に分類判定の賢さを持たせない。
+
+## Consequences
+
+- 規律が人と agent の記憶・善意に依存しなくなる
+- 設計を後追いで書く運用も merge 前なら許容される。順序ではなく整合が本質
+- 実装リポジトリ側に ruleset を消費する architecture test の雛形が必要（導入手順の一部となる）
