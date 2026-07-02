@@ -138,7 +138,7 @@ describe("handleCheck --request mode", () => {
     }
   });
 
-  it("returns 1 when citing an implemented element", async () => {
+  it("TC-023: returns 1 when citing an implemented element", async () => {
     const designDir = await createDesignFixture({
       "mod-cli": { state: "implemented", request: "prev", pr: 1 },
     });
