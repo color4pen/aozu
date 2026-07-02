@@ -1,0 +1,24 @@
+{
+  "version": 2,
+  "jobId": "99fc1740-a8ad-4c84-a092-f2b85e2d75f5",
+  "createdAt": "2026-07-02T05:43:18.535Z",
+  "updatedAt": "2026-07-02T05:43:19.176Z",
+  "request": {
+    "title": "rules export と aozu 自身の歯（architecture test）を実装する",
+    "type": "new-feature",
+    "baseBranch": "main"
+  },
+  "repository": {
+    "owner": "color4pen",
+    "name": "aozu"
+  },
+  "step": "request-review",
+  "status": "running",
+  "branch": "feat/export-rules-and-teeth-99fc1740",
+  "error": null,
+  "pipelineId": "standard",
+  "_journal": {
+    "historyCount": 2,
+    "stepCounts": {}
+  }
+}
