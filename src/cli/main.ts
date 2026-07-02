@@ -1,6 +1,26 @@
 #!/usr/bin/env bun
 
-// CLI entry point — wiring is out of scope for this iteration (skeleton-and-parser).
-// Full command registration will be implemented in the next request.
+/**
+ * aozu — design layer CLI entry point.
+ *
+ * Dispatches to command handlers via the registry.
+ * No CLI framework is used (ADR-0009).
+ */
 
-console.log("aozu — design layer CLI (not yet wired)");
+import { createRegistry, register, dispatch, helpText } from "./registry.ts";
+import { handleCheck } from "./commands/check.ts";
+
+const registry = createRegistry();
+register(registry, "check", handleCheck, "run closure checks on design directory");
+
+const argv = process.argv.slice(2); // strip [bun, script.ts]
+const commandName = argv[0];
+const commandArgs = argv.slice(1);
+
+if (!commandName || commandName === "--help" || commandName === "-h") {
+  process.stderr.write(helpText(registry) + "\n");
+  process.exit(0);
+}
+
+const exitCode = await dispatch(registry, commandName, commandArgs);
+process.exit(exitCode);
