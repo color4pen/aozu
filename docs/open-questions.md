@@ -2,12 +2,6 @@
 
 決定済み事項は adr/ を参照。ここは詰め残しの一覧。解決したら ADR 化または形式仕様へ反映して消す。
 
-## 1. 名前
-
-`sd` は仮称。同名の著名 CLI（sed 代替の Rust 製ツール）と衝突するため、npm publish 前に binary 名を確定する必要がある。
-
-npm 空き確認済みの候補（2026-07-02 時点）: `aozu`（青図 = blueprint。設計図の含意が最も強い）/ `seizu`（製図）/ `sekkei`（設計）。いずれも空き。`kozu` / `keel` は使用済み。
-
 ## 2. 形式仕様の実体
 
 v0 draft を起草済み（`spec/format.md`）。ID 文法・宣言/参照構文・型スキーマ・閉包規則 C1〜C11・state.json・rules export を含む。mod↔実装の対応付けは modules.md の `実装:` 行に決定済み。残り:
@@ -49,7 +43,7 @@ strict プロファイルや manifest スキーマが変わったときの既存
 
 ## 9-a. one-shot runner の要否
 
-プロンプト動詞を設定コマンドテンプレートで直接実行する薄い runner（同期一発・agent 出力を解釈しない・合否は check / coverage）を持つか。主経路が「agent セッションが sd を呼び、出力された指示を消費する」である間は不要。セッション外での一括 derive 等の需要の証拠が出たら再検討する。持つ場合も、オーケストレーション状態（queue / worktree / resume / 自動リトライ）は workflow ツールの領分であり sd に足さない。
+プロンプト動詞を設定コマンドテンプレートで直接実行する薄い runner（同期一発・agent 出力を解釈しない・合否は check / coverage）を持つか。主経路が「agent セッションが aozu を呼び、出力された指示を消費する」である間は不要。セッション外での一括 derive 等の需要の証拠が出たら再検討する。持つ場合も、オーケストレーション状態（queue / worktree / resume / 自動リトライ）は workflow ツールの領分であり aozu に足さない。
 
 ## 9. ドッグフーディング計画
 

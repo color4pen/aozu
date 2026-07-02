@@ -1,6 +1,6 @@
-# sd（仮称）
+# aozu
 
-設計レイヤ CLI。プロダクトリポジトリ内の設計文書を正本として管理し、閉包検証・差分計算・request 導出支援を行う**決定的ツール**。agent 実行を内蔵せず、文脈注入済みの指示（instruction）を出力するまでを担う。消費するのはセッション側の agent。
+**aozu（青図 = blueprint）** — 設計レイヤ CLI。プロダクトリポジトリ内の設計文書を正本として管理し、閉包検証・差分計算・request 導出支援を行う**決定的ツール**。agent 実行を内蔵せず、文脈注入済みの指示（instruction）を出力するまでを担う。消費するのはセッション側の agent。
 
 ## 位置づけ
 
@@ -43,6 +43,7 @@ topic 起票
 | [0008](adr/0008-verb-cli.md) | CLI 動詞体系 — 完走 run を持たない |
 | [0009](adr/0009-tech-stack.md) | 技術選定 — TypeScript + Bun、依存ゼロ |
 | [0010](adr/0010-adoption-gradient.md) | 導入の段階性 — 最小プロファイルは静的構造のみ（0002 を修正） |
+| [0012](adr/0012-consumer-agnostic-derive.md) | 導出の消費者非依存 — request テンプレートは設定で注入 |
 
 未確定の論点は [docs/open-questions.md](docs/open-questions.md)。
 
@@ -50,7 +51,7 @@ topic 起票
 
 - [形式仕様 v0](spec/format.md) — ID 文法・宣言/参照構文・型スキーマ・閉包規則 C1〜C11・state.json・rules export
 - [交換面契約 v0](spec/integration.md) — `check --request` / `mark implemented` / `export rules` の CLI 契約
-- [design/](design/) — sd 自身の設計（本形式による自己記述）
+- [design/](design/) — aozu 自身の設計（本形式による自己記述）
 
 ## ステータス
 
