@@ -1,6 +1,6 @@
 # sd（仮称）
 
-設計レイヤ CLI。プロダクトリポジトリ内の設計文書を正本として管理し、閉包検証・差分計算・request 導出支援を行う**決定的ツール**。agent 実行機構を持たない。
+設計レイヤ CLI。プロダクトリポジトリ内の設計文書を正本として管理し、閉包検証・差分計算・request 導出支援を行う。agent は薄い one-shot runner で動くが、sd は agent を管理せず（ADR-0011）、合否は常に決定的ゲートが出す。
 
 ## 位置づけ
 
@@ -43,6 +43,7 @@ topic 起票
 | [0008](adr/0008-verb-cli.md) | CLI 動詞体系 — 完走 run を持たない |
 | [0009](adr/0009-tech-stack.md) | 技術選定 — TypeScript + Bun、依存ゼロ |
 | [0010](adr/0010-adoption-gradient.md) | 導入の段階性 — 最小プロファイルは静的構造のみ（0002 を修正） |
+| [0011](adr/0011-thin-oneshot-runner.md) | 薄い one-shot runner — agent は動くが管理しない（0001 を修正） |
 
 未確定の論点は [docs/open-questions.md](docs/open-questions.md)。
 

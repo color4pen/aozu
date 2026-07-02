@@ -1,6 +1,6 @@
 # ADR-0001: 位置づけと責務境界 — 設計の正本を守る決定的 CLI
 
-- Status: accepted
+- Status: accepted（「agent 実行ループを内蔵しない」は ADR-0011 により修正: 薄い one-shot runner を持つ。重いオーケストレーション機構を持たない点は不変）
 - Date: 2026-07-02
 
 ## Context
