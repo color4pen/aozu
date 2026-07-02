@@ -42,6 +42,7 @@ topic 起票
 | [0007](adr/0007-gates.md) | ゲート — design-not-later-than-merge の機械強制 |
 | [0008](adr/0008-verb-cli.md) | CLI 動詞体系 — 完走 run を持たない |
 | [0009](adr/0009-tech-stack.md) | 技術選定 — TypeScript + Bun、依存ゼロ |
+| [0010](adr/0010-adoption-gradient.md) | 導入の段階性 — 最小プロファイルは静的構造のみ（0002 を修正） |
 
 未確定の論点は [docs/open-questions.md](docs/open-questions.md)。
 
