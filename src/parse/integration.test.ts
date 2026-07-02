@@ -1,6 +1,6 @@
 /**
  * Integration test: parse all `design/` documents and verify extraction counts
- * match tools/check.sh output (宣言 25 要素 / 参照 15 種).
+ * match tools/check.sh output (宣言 26 要素 / 参照 16 種).
  */
 
 import { describe, expect, it } from "bun:test";
@@ -11,13 +11,13 @@ import { parseFiles } from "./parser.ts";
 const DESIGN_DIR = join(import.meta.dir, "../../design");
 
 describe("design/ integration", () => {
-  it("TC-001: extracts exactly 25 declared elements", async () => {
+  it("TC-001: extracts exactly 26 declared elements", async () => {
     const files = await readMarkdownFiles(DESIGN_DIR);
     const result = parseFiles(files);
-    expect(result.elements).toHaveLength(25);
+    expect(result.elements).toHaveLength(26);
   });
 
-  it("TC-033: exact 25-element ID regression list matches expected IDs", async () => {
+  it("TC-033: exact 26-element ID regression list matches expected IDs", async () => {
     const files = await readMarkdownFiles(DESIGN_DIR);
     const result = parseFiles(files);
     const ids = result.elements.map((e) => e.id).sort();
@@ -37,6 +37,7 @@ describe("design/ integration", () => {
       "mod-cli",
       "mod-diff",
       "mod-export",
+      "mod-fsread",
       "mod-gitread",
       "mod-graph",
       "mod-parse",
@@ -53,14 +54,14 @@ describe("design/ integration", () => {
     expect(ids).toEqual(expected);
   });
 
-  it("TC-004: extracts exactly 15 unique reference target IDs", async () => {
+  it("TC-004: extracts exactly 16 unique reference target IDs", async () => {
     const files = await readMarkdownFiles(DESIGN_DIR);
     const result = parseFiles(files);
     const uniqueTargets = [...new Set(result.references.map((r) => r.targetId))].sort();
-    expect(uniqueTargets).toHaveLength(15);
+    expect(uniqueTargets).toHaveLength(16);
   });
 
-  it("TC-034: exact 15 reference target ID regression list matches expected IDs", async () => {
+  it("TC-034: exact 16 reference target ID regression list matches expected IDs", async () => {
     const files = await readMarkdownFiles(DESIGN_DIR);
     const result = parseFiles(files);
     const uniqueTargets = [...new Set(result.references.map((r) => r.targetId))].sort();
@@ -74,6 +75,7 @@ describe("design/ integration", () => {
       "mod-cli",
       "mod-diff",
       "mod-export",
+      "mod-fsread",
       "mod-gitread",
       "mod-graph",
       "mod-parse",
@@ -100,12 +102,12 @@ describe("design/ integration", () => {
     expect(ids).not.toContain("id");
   });
 
-  it("TC-007 TC-035: design/static/dependencies.md yields exactly 16 dependency edges", async () => {
+  it("TC-007 TC-035: design/static/dependencies.md yields exactly 17 dependency edges", async () => {
     const files = await readMarkdownFiles(DESIGN_DIR);
     const result = parseFiles(files);
     const depsEdges = result.dependencyEdges.filter((e) =>
       e.file.includes("dependencies.md")
     );
-    expect(depsEdges).toHaveLength(16);
+    expect(depsEdges).toHaveLength(17);
   });
 });

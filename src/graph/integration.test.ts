@@ -12,11 +12,11 @@ const DESIGN_DIR = join(import.meta.dir, "../../design");
 const MANIFEST_PATH = join(DESIGN_DIR, "manifest.md");
 
 describe("graph integration: design/", () => {
-  it("ElementTable has exactly 25 entries", async () => {
+  it("ElementTable has exactly 26 entries", async () => {
     const files = await readMarkdownFiles(DESIGN_DIR);
     const parsed = parseFiles(files);
     const graph = buildGraph(parsed, MANIFEST_PATH);
-    expect(graph.elements.size).toBe(25);
+    expect(graph.elements.size).toBe(26);
   });
 
   it("resolveId returns Element for 'mod-parse'", async () => {
