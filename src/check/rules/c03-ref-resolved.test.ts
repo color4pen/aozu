@@ -105,4 +105,33 @@ describe("checkC3: reference resolution", () => {
     );
     expect(checkC3(graph, ALL_PREFIXES)).toHaveLength(0);
   });
+
+  // --- fail-closed: unknown prefix ---
+
+  it("unknown prefix reference ([[zzz-typo]]) with enabled:static → C3 diagnostic (fail-closed)", () => {
+    // zzz is not in KNOWN_PREFIXES; it must always be diagnosed regardless of enabledPrefixes
+    const graph = makeGraph(
+      [{ id: "mod-intake", prefix: "mod", displayName: "Intake", file: "modules.md", line: 1 }],
+      [{ targetId: "zzz-typo", file: "modules.md", line: 5 }]
+    );
+    const enabledStatic = new Set(["mod", "adr"]);
+    const diags = checkC3(graph, enabledStatic);
+    expect(diags).toHaveLength(1);
+    expect(diags[0]!.code).toBe("C3");
+    expect(diags[0]!.level).toBe("error");
+    expect(diags[0]!.message).toContain("zzz-typo");
+    expect(diags[0]!.message).toContain("zzz");
+  });
+
+  // --- degenerate skip maintained: known but disabled prefix ---
+
+  it("known but disabled prefix reference ([[ent-x]]) with enabled:static → no C3 diagnostic (縮退維持)", () => {
+    // ent is a KNOWN prefix but not in the static enabledPrefixes set
+    const graph = makeGraph(
+      [{ id: "mod-intake", prefix: "mod", displayName: "Intake", file: "modules.md", line: 1 }],
+      [{ targetId: "ent-x", file: "modules.md", line: 5 }]
+    );
+    const enabledStatic = new Set(["mod", "adr"]);
+    expect(checkC3(graph, enabledStatic)).toHaveLength(0);
+  });
 });
