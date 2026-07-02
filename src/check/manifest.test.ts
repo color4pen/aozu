@@ -6,6 +6,7 @@ import {
   isLayerEnabled,
   VIEW_TYPE_NAMES,
   LAYER_ENABLED_NAMES,
+  LAYER_MAP,
 } from "./manifest.ts";
 import type { ParseResult } from "../parse/types.ts";
 import type { Manifest } from "../graph/types.ts";
@@ -156,6 +157,12 @@ describe("isLayerEnabled", () => {
   it("returns false for disabled layer", () => {
     expect(isLayerEnabled("dynamic", manifest(["static"]))).toBe(false);
     expect(isLayerEnabled("loop", manifest(["static"]))).toBe(false);
+  });
+});
+
+describe("LAYER_MAP", () => {
+  it("TC-003: LAYER_MAP[\"act\"] === \"domain\"", () => {
+    expect(LAYER_MAP["act"]).toBe("domain");
   });
 });
 
