@@ -7,7 +7,7 @@
 v0 draft を起草済み（`spec/format.md`）。ID 文法・宣言/参照構文・型スキーマ・閉包規則 C1〜C11・state.json・rules export を含む。mod↔実装の対応付けは modules.md の `実装:` 行に決定済み。残り:
 
 - 業務系ドッグフーディング（論点 9）での実地修正
-- ビュー型のスキーマ詳細（有効化する実プロジェクト出現時に追補）
+- ビュー型のスキーマ詳細。方針: **最終的に全 9 種（uc / scr / api / dat / flow / evt / ext / perm / dpl）を揃える**。順序は、業務系ドッグフーディングが要る型（use-case / screen / data / permission あたり）で機構（宣言構文・リンク義務・scaffold・C6 結線）を検証 → 残りを一括追補。ビュー型の追加は加算的変更なので format-version は上げない
 
 ## 3. 要素の粒度
 
