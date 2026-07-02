@@ -2,7 +2,7 @@
   "version": 2,
   "jobId": "beb2cc14-a63f-4a18-8b38-e8c8b04c3a2f",
   "createdAt": "2026-07-02T02:21:44.242Z",
-  "updatedAt": "2026-07-02T02:42:17.815Z",
+  "updatedAt": "2026-07-02T02:53:05.289Z",
   "request": {
     "title": "プロジェクト骨格と strict プロファイルパーサを確立する",
     "type": "new-feature",
@@ -12,18 +12,20 @@
     "owner": "color4pen",
     "name": "aozu"
   },
-  "step": "implementer",
+  "step": "build-fixer",
   "status": "running",
   "branch": "feat/skeleton-and-parser-beb2cc14",
   "error": null,
   "pipelineId": "standard",
   "_journal": {
-    "historyCount": 16,
+    "historyCount": 24,
     "stepCounts": {
       "request-review": 1,
       "design": 1,
       "spec-review": 1,
-      "test-case-gen": 1
+      "test-case-gen": 1,
+      "implementer": 1,
+      "verification": 1
     }
   }
 }
