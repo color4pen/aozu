@@ -1,0 +1,18 @@
+name: record-review
+description: 設計記録（adr / spec / design / open-questions）の敵対的整合レビューを 1 巡実行する
+max_steps: 2
+
+steps:
+  - name: review
+    edit: true
+    required_permission_mode: edit
+    instruction: |
+      docs/review/adversarial-consistency.md を読み、その指示に従って任務を実行してください。
+      出力ファイルは docs/review/findings-takt.md です（既存なら上書き）。
+      出力ファイル以外のファイルを変更しないでください。
+      完了したら findings 件数と深刻度の内訳を 1 行で報告してください。
+    rules:
+      - condition: "Review complete and findings file written"
+        next: COMPLETE
+      - condition: "Cannot proceed"
+        next: ABORT
