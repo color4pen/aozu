@@ -16,3 +16,6 @@
 {"type":"lineage","step":"spec-review","ts":"2026-07-02T03:42:09.997Z","outputs":[{"path":"specrunner/changes/graph-and-check/spec-review-result-002.md","hash":null}],"inputs":[{"path":"specrunner/changes/graph-and-check/spec.md","hash":"sha256:28b7faeb256dea7cfdebc6d2b969eaec82e2ef68ebf6125ce8e926b548389fff"},{"path":"specrunner/changes/graph-and-check/design.md","hash":"sha256:b6fa333df079420f0f1b6f729235f13464885e369bf721918765ed7abbd57123"},{"path":"specrunner/changes/graph-and-check/tasks.md","hash":"sha256:28afa664bc853275ef73821b8dbbb8d1a77a16db17befed1415b8a6facdf6600"}]}
 {"type":"transition","ts":"2026-07-02T03:42:11.216Z","step":"spec-review","status":"error","message":"spec-review iteration 1 completed with verdict: escalation"}
 {"type":"transition","ts":"2026-07-02T03:42:11.216Z","step":"pipeline","status":"ok","message":"running → awaiting-resume: spec-review escalated"}
+{"type":"transition","ts":"2026-07-02T03:46:49.585Z","step":"resume","status":"ok","message":"awaiting-resume → running: Resuming from step 'spec-review'"}
+{"type":"transition","ts":"2026-07-02T03:46:49.628Z","step":"spec-review","status":"started","message":"spec-review iteration 1 started"}
+{"type":"transition","ts":"2026-07-02T03:46:49.629Z","step":"spec-review-started","status":"started","message":"Starting spec-review step"}

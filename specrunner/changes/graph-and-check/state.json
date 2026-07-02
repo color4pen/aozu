@@ -2,7 +2,7 @@
   "version": 2,
   "jobId": "ada3c375-946b-41cd-8cb2-8ebdfa3f5688",
   "createdAt": "2026-07-02T03:22:44.323Z",
-  "updatedAt": "2026-07-02T03:42:11.216Z",
+  "updatedAt": "2026-07-02T03:46:49.629Z",
   "request": {
     "title": "参照グラフと閉包検証（C1〜C11）を実装する",
     "type": "new-feature",
@@ -13,17 +13,13 @@
     "name": "aozu"
   },
   "step": "spec-review",
-  "status": "awaiting-resume",
+  "status": "running",
   "branch": "feat/graph-and-check-ada3c375",
   "error": null,
   "pipelineId": "standard",
-  "resumePoint": {
-    "step": "spec-review",
-    "reason": "spec-review escalated",
-    "iterationsExhausted": 1
-  },
+  "resumePoint": null,
   "_journal": {
-    "historyCount": 12,
+    "historyCount": 15,
     "stepCounts": {
       "request-review": 1,
       "design": 1,
