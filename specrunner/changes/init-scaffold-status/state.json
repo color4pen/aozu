@@ -2,7 +2,7 @@
   "version": 2,
   "jobId": "5bf843dc-c4be-4491-88ad-904845e9fb87",
   "createdAt": "2026-07-02T06:42:27.836Z",
-  "updatedAt": "2026-07-02T07:29:54.834Z",
+  "updatedAt": "2026-07-02T07:34:17.319Z",
   "request": {
     "title": "init / scaffold / status を実装し、導入体験とフロンティア表示を立てる",
     "type": "new-feature",
@@ -12,20 +12,21 @@
     "owner": "color4pen",
     "name": "aozu"
   },
-  "step": "build-fixer",
+  "step": "code-review",
   "status": "running",
   "branch": "feat/init-scaffold-status-5bf843dc",
   "error": null,
   "pipelineId": "standard",
   "_journal": {
-    "historyCount": 24,
+    "historyCount": 33,
     "stepCounts": {
       "request-review": 1,
       "design": 1,
       "spec-review": 1,
       "test-case-gen": 1,
       "implementer": 1,
-      "verification": 1
+      "verification": 2,
+      "build-fixer": 1
     }
   }
 }
