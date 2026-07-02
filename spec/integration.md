@@ -10,7 +10,7 @@ aozu と他ツールの結合はリポジトリ内ファイルと本契約のみ
 request 文書中の設計要素引用を検証する。
 
 - **抽出**: 文書中のすべての `[[id]]`（形式仕様 §6 のコード除外規則を適用）
-- **検証**: (a) すべての引用が実在要素に解決される、(b) 引用要素の状態が designed または requested である（implemented のみを引用する request は設計 delta を経ていない疑い）
+- **検証**: (a) すべての引用が実在要素に解決される、(b) 引用要素の状態が designed または requested である（implemented のみを引用する request は設計 delta を経ていない疑い）。**(b) は loop 有効時のみ検出力を持つ**——state.json が無いプロファイルでは全要素が designed とみなされ常に通過する（段階縮退の帰結として仕様どおり）
 - `--require-citation`: 引用が 0 件なら不合格にする。構造変更を含む request 型にこのフラグを付けるかは**呼び出し側の判断**（aozu は request の型体系を知らない）
 - **出力**: 1 行 1 診断のテキスト。`<LEVEL> <CODE> <id> <message>`
 - **exit code**: 0 = 合格 / 1 = 不合格 / 2 = 入力不正（ファイル不存在・design/ 不在）
