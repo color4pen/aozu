@@ -73,6 +73,14 @@ v0 draft を起草済み（`spec/format.md`）。ID 文法・宣言/参照構文
 
 残: 実装パイプラインプロジェクトでの段階①検証と、loop 動詞実装後のフルループ一周検証。
 
+## 11. 実装への敵対的検証（アプリの穴）
+
+検証が設計記録の整合に偏っており、実装への横断的な敵対検証が per-request レビュー任せになっている。三層で対応する:
+
+1. **既知の実装穴の修正**（即応）: 未知 prefix 参照の fail-open（実証済み: `[[zzz-typo]]` が無診断通過）と C11 診断の要素帰属バグ（複数要素ファイルでファイル先頭要素に誤帰属）→ bug-fix request で修正
+2. **仕様適合の反証定型**（未作成）: `docs/review/adversarial-conformance.md` — spec/format.md・integration.md の各節に対し「実装がそれを破る入力」を構成・実行して findings にする。設計記録用の定型と同じ三殻（subagent / takt / spec-runner reviewer）で運用
+3. **aozu 自身の不変条件の歯**: 現在の歯は依存構造のみで狭い（findings-takt #7 の指摘どおり）。design/domain/invariants.md の inv-*（決定的 verdict・状態はツールのみが書く・fail-closed 等）を grep ベースの architecture test に落とす。実装パイプラインプロジェクトの core-invariants と同じパターン
+
 ## 10. 業務系ドッグフーディングの設計課題（clearflow findings より）
 
 正本は docs/findings/clearflow-2026-07-02.md（全 11 件）。設計判断が要るものを抽出:
