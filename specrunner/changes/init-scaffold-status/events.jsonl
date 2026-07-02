@@ -53,3 +53,9 @@
 {"type":"transition","ts":"2026-07-02T07:43:52.697Z","step":"code-review","status":"ok","message":"code-review iteration 1 completed with verdict: approved"}
 {"type":"transition","ts":"2026-07-02T07:43:52.697Z","step":"step-transition","status":"ok","message":"code-review → code-fixer"}
 {"type":"transition","ts":"2026-07-02T07:43:52.700Z","step":"code-fixer-started","status":"started","message":"Starting code-fixer step"}
+{"type":"transition","ts":"2026-07-02T07:44:23.244Z","step":"code-fixer-verdict","status":"ok","message":"code-fixer verdict: approved"}
+{"type":"step-attempt","step":"code-fixer","sessionId":"42075616-8f9a-4555-af3b-28cd95ce974c","outcome":{"verdict":"approved","findingsPath":null,"error":null,"toolResult":{"ok":true,"status":"success"},"followUpAttempts":1,"transientRetryAttempts":0},"startedAt":"2026-07-02T07:43:52.711Z","endedAt":"2026-07-02T07:44:22.163Z"}
+{"type":"lineage","step":"code-fixer","ts":"2026-07-02T07:44:22.163Z","outputs":[{"path":"specrunner/changes/init-scaffold-status","hash":null}],"inputs":[{"path":"specrunner/changes/init-scaffold-status/review-feedback-001.md","hash":"sha256:f811df602873744df7ddbcaa423c3ba7869a58e6485571941a2b158355e39c3d"}]}
+{"type":"transition","ts":"2026-07-02T07:44:23.250Z","step":"step-transition","status":"ok","message":"code-fixer → conformance"}
+{"type":"transition","ts":"2026-07-02T07:44:23.251Z","step":"conformance","status":"started","message":"conformance iteration 1 started"}
+{"type":"transition","ts":"2026-07-02T07:44:23.252Z","step":"conformance-started","status":"started","message":"Starting conformance step"}
