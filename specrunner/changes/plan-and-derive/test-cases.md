@@ -6,6 +6,7 @@ Test Case heading format: `### TC-{NNN}: {Name}` (3-digit zero-padded, e.g. TC-0
 Required fields per test case:
   **Category**: unit | integration | manual
   **Priority**: must | should | could
+
   **Source**: reference to spec Scenario (spec.md > Requirement: <name> > Scenario: <name>) or design.md / tasks.md section
 
 GIVEN/WHEN/THEN structure (mixed format — depends on TC type):
@@ -55,10 +56,10 @@ Result section MUST appear at the very end as a YAML code block:
 
 ## Summary
 
-- **Total**: 56 cases
-- **Automated** (unit/integration): 53
-- **Manual**: 3
-- **Priority**: must: 39, should: 14, could: 3
+- **Total**: 49 cases
+- **Automated** (unit/integration): 49
+- **Manual**: 0
+- **Priority**: must: 37, should: 11, could: 1
 
 ---
 
@@ -69,6 +70,8 @@ Result section MUST appear at the very end as a YAML code block:
 **Category**: integration
 **Priority**: must
 **Source**: spec.md > Requirement: plan SHALL generate a spec-conformant plan document from designed elements > Scenario: plan generates a valid plan file from a fixture with designed elements
+
+---
 
 ### TC-002: generated plan file does not break check
 
@@ -86,11 +89,15 @@ Result section MUST appear at the very end as a YAML code block:
 **Priority**: must
 **Source**: spec.md > Requirement: plan SHALL include judgment annotations for reference edges, mod grounding, and requested elements > Scenario: plan annotations include reference edges between designed elements
 
+---
+
 ### TC-004: plan annotations include module grounding
 
 **Category**: integration
 **Priority**: must
 **Source**: spec.md > Requirement: plan SHALL include judgment annotations for reference edges, mod grounding, and requested elements > Scenario: plan annotations include module grounding
+
+---
 
 ### TC-005: plan annotations include requested elements list
 
@@ -108,11 +115,15 @@ Result section MUST appear at the very end as a YAML code block:
 **Priority**: must
 **Source**: spec.md > Requirement: plan SHALL fail-closed with exit 1 for gate violations > Scenario: plan rejects when loop is not enabled
 
+---
+
 ### TC-007: plan rejects when slug already exists
 
 **Category**: integration
 **Priority**: must
 **Source**: spec.md > Requirement: plan SHALL fail-closed with exit 1 for gate violations > Scenario: plan rejects when slug already exists
+
+---
 
 ### TC-008: plan rejects when no designed elements exist
 
@@ -122,7 +133,7 @@ Result section MUST appear at the very end as a YAML code block:
 
 ---
 
-## prompt derive — 正常系
+## prompt derive コマンド — 正常系
 
 ### TC-009: derive output contains all required sections
 
@@ -130,11 +141,15 @@ Result section MUST appear at the very end as a YAML code block:
 **Priority**: must
 **Source**: spec.md > Requirement: prompt derive SHALL output instruction text to stdout containing all required sections > Scenario: derive output contains all required sections
 
+---
+
 ### TC-010: derive resolves template from file path
 
 **Category**: integration
 **Priority**: must
 **Source**: spec.md > Requirement: derive SHALL support dual-mode template resolution > Scenario: derive resolves template from file path
+
+---
 
 ### TC-011: derive resolves template from command execution
 
@@ -144,37 +159,47 @@ Result section MUST appear at the very end as a YAML code block:
 
 ---
 
-## prompt derive — ゲート違反・設定欠落
+## prompt derive コマンド — ゲート違反
 
-### TC-012: derive rejects when request-template is missing
+### TC-012: derive rejects when loop is not enabled
+
+**Category**: integration
+**Priority**: must
+**Source**: spec.md > Requirement: derive SHALL fail with exit 1 when loop is not enabled > Scenario: derive rejects when loop is not enabled
+
+---
+
+### TC-013: derive rejects when request-template is missing
 
 **Category**: integration
 **Priority**: must
 **Source**: spec.md > Requirement: derive SHALL fail with exit 2 for missing configuration or invalid input > Scenario: derive rejects when request-template is missing
 
-### TC-013: derive rejects when request-output-dir is missing
+---
+
+### TC-014: derive rejects when request-output-dir is missing
 
 **Category**: integration
 **Priority**: must
 **Source**: spec.md > Requirement: derive SHALL fail with exit 2 for missing configuration or invalid input > Scenario: derive rejects when request-output-dir is missing
 
-### TC-014: derive rejects when plan file is not found
+---
+
+### TC-015: derive rejects when plan file is not found
 
 **Category**: integration
 **Priority**: must
 **Source**: spec.md > Requirement: derive SHALL fail with exit 2 for missing configuration or invalid input > Scenario: derive rejects when plan file is not found
 
-### TC-015: derive rejects when group is not found
+---
+
+### TC-016: derive rejects when group is not found
 
 **Category**: integration
 **Priority**: must
 **Source**: spec.md > Requirement: derive SHALL fail with exit 2 for missing configuration or invalid input > Scenario: derive rejects when group is not found
 
-### TC-016: derive rejects when loop is not enabled
-
-**Category**: integration
-**Priority**: must
-**Source**: spec.md > Requirement: derive SHALL fail with exit 2 for missing configuration or invalid input > Scenario: derive rejects when loop is not enabled
+---
 
 ### TC-017: derive rejects when group elements do not resolve
 
@@ -184,7 +209,7 @@ Result section MUST appear at the very end as a YAML code block:
 
 ---
 
-## prompt derive — ファイルシステム非書き込み
+## prompt derive コマンド — ファイルシステム非書き込み
 
 ### TC-018: derive produces no file system side effects
 
@@ -198,7 +223,7 @@ Result section MUST appear at the very end as a YAML code block:
 
 ### TC-019: format spec documents new manifest keys
 
-**Category**: manual
+**Category**: integration
 **Priority**: should
 **Source**: spec.md > Requirement: spec and integration documents SHALL be updated to reflect new manifest keys > Scenario: format spec documents new manifest keys
 
@@ -209,416 +234,374 @@ Result section MUST appear at the very end as a YAML code block:
 ### TC-020: plan writes success to stderr, not stdout
 
 **Category**: integration
-**Priority**: must
+**Priority**: should
 **Source**: spec.md > Requirement: all commands SHALL separate stdout and stderr per spec/integration.md §5 > Scenario: plan writes success to stderr, not stdout
+
+---
 
 ### TC-021: derive writes instruction to stdout, errors to stderr
 
 **Category**: integration
-**Priority**: must
+**Priority**: should
 **Source**: spec.md > Requirement: all commands SHALL separate stdout and stderr per spec/integration.md §5 > Scenario: derive writes instruction to stdout, errors to stderr
 
 ---
 
-## T-01: computeFrontier 移設
+## computeFrontier 移設 (T-01)
 
-### TC-022: computeFrontier is exported from src/plan/frontier.ts
+### TC-022: computeFrontier が src/plan/frontier.ts に存在する
 
-**Category**: unit
-**Priority**: should
+**Category**: integration
+**Priority**: must
 **Source**: tasks.md > T-01
 
-**GIVEN** the source repository after T-01 is applied
-**WHEN** src/plan/frontier.ts is inspected for exported symbols
-**THEN** `computeFrontier` function, `Frontier` type, and `IMPLEMENTATION_PREFIXES` constant are all exported from that file
+**GIVEN** ソースコードが変更済みの状態
+**WHEN** src/plan/frontier.ts の export を確認する
+**THEN** `computeFrontier`、`Frontier` 型、`IMPLEMENTATION_PREFIXES` が src/plan/frontier.ts から export されている
 
-### TC-023: status.ts imports computeFrontier from src/plan/frontier.ts
+---
+
+### TC-023: status.ts が src/plan/frontier.ts を import している
 
 **Category**: integration
 **Priority**: should
 **Source**: tasks.md > T-01
 
-**GIVEN** the source repository after T-01 is applied
-**WHEN** src/cli/commands/status.ts import statements are inspected
-**THEN** `computeFrontier` is imported from `../../plan/frontier` (not defined locally) and the original local definition is absent
-
-### TC-024: computeFrontier accepts enabledPrefixes argument with no mod-check import
-
-**Category**: unit
-**Priority**: should
-**Source**: tasks.md > T-01
-
-**GIVEN** src/plan/frontier.ts after T-01 is applied
-**WHEN** the function signature and import list of `computeFrontier` are inspected
-**THEN** the signature includes an `enabledPrefixes: Set<string>` parameter, and the file contains no import from `../check/`
+**GIVEN** ソースコードが変更済みの状態
+**WHEN** src/cli/commands/status.ts の import 宣言を確認する
+**THEN** `computeFrontier` の import 元が `src/plan/frontier.ts` になっており、`status.ts` 内に `computeFrontier` の独自定義が存在しない
 
 ---
 
-## T-02: findOwningElement 移設
+### TC-024: mod-plan から mod-check への依存が発生していない
 
-### TC-025: findOwningElement is defined in src/graph/attribution.ts
+**Category**: integration
+**Priority**: must
+**Source**: tasks.md > T-01 / design.md > D1
+
+**GIVEN** src/plan/frontier.ts が実装済みの状態
+**WHEN** src/plan/frontier.ts の import 宣言を確認する
+**THEN** `../check/` 配下へのパスを持つ import が存在しない（enabledPrefixes は引数として受け取るため）
+
+---
+
+### TC-025: IMPLEMENTATION_PREFIXES に 'act' が含まれる
 
 **Category**: unit
+**Priority**: must
+**Source**: design.md > D1（adversarial-consistency finding 1）
+
+**GIVEN** src/plan/frontier.ts の `IMPLEMENTATION_PREFIXES` 定数
+**WHEN** その値を確認する
+**THEN** `"act"` が含まれている（ADR-0015 の act 一級化への追随）
+
+---
+
+## findOwningElement 移設 (T-02)
+
+### TC-026: findOwningElement が src/graph/attribution.ts に存在する
+
+**Category**: integration
+**Priority**: must
+**Source**: tasks.md > T-02
+
+**GIVEN** ソースコードが変更済みの状態
+**WHEN** src/graph/attribution.ts の export を確認する
+**THEN** `findOwningElement` が src/graph/attribution.ts から export されている
+
+---
+
+### TC-027: check/attribution.ts が graph/attribution.ts を re-export している
+
+**Category**: integration
 **Priority**: should
 **Source**: tasks.md > T-02
 
-**GIVEN** the source repository after T-02 is applied
-**WHEN** src/graph/attribution.ts is inspected
-**THEN** `findOwningElement` is defined and exported from that file
-
-### TC-026: src/check/attribution.ts re-exports findOwningElement without local definition
-
-**Category**: unit
-**Priority**: should
-**Source**: tasks.md > T-02
-
-**GIVEN** the source repository after T-02 is applied
-**WHEN** src/check/attribution.ts is read
-**THEN** the file contains a re-export statement pointing to `../graph/attribution` and does not define `findOwningElement` locally
+**GIVEN** ソースコードが変更済みの状態
+**WHEN** src/check/attribution.ts の内容を確認する
+**THEN** `findOwningElement` を `../graph/attribution.ts` から re-export しており、実装の重複がない
 
 ---
 
-## T-03: extractElementBody
+## extractElementBody (T-03)
 
-### TC-027: extractElementBody returns correct body text for a heading element
-
-**Category**: unit
-**Priority**: must
-**Source**: tasks.md > T-03
-
-**GIVEN** a Graph with heading element `mod-app` declared at line 3 of `design/modules/app.md`, and a FileInput for that file where the next heading of the same level begins at line 10
-**WHEN** `extractElementBody("mod-app", graph, files)` is called
-**THEN** the returned string contains lines 4 through 9 (inclusive) of the file, not including the next heading line
-
-### TC-028: extractElementBody returns body for a document element excluding frontmatter
+### TC-028: 見出し要素の本文が正しく切り出される
 
 **Category**: unit
 **Priority**: must
 **Source**: tasks.md > T-03
 
-**GIVEN** a Graph with document element `adr-0001` declared in `design/adr/0001.md`, and a FileInput for that file containing a YAML frontmatter block followed by body text
-**WHEN** `extractElementBody("adr-0001", graph, files)` is called
-**THEN** the returned string contains only the content after the closing `---` of the frontmatter, not the frontmatter itself
+**GIVEN** `mod-app` 要素が line 5 に宣言されており、line 10 に次の `## ` 見出しがあるファイルの FileInput
+**WHEN** `extractElementBody("mod-app", graph, files)` を呼ぶ
+**THEN** line 6 から line 9 の本文テキストが返され、次の見出し以降は含まれない
 
-### TC-029: extractElementBody returns null for a nonexistent element ID
+---
+
+### TC-029: 文書要素の本文が正しく切り出される
+
+**Category**: unit
+**Priority**: must
+**Source**: tasks.md > T-03
+
+**GIVEN** `plan-my-batch` 要素のファイルが frontmatter と本文テキストを持つ FileInput
+**WHEN** `extractElementBody("plan-my-batch", graph, files)` を呼ぶ
+**THEN** frontmatter 部分を除いた本文全体が返される
+
+---
+
+### TC-030: 存在しない要素 ID で null が返る
 
 **Category**: unit
 **Priority**: should
 **Source**: tasks.md > T-03
 
-**GIVEN** a Graph that contains no element with ID `ent-ghost`
-**WHEN** `extractElementBody("ent-ghost", graph, files)` is called
-**THEN** the function returns `null`
+**GIVEN** files 内に対応ファイルが存在しない要素 ID `ent-nonexistent`
+**WHEN** `extractElementBody("ent-nonexistent", graph, files)` を呼ぶ
+**THEN** `null` が返される
 
-### TC-030: extractElementBody stops at the next same-level heading boundary
+---
+
+### TC-031: 同一ファイル内の複数見出し要素の境界が正しい
 
 **Category**: unit
 **Priority**: must
 **Source**: tasks.md > T-03
 
-**GIVEN** a single file containing heading element `mod-a` at line 2 and `mod-b` at line 7 (both are `##` headings)
-**WHEN** `extractElementBody("mod-a", graph, files)` is called
-**THEN** the returned body ends at line 6 and does not include line 7 (the `mod-b` declaration) or later lines
+**GIVEN** 同一ファイルに `mod-a`（line 3）、`mod-b`（line 8）、`mod-c`（line 15）が宣言されている FileInput
+**WHEN** `extractElementBody("mod-b", graph, files)` を呼ぶ
+**THEN** line 9 から line 14 のテキストのみが返され、`mod-a` と `mod-c` の本文は含まれない
 
 ---
 
-## T-04: computeNeighborhood
+## computeNeighborhood (T-04)
 
-### TC-031: computeNeighborhood returns direct neighbors in both in and out directions
-
-**Category**: unit
-**Priority**: must
-**Source**: tasks.md > T-04
-
-**GIVEN** a Graph where element A references B (out) and element C references A (in)
-**WHEN** `computeNeighborhood(["A"], graph, 1)` is called
-**THEN** the returned Set contains both `B` and `C`
-
-### TC-032: computeNeighborhood includes 2-hop transitive neighbors
+### TC-032: 1 hop 近傍が正しく返る
 
 **Category**: unit
 **Priority**: must
 **Source**: tasks.md > T-04
 
-**GIVEN** a Graph where A -> B -> C (A references B, B references C)
-**WHEN** `computeNeighborhood(["A"], graph, 2)` is called
-**THEN** the returned Set contains both `B` (1-hop) and `C` (2-hop)
-
-### TC-033: computeNeighborhood excludes seedIds from the result
-
-**Category**: unit
-**Priority**: must
-**Source**: tasks.md > T-04
-
-**GIVEN** a Graph where A references B
-**WHEN** `computeNeighborhood(["A"], graph, 2)` is called
-**THEN** the returned Set does not contain `A`
-
-### TC-034: computeNeighborhood terminates without infinite loop on circular references
-
-**Category**: unit
-**Priority**: must
-**Source**: tasks.md > T-04
-
-**GIVEN** a Graph where A references B and B references A (circular)
-**WHEN** `computeNeighborhood(["A"], graph, 2)` is called
-**THEN** the function returns a finite result without hanging, and the Set contains `B`
+**GIVEN** `mod-a` が `mod-b` を参照し、`mod-c` が `mod-a` を参照するグラフ
+**WHEN** `computeNeighborhood(["mod-a"], graph, 1)` を呼ぶ
+**THEN** `{"mod-b", "mod-c"}` が返され、`"mod-a"` 自身は含まれない
 
 ---
 
-## T-05: generatePlan
-
-### TC-035: generatePlan places H1 title heading immediately after frontmatter
+### TC-033: 2 hop 近傍が正しく返る
 
 **Category**: unit
 **Priority**: must
-**Source**: tasks.md > T-05
+**Source**: tasks.md > T-04
 
-**GIVEN** `generatePlan("my-batch", ["mod-app"], annotations)` is called
-**WHEN** the returned string is split by lines
-**THEN** the line immediately following the closing `---` of the frontmatter is `# my-batch`
-
-### TC-036: generatePlan uses grp-\<slug\> as the group anchor ID
-
-**Category**: unit
-**Priority**: must
-**Source**: tasks.md > T-05
-
-**GIVEN** `generatePlan("my-batch", ["mod-app"], annotations)` is called
-**WHEN** the returned string is inspected for the group heading
-**THEN** the group heading contains `{#grp-my-batch}`
-
-### TC-037: generatePlan does not include any request: line
-
-**Category**: unit
-**Priority**: must
-**Source**: tasks.md > T-05
-
-**GIVEN** `generatePlan("my-batch", ["mod-app", "ent-order"], annotations)` is called
-**WHEN** every line of the returned string is checked
-**THEN** no line matching `- request:` exists in the output
+**GIVEN** `mod-a -> mod-b -> mod-c` の参照チェーンを持つグラフ
+**WHEN** `computeNeighborhood(["mod-a"], graph, 2)` を呼ぶ
+**THEN** `{"mod-b", "mod-c"}` が返され（out 方向 2 hop）、`"mod-a"` 自身は含まれない
 
 ---
 
-## T-06: plan handler
+### TC-034: seedIds が結果に含まれない
 
-### TC-038: handlePlan returns exit 2 for invalid slug format
+**Category**: unit
+**Priority**: must
+**Source**: tasks.md > T-04
+
+**GIVEN** `mod-a -> mod-b` の参照を持つグラフ、seedIds = `["mod-a"]`
+**WHEN** `computeNeighborhood(["mod-a"], graph, 2)` を呼ぶ
+**THEN** 返された Set に `"mod-a"` が含まれない
+
+---
+
+### TC-035: 循環参照がある場合に無限ループしない
+
+**Category**: unit
+**Priority**: must
+**Source**: tasks.md > T-04
+
+**GIVEN** `mod-a -> mod-b -> mod-a` の循環参照を持つグラフ
+**WHEN** `computeNeighborhood(["mod-a"], graph, 2)` を呼ぶ
+**THEN** 有限時間で終了し `{"mod-b"}` が返される（`mod-a` は seed のため除外）
+
+---
+
+## generatePlan 純粋関数 (T-05)
+
+### TC-036: frontmatter 直後に H1 見出しが含まれる
+
+**Category**: unit
+**Priority**: must
+**Source**: tasks.md > T-05 / design.md > D5
+
+**GIVEN** slug = `"my-batch"`、designed = `["mod-app", "ent-order"]`、空の annotations
+**WHEN** `generatePlan("my-batch", designed, annotations)` を呼ぶ
+**THEN** 出力文字列の frontmatter 終了（`---`）の直後の行が `# my-batch` である
+
+---
+
+### TC-037: 生成 plan に request: 行が含まれない
+
+**Category**: unit
+**Priority**: must
+**Source**: tasks.md > T-05 / design.md > D5（ADR-0018-2）
+
+**GIVEN** slug = `"my-batch"`、designed = `["mod-app"]`、空の annotations
+**WHEN** `generatePlan("my-batch", designed, annotations)` を呼ぶ
+**THEN** 出力文字列に `request:` で始まる行が一切存在しない
+
+---
+
+## plan handler — バリデーション (T-06)
+
+### TC-038: 不正な slug 形式で exit 2 を返す
 
 **Category**: integration
 **Priority**: must
-**Source**: tasks.md > T-06
+**Source**: tasks.md > T-06 / T-07
 
-**GIVEN** `handlePlan` is invoked with a slug that does not match `[a-z0-9]+(-[a-z0-9]+)*` (e.g., `../evil`, `My Batch`, `UPPER`)
-**WHEN** the handler completes
-**THEN** the return value is 2, stderr contains an error message, and no file is created in the design directory
+**GIVEN** design ディレクトリが存在する状態
+**WHEN** `handlePlan(["../evil", "--dir", dir])` を呼ぶ（パストラバーサル形式の slug）
+**THEN** return value が `2` であり、ファイルが生成されない。同様に `My Batch`（スペース含む）や `UPPER`（大文字含む）でも exit 2
 
-### TC-039: handlePlan creates plans/ directory when it does not exist
+---
+
+### TC-039: help フラグで usage を stderr に出力して exit 0
 
 **Category**: integration
 **Priority**: should
 **Source**: tasks.md > T-06
 
-**GIVEN** a design directory with loop enabled and designed elements, but no existing `plans/` subdirectory
-**WHEN** `handlePlan(["new-slug", "--dir", dir])` is executed
-**THEN** `design/plans/` directory is created and `design/plans/new-slug.md` is written
-
-### TC-040: handlePlan produces no stdout output on successful generation
-
-**Category**: integration
-**Priority**: should
-**Source**: tasks.md > T-06
-
-**GIVEN** a valid design directory with loop enabled and designed elements
-**WHEN** `handlePlan` is run as a subprocess
-**THEN** stdout is empty and the exit code is 0
+**GIVEN** 任意の状態
+**WHEN** `handlePlan(["--help"])` を呼ぶ
+**THEN** return value が `0` であり、stderr に usage テキストが含まれる
 
 ---
 
-## T-08: buildDeriveInstruction
+## buildDeriveInstruction 純粋関数 (T-08)
 
-### TC-041: buildDeriveInstruction wraps template content with BEGIN/END delimiters
+### TC-040: テンプレートがデリミタで明示的に区切られる
 
 **Category**: unit
 **Priority**: must
-**Source**: tasks.md > T-08
+**Source**: tasks.md > T-08 / design.md > D6
 
-**GIVEN** a `DeriveInput` with `templateContent: "## My Template"`
-**WHEN** `buildDeriveInstruction(input)` is called
-**THEN** the returned string contains `---TEMPLATE BEGIN---` before and `---TEMPLATE END---` after the template content, with both delimiters appearing on their own lines
+**GIVEN** templateContent = `"## template content"`、その他フィールドを適切に埋めた DeriveInput
+**WHEN** `buildDeriveInstruction(input)` を呼ぶ
+**THEN** 出力文字列に `---TEMPLATE BEGIN---` と `---TEMPLATE END---` が含まれ、その間に `"## template content"` が含まれる
 
-### TC-042: buildDeriveInstruction includes citation convention with [[id]] and coverage mention
+---
 
-**Category**: unit
+## prompt handler — サブコマンド dispatch (T-09)
+
+### TC-041: 不明なサブコマンドで exit 2 を返す
+
+**Category**: integration
 **Priority**: must
-**Source**: tasks.md > T-08
+**Source**: tasks.md > T-09 / design.md > D12
 
-**GIVEN** any valid `DeriveInput`
-**WHEN** `buildDeriveInstruction(input)` is called
-**THEN** the returned string contains a section mentioning `[[id]]` and the word "coverage" in the context of the citation convention instruction
-
----
-
-## T-09: prompt handler
-
-### TC-043: handlePrompt returns exit 2 for missing or unrecognized subcommand
-
-**Category**: integration
-**Priority**: should
-**Source**: tasks.md > T-09
-
-**GIVEN** `handlePrompt` is invoked with args `[]` (no subcommand) or `["unknown"]`
-**WHEN** the handler completes
-**THEN** the return value is 2 and stderr contains an error message about the subcommand
-
-### TC-044: handleDerive returns exit 2 when template command exits non-zero
-
-**Category**: integration
-**Priority**: should
-**Source**: tasks.md > T-09
-
-**GIVEN** a manifest with `request-template` set to a shell command that exits non-zero (e.g., `false`), and no matching file exists at that path
-**WHEN** `aozu prompt derive --group grp-test --dir <path>` is executed
-**THEN** exit code is 2 and stderr contains a diagnostic about the command failure
+**GIVEN** 任意の設計ディレクトリ
+**WHEN** `handlePrompt(["unknown-subcommand"])` を呼ぶ
+**THEN** return value が `2` であり、stderr にサブコマンド不明のエラーメッセージが含まれる
 
 ---
 
-## T-11: main.ts 登録
+### TC-042: derive でテンプレートコマンドが非ゼロで終了した場合 exit 2
 
-### TC-045: aozu --help lists both plan and prompt commands
+**Category**: integration
+**Priority**: should
+**Source**: design.md > D7（Risk: テンプレートコマンド失敗）
+
+**GIVEN** manifest の `request-template` が `"exit 1"` のように必ず失敗するコマンドである
+**WHEN** `aozu prompt derive --group grp-test --dir <path>` を実行する
+**THEN** exit code が `2` であり、stderr にコマンド失敗の診断メッセージが含まれる
+
+---
+
+## main.ts 登録 (T-11)
+
+### TC-043: aozu --help に plan と prompt が表示される
 
 **Category**: integration
 **Priority**: should
 **Source**: tasks.md > T-11
 
-**GIVEN** plan and prompt are registered in src/cli/main.ts
-**WHEN** `aozu --help` is run
-**THEN** the output includes both `plan` and `prompt` entries in the command listing
-
-### TC-046: aozu plan --help shows plan usage on stderr
-
-**Category**: integration
-**Priority**: could
-**Source**: tasks.md > T-11
-
-**GIVEN** the plan command is registered
-**WHEN** `aozu plan --help` is run
-**THEN** exit code is 0 and stderr contains usage information describing the `<slug>` argument and `--dir` option
-
-### TC-047: aozu prompt --help shows prompt usage on stderr
-
-**Category**: integration
-**Priority**: could
-**Source**: tasks.md > T-11
-
-**GIVEN** the prompt command is registered
-**WHEN** `aozu prompt --help` is run
-**THEN** exit code is 0 and stderr contains usage information describing the `derive` subcommand
+**GIVEN** src/cli/main.ts に plan / prompt が登録済みの状態
+**WHEN** `aozu --help` を実行する
+**THEN** 出力に `plan` と `prompt` の両コマンドが列挙されている
 
 ---
 
-## T-12: 正本追随
+## 正本更新 (T-12)
 
-### TC-048: spec/integration.md §4 specifies manifest frontmatter as injection point
+### TC-044: spec/integration.md §4 に manifest frontmatter の注入点が明記されている
 
-**Category**: manual
+**Category**: integration
 **Priority**: should
 **Source**: tasks.md > T-12
 
-**GIVEN** spec/integration.md after this change is applied
-**WHEN** §4 is reviewed
-**THEN** the text explicitly identifies manifest frontmatter keys `request-template` and `request-output-dir` as the injection point for derive settings
-
-### TC-049: design/static/modules.md mod-plan responsibility excludes request recording
-
-**Category**: manual
-**Priority**: should
-**Source**: tasks.md > T-12
-
-**GIVEN** design/static/modules.md after this change is applied
-**WHEN** the mod-plan entry is read
-**THEN** the responsibility description does not contain「グループへの request 記録」
-
-### TC-050: export rules --verify exits 0 after rules.json regeneration
-
-**Category**: integration
-**Priority**: must
-**Source**: tasks.md > T-12
-
-**GIVEN** design/rules.json has been regenerated by running `aozu export rules --out design/rules.json`
-**WHEN** `aozu export rules --verify` is executed
-**THEN** exit code is 0
+**GIVEN** spec/integration.md が更新済みの状態
+**WHEN** §4 の内容を確認する
+**THEN** `request-template` と `request-output-dir` の注入点として manifest frontmatter が明示されている
 
 ---
 
-## T-13: 全体回帰
-
-### TC-051: tsc --noEmit exits 0 with all new and modified files
-
-**Category**: integration
-**Priority**: must
-**Source**: tasks.md > T-13
-
-**GIVEN** all new TypeScript files in src/plan/, src/prompt/, modified files in src/graph/ and src/cli/ are present
-**WHEN** `tsc --noEmit` is executed
-**THEN** exit code is 0 with no type errors reported
-
-### TC-052: bun test passes all tests including the original 336 pre-existing tests
-
-**Category**: integration
-**Priority**: must
-**Source**: tasks.md > T-13
-
-**GIVEN** the complete test suite after all new tests are added
-**WHEN** `bun test` is executed
-**THEN** all tests pass and the count of passing tests is at least 336 (the pre-existing count) plus the new tests added by this change
-
-### TC-053: package.json dependencies field remains empty
-
-**Category**: integration
-**Priority**: must
-**Source**: tasks.md > T-13
-
-**GIVEN** package.json after all implementation is complete
-**WHEN** the `dependencies` field is read
-**THEN** the field is empty — no new runtime dependencies have been added
-
-### TC-054: architecture test passes with no forbidden dependency violations
-
-**Category**: integration
-**Priority**: must
-**Source**: tasks.md > T-13
-
-**GIVEN** architecture.test.ts enforcing allowed cross-module dependency rules
-**WHEN** `bun test` is run and the architecture test executes
-**THEN** no forbidden import paths are detected (e.g., mod-plan does not import from mod-check, mod-prompt does not import from mod-cli)
-
----
-
-## D7: テンプレートのシェル実行
-
-### TC-055: template command with spaces executes correctly via shell mode
+### TC-045: design/static/modules.md の mod-plan 責務行から「グループへの request 記録」が除去されている
 
 **Category**: integration
 **Priority**: could
-**Source**: design.md > D7
+**Source**: tasks.md > T-12（ADR-0018-2 追随）
 
-**GIVEN** a manifest with `request-template: echo "hello world"` and no file at that path exists
-**WHEN** `aozu prompt derive --group grp-test --dir <path>` is executed
-**THEN** stdout contains `hello world` between the `---TEMPLATE BEGIN---` and `---TEMPLATE END---` delimiters, confirming that shell: true allows space-delimited commands
+**GIVEN** design/static/modules.md が更新済みの状態
+**WHEN** mod-plan の責務行を確認する
+**THEN** 「グループへの request 記録」の記述が存在せず、「plan の生成・coverage 検証」に修正されている
 
 ---
 
-## D9: 注釈の自由 Markdown 節
-
-### TC-056: plan annotation free Markdown section does not violate check C10
+### TC-046: export rules --verify が exit 0
 
 **Category**: integration
 **Priority**: must
-**Source**: design.md > D9
+**Source**: tasks.md > T-12 / T-13
 
-**GIVEN** a plan file generated by the plan command that contains a `## 注釈` section with reference edges, module grounding, and requested elements as free Markdown text
-**WHEN** `aozu check --dir <path>` is run on the design directory containing that plan file
-**THEN** check exits 0, confirming that the free Markdown annotation section does not trigger C10 (or any other check rule) violations
+**GIVEN** rules.json が再 export 済み、modules.md が更新済みの状態
+**WHEN** `aozu export rules --verify` を実行する
+**THEN** exit code が `0` である
+
+---
+
+## 全体回帰 (T-13)
+
+### TC-047: 既存テストが全て green のまま
+
+**Category**: integration
+**Priority**: must
+**Source**: tasks.md > T-13
+
+**GIVEN** 本変更が適用済みの状態
+**WHEN** `bun test` を実行する
+**THEN** 既存 336 テスト（+ 新規テスト）が全て green であり、テスト数が変更前より少なくなっていない
+
+---
+
+### TC-048: architecture test が green
+
+**Category**: integration
+**Priority**: must
+**Source**: tasks.md > T-13
+
+**GIVEN** 本変更が適用済みの状態
+**WHEN** architecture.test.ts を実行する（`bun test` の一部として）
+**THEN** 許可依存の違反が検出されない（mod-plan -> mod-check 等の不許可依存が存在しない）
+
+---
+
+### TC-049: package.json の dependencies が空のまま
+
+**Category**: integration
+**Priority**: should
+**Source**: tasks.md > T-13
+
+**GIVEN** 本変更が適用済みの状態
+**WHEN** package.json の `dependencies` フィールドを確認する
+**THEN** `dependencies` が空オブジェクト `{}` のままであり、新規パッケージが追加されていない
 
 ---
 
@@ -626,11 +609,11 @@ Result section MUST appear at the very end as a YAML code block:
 
 ```yaml
 result: completed
-total: 56
-automated: 53
-manual: 3
-must: 39
-should: 14
-could: 3
+total: 49
+automated: 49
+manual: 0
+must: 37
+should: 11
+could: 1
 blocked_reasons: []
 ```
