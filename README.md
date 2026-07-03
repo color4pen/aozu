@@ -4,7 +4,7 @@
 
 ## 位置づけ
 
-実装パイプライン（request → merged PR を無人完走するツール。例: spec-runner）の上流に、構造レベルの設計工程を形式として与える。設計判断には機械的な合否が存在しないため、実装と同じ完走型パイプラインにはせず、人の判断を決定的処理（検証・差分・導出）で挟む動詞型 CLI とする。
+実装パイプライン（request → merged PR を無人完走するツール。例: spec-runner）の上流に、構造レベルの設計工程を形式として与える。設計判断には機械的な合否が存在しないため、実装と同じ完走型パイプラインにはせず、人の判断を決定的処理（検証・差分・導出）で挟む動詞型 CLI とする。境界の詳細（解く問題と解かない問題・保証の範囲・細部の置き場）は [docs/boundary.md](docs/boundary.md)。
 
 ## 原理
 
@@ -56,6 +56,7 @@ bun add -g aozu
 ## 使い方
 
 - **動詞体系**: ADR-0008。実装状況は下記ステータス参照
+- **ツールの境界**: [docs/boundary.md](docs/boundary.md) — 解く問題と解かない問題・保証の対応表・細部の置き場の三段選択
 - **既存プロジェクトへの導入**: [docs/adoption.md](docs/adoption.md) — 三原則（消費者と同時にしか書き起こさない・一括書き起こしは static のみ・正本は型ごとに移る）と Step 0〜4 の手順
 - **実装パイプラインとの結線**: [spec/integration.md](spec/integration.md) — `check --request` / `mark implemented` / `export rules` の CLI 契約
 - **仕様の破綻を探すドッグフーディング**: [docs/dogfooding-runbook.md](docs/dogfooding-runbook.md)（導入とは目的が異なり、一括転写が正当な唯一の場面）
