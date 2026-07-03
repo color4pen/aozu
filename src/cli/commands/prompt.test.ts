@@ -1256,9 +1256,11 @@ describe("handleSession — stage gates", () => {
         { stdout: "pipe", stderr: "pipe" }
       );
       const exitCode = await proc.exited;
+      const stdout = await new Response(proc.stdout).text();
       const stderr = await new Response(proc.stderr).text();
       expect(exitCode).toBe(1);
       expect(stderr).toContain("loop");
+      expect(stdout).toBe("");
     } finally {
       await rm(baseDir, { recursive: true });
     }
@@ -1272,9 +1274,11 @@ describe("handleSession — stage gates", () => {
         { stdout: "pipe", stderr: "pipe" }
       );
       const exitCode = await proc.exited;
+      const stdout = await new Response(proc.stdout).text();
       const stderr = await new Response(proc.stderr).text();
       expect(exitCode).toBe(2);
       expect(stderr).toContain("top-nonexistent");
+      expect(stdout).toBe("");
     } finally {
       await rm(baseDir, { recursive: true });
     }
@@ -1286,7 +1290,9 @@ describe("handleSession — stage gates", () => {
       { stdout: "pipe", stderr: "pipe" }
     );
     const exitCode = await proc.exited;
+    const stdout = await new Response(proc.stdout).text();
     expect(exitCode).toBe(2);
+    expect(stdout).toBe("");
   });
 
   it("missing --topic argument → exit 2", async () => {
@@ -1297,7 +1303,9 @@ describe("handleSession — stage gates", () => {
         { stdout: "pipe", stderr: "pipe" }
       );
       const exitCode = await proc.exited;
+      const stdout = await new Response(proc.stdout).text();
       expect(exitCode).toBe(2);
+      expect(stdout).toBe("");
     } finally {
       await rm(baseDir, { recursive: true });
     }
