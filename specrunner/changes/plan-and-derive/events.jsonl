@@ -89,3 +89,6 @@
 {"type":"step-attempt","step":"custom-reviewers","sessionId":null,"outcome":{"verdict":"escalation","findingsPath":null,"error":null},"startedAt":"2026-07-03T01:16:47.711Z","endedAt":"2026-07-03T01:27:32.934Z"}
 {"type":"transition","ts":"2026-07-03T01:27:32.936Z","step":"custom-reviewers","status":"error","message":"custom-reviewers iteration 1 completed with verdict: escalation"}
 {"type":"transition","ts":"2026-07-03T01:27:32.936Z","step":"pipeline","status":"ok","message":"running → awaiting-resume: custom-reviewers escalated"}
+{"type":"transition","ts":"2026-07-03T01:37:20.236Z","step":"resume","status":"ok","message":"awaiting-resume → running: Resuming from step 'custom-reviewers'"}
+{"type":"transition","ts":"2026-07-03T01:37:20.293Z","step":"custom-reviewers","status":"started","message":"custom-reviewers iteration 1 started"}
+{"type":"transition","ts":"2026-07-03T01:37:20.300Z","step":"adversarial-consistency-started","status":"started","message":"Starting adversarial-consistency step"}
