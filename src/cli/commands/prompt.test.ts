@@ -160,6 +160,71 @@ async function createDeriveFixture(): Promise<{ designDir: string; baseDir: stri
 }
 
 /**
+ * Create a fixture where the plan group references an element that does not
+ * exist in the graph (TC-017).  The grp-test element is valid but its
+ * elements: line contains [[ent-nonexistent]] which has no matching heading.
+ */
+async function createUnresolvedElementFixture(): Promise<{ designDir: string; baseDir: string }> {
+  const baseDir = await mkdtemp(join(tmpdir(), "aozu-derive-unresolved-"));
+  const designDir = join(baseDir, "design");
+
+  await mkdir(join(designDir, "static"), { recursive: true });
+  await mkdir(join(designDir, "domain"), { recursive: true });
+  await mkdir(join(designDir, "plans"), { recursive: true });
+
+  // manifest: loop enabled + template config
+  await writeFile(
+    join(designDir, "manifest.md"),
+    [
+      "---",
+      "format-version: 0",
+      "enabled: static, domain, dynamic, loop",
+      "request-template: template.md",
+      "request-output-dir: requests/",
+      "---",
+      "",
+      "# manifest",
+    ].join("\n")
+  );
+
+  // template file
+  await writeFile(join(designDir, "template.md"), "# Request Template\n");
+
+  // static/modules.md
+  await writeFile(
+    join(designDir, "static", "modules.md"),
+    ["# モジュール", "", "## Core {#mod-core}", "責務: コア", "実装: src/core/"].join("\n")
+  );
+
+  // static/dependencies.md
+  await writeFile(join(designDir, "static", "dependencies.md"), "# 許可依存\n");
+
+  // domain/model.md: ent-real exists, ent-nonexistent does NOT
+  await writeFile(
+    join(designDir, "domain", "model.md"),
+    ["# ドメインモデル", "", "## 実エンティティ {#ent-real}", "実エンティティの説明。"].join("\n")
+  );
+
+  // plans/test-plan.md: grp-test references [[ent-nonexistent]] (unresolvable)
+  await writeFile(
+    join(designDir, "plans", "test-plan.md"),
+    [
+      "---",
+      "id: plan-test",
+      "status: open",
+      "---",
+      "# test-plan",
+      "",
+      "## テストグループ {#grp-test}",
+      "- elements: [[ent-nonexistent]]",
+      "- parallel: no",
+    ].join("\n")
+  );
+
+  return { designDir, baseDir };
+}
+
+/**
  * Create a fixture with loop disabled.
  */
 async function createLoopDisabledFixture(): Promise<{ designDir: string; baseDir: string }> {
@@ -474,6 +539,23 @@ describe("handleDerive — stage gates", () => {
       );
       const exitCode = await proc.exited;
       expect(exitCode).toBe(2);
+    } finally {
+      await rm(baseDir, { recursive: true });
+    }
+  });
+
+  // TC-017: group elements reference IDs absent from the graph
+  it("group elements reference unresolvable IDs → exit 2 + stderr diagnostic (TC-017)", async () => {
+    const { designDir, baseDir } = await createUnresolvedElementFixture();
+    try {
+      const proc = Bun.spawn(
+        ["bun", MAIN_TS, "prompt", "derive", "--group", "grp-test", "--dir", designDir],
+        { stdout: "pipe", stderr: "pipe" }
+      );
+      const exitCode = await proc.exited;
+      const stderr = await new Response(proc.stderr).text();
+      expect(exitCode).toBe(2);
+      expect(stderr).toContain("ent-nonexistent");
     } finally {
       await rm(baseDir, { recursive: true });
     }
