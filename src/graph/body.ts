@@ -26,8 +26,11 @@ const HEADING_PREFIXES = new Set(["mod", "term", "ent", "inv", "act", "grp"]);
 /** Prefixes that use the document element format (frontmatter `id:` key). */
 const DOCUMENT_PREFIXES = new Set(["seq", "top", "plan", "adr"]);
 
-/** Pattern that marks the start of a new h2 heading element (same-level boundary). */
-const HEADING_ELEMENT_RE = /^## /;
+/** Pattern that extracts the level of a heading declaration line (h2 or h3, spec §5). */
+const DECL_HEADING_RE = /^(#{2,3}) /;
+
+/** Pattern that extracts the level of any heading line (boundary scan). */
+const ANY_HEADING_RE = /^(#{1,6}) /;
 
 // ---------------------------------------------------------------------------
 // Body extraction
@@ -62,10 +65,25 @@ export function extractElementBody(
 
   if (HEADING_PREFIXES.has(el.prefix)) {
     // Heading element: from the line after the declaration to the next heading
+    // of the same or higher level (spec §5 「見出しから次の同レベル見出しまで」—
+    // an h2-declared element keeps its h3 sub-headings in the body; an
+    // h3-declared element ends at the next h3 sibling or at a parent h2).
+    // Headings inside code fences are literal text, not boundaries (same
+    // line-oriented fence toggling as reference extraction, spec §6).
     const headingIdx = el.line - 1; // 0-based
+    const declMatch = DECL_HEADING_RE.exec(lines[headingIdx] ?? "");
+    const declLevel = declMatch ? declMatch[1]!.length : 2;
     let endIdx = lines.length;
+    let inCodeFence = false;
     for (let i = headingIdx + 1; i < lines.length; i++) {
-      if (HEADING_ELEMENT_RE.test(lines[i]!)) {
+      const line = lines[i]!;
+      if (line.trimStart().startsWith("```")) {
+        inCodeFence = !inCodeFence;
+        continue;
+      }
+      if (inCodeFence) continue;
+      const m = ANY_HEADING_RE.exec(line);
+      if (m && m[1]!.length <= declLevel) {
         endIdx = i;
         break;
       }

@@ -144,6 +144,109 @@ describe("extractElementBody — heading elements", () => {
     expect(grpBody).toContain("elements:");
     expect(grpBody).toContain("parallel: no");
   });
+
+  it("h2 element body keeps h3 sub-headings (spec §5 same-level boundary)", () => {
+    const files = makeFiles([
+      [
+        "domain/model.md",
+        [
+          "# モデル",
+          "",
+          "## 受注 {#ent-order}",
+          "受注の説明。",
+          "",
+          "### 属性",
+          "- 番号",
+          "",
+          "## 請求 {#ent-billing}",
+          "請求の説明。",
+        ].join("\n"),
+      ],
+    ]);
+    const parsed = parseFiles(files);
+    const graph = buildGraph(parsed);
+
+    const body = extractElementBody("ent-order", graph, files);
+    expect(body).toContain("### 属性");
+    expect(body).toContain("- 番号");
+    expect(body).not.toContain("請求の説明");
+  });
+
+  it("h3 element body ends at the next h3 sibling (spec §5 same-level boundary)", () => {
+    const files = makeFiles([
+      [
+        "plans/multi.md",
+        [
+          "---",
+          "id: plan-multi",
+          "status: open",
+          "---",
+          "# multi",
+          "",
+          "### 一次 {#grp-first}",
+          "- elements: [[mod-cli]]",
+          "- parallel: no",
+          "",
+          "### 二次 {#grp-second}",
+          "- elements: [[mod-core]]",
+          "- parallel: no",
+        ].join("\n"),
+      ],
+      [
+        "static/modules.md",
+        [
+          "# モジュール構成",
+          "",
+          "## CLI {#mod-cli}",
+          "責務: コマンド解釈",
+          "実装: src/cli/",
+          "",
+          "## コア {#mod-core}",
+          "責務: 中核",
+          "実装: src/core/",
+        ].join("\n"),
+      ],
+    ]);
+    const parsed = parseFiles(files);
+    const graph = buildGraph(parsed);
+
+    const body = extractElementBody("grp-first", graph, files);
+    expect(body).not.toBeNull();
+    expect(body).toContain("[[mod-cli]]");
+    // Must NOT bleed into the next h3 sibling group
+    expect(body).not.toContain("二次");
+    expect(body).not.toContain("[[mod-core]]");
+  });
+
+  it("headings inside code fences do not end the body (spec §6 fence toggling)", () => {
+    const files = makeFiles([
+      [
+        "domain/model.md",
+        [
+          "# モデル",
+          "",
+          "## 受注 {#ent-order}",
+          "例:",
+          "",
+          "```markdown",
+          "## これはフェンス内の例示見出し",
+          "```",
+          "",
+          "フェンス後の本文。",
+          "",
+          "## 請求 {#ent-billing}",
+          "請求の説明。",
+        ].join("\n"),
+      ],
+    ]);
+    const parsed = parseFiles(files);
+    const graph = buildGraph(parsed);
+
+    const body = extractElementBody("ent-order", graph, files);
+    expect(body).toContain("フェンス内の例示見出し");
+    expect(body).toContain("フェンス後の本文");
+    expect(body).not.toContain("請求の説明");
+  });
 });
 
 // ---------------------------------------------------------------------------
