@@ -85,6 +85,7 @@ bun add -g aozu
 | [0016](adr/0016-versioning-and-release.md) | バージョニング — ツール semver と format-version の二軸分離 |
 | [0017](adr/0017-granularity-by-citation-context.md) | 要素の粒度 — 型ごとの主たる引用文脈で決める |
 | [0018](adr/0018-loop-write-semantics.md) | loop の書き込み意味論 — 書き手の最小化と計算される遷移（0006 を修正） |
+| [0019](adr/0019-prompt-session-injection-scope.md) | prompt session の注入スコープ — 2 hop 近傍 + inv/term 全量 + static 縮約 |
 
 未確定の論点は [docs/open-questions.md](docs/open-questions.md)。
 
@@ -98,7 +99,7 @@ bun add -g aozu
 
 実装中。動詞の実装状況:
 
-- **実装済み**: `init` / `scaffold` / `check`（`--request` 含む）/ `status` / `export rules`（`--verify` 含む）/ `plan` / `prompt derive` / `coverage` / `mark implemented`
-- **未実装**: `diff` / `trace` / `prompt session` / `prompt propagate` / `prompt review`
+- **実装済み**: `init` / `scaffold` / `check`（`--request` 含む）/ `status` / `export rules`（`--verify` 含む）/ `plan` / `prompt derive` / `coverage` / `mark implemented` / `prompt session`
+- **未実装**: `diff` / `trace` / `prompt propagate` / `prompt review`
 
 検証状況: 自己記述ドッグフード（design/ 26 要素）と業務 SaaS の書き起こし（74 要素）で check exit 0。状態機械の一周（plan → derive → coverage → mark → フロンティア空）は合成 fixture で検証済み。不変条件の歯は tests/invariants.test.ts（PR #8）。実地のフルループ検証と publish（CI + npm）が残り。
