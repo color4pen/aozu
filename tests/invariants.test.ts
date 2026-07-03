@@ -146,13 +146,16 @@ export function detectStateWriteViolation(content: string): boolean {
 // ---------------------------------------------------------------------------
 
 /**
- * Matches the 4-character sequence `\[\[` (backslash + `[` + backslash + `[`)
- * which is the signature of a regex that *interprets* `[[id]]` references.
+ * Matches escaped double-bracket sequences — the signature of a regex that
+ * *interprets* `[[id]]` references. Covers both source forms:
+ *   - regex literal:      `/\[\[.../`          → content contains `\[\[`
+ *   - RegExp constructor: `new RegExp("\\[\\[")` → content contains `\\[\\[`
+ * `\\+` (one or more backslashes before each bracket) matches both.
  *
  * Plain `[[...]]` text in template strings or line comments contains only
  * bare brackets (no preceding backslash) and does NOT trigger this pattern.
  */
-const REF_GRAMMAR_RE = /\\\[\\\[/;
+const REF_GRAMMAR_RE = /\\+\[\\+\[/;
 
 /**
  * Returns true if the content appears to interpret `[[...]]` references via
@@ -395,6 +398,13 @@ describe("inv-single-reference-grammar — fixture tests (T-04)", () => {
   it("detects RegExp constructor with \\[\\[ (positive)", () => {
     // Represents source code using new RegExp("\[\[") — single-backslash form
     const fixture = 'new RegExp("\\[\\[")';
+    expect(detectReferenceGrammarViolation(fixture)).toBe(true);
+  });
+
+  it("detects RegExp constructor with double-backslash escapes (positive)", () => {
+    // Represents actual source text: new RegExp("\\[\\[([a-z0-9-]+)\\]\\]")
+    // — the standard way to write this pattern in a string literal
+    const fixture = 'new RegExp("\\\\[\\\\[([a-z0-9-]+)\\\\]\\\\]")';
     expect(detectReferenceGrammarViolation(fixture)).toBe(true);
   });
 
