@@ -1,0 +1,40 @@
+{
+  "version": 2,
+  "jobId": "0d8b8cc0-e0fe-4568-b218-e6ca8155a3d8",
+  "createdAt": "2026-07-03T11:54:34.925Z",
+  "updatedAt": "2026-07-03T11:54:35.683Z",
+  "request": {
+    "title": "prompt propagate / prompt review を実装し、prompt 動詞群を完成させる",
+    "type": "new-feature",
+    "baseBranch": "main"
+  },
+  "repository": {
+    "owner": "color4pen",
+    "name": "aozu"
+  },
+  "step": "request-review",
+  "status": "running",
+  "branch": "feat/prompt-propagate-review-0d8b8cc0",
+  "error": null,
+  "pipelineId": "standard",
+  "reviewers": [
+    {
+      "name": "adversarial-consistency",
+      "maxIterations": 3,
+      "purpose": "設計記録（ADR・形式仕様・設計文書・未決論点）に触れる変更が、既存の記録済み原理・決定と矛盾していないかを敵対的に検証する。改善提案ではなく反証に徹する。正典は docs/review/adversarial-consistency.md であり、観点の改訂はそちらと同期する。",
+      "criteria": "指摘には「根拠となる記述の引用（ファイル + 原文）」と「矛盾する記述の引用または構成した反例」の**両方**を必須とする。引用も反例も構成できない違和感は報告しない。\n\n1. **原理間矛盾**: 変更が別の記録済み原理・決定（adr/ 全件・spec/）と両立しない\n2. **消費者不在の形式化**: 文書化・形式化・移行・追補の提案に「読む機械（または強制力）」が名指しされていない。未決・計画（docs/open-questions.md）も対象であり、「未決だから」は免除理由にならない\n3. **エレガント統合型の断定**: 一般化された主張のうち、具体例を歩くと崩れるもの。反例シナリオを最低 1 つ構成して示す\n4. **段階・縮退の穴**: manifest の enabled 組み合わせによって意味論が壊れる・未定義になるケース\n5. **決定と未決の食い違い**: 決定済み事項と open-questions の記述の矛盾、決定に必要な前提の未決放置",
+      "judgment": "- 引用可能な矛盾または構成できた反例が 1 件でも成立する: **needs-fix**（findings に引用を含めて列挙）\n- すべての観点で反証を試みて不能だった: **approved**（反証不能だった観点を列挙する）",
+      "freeText": "",
+      "paths": [
+        "adr/**",
+        "spec/**",
+        "design/**",
+        "docs/open-questions.md"
+      ]
+    }
+  ],
+  "_journal": {
+    "historyCount": 2,
+    "stepCounts": {}
+  }
+}
