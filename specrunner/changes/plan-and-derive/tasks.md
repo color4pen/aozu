@@ -89,17 +89,20 @@ src/plan/generator.ts に plan 文書の生成ロジックを実装する。
   ```
 - [ ] `generatePlan(slug: string, designed: string[], annotations: PlanAnnotations): string` を実装する:
   - frontmatter: `id: plan-<slug>`, `status: open`
+  - frontmatter 直後に H1 見出し `# <slug>` を出力する（spec/format.md §5 で文書要素の表示名は先頭の # 見出しとする規約に準拠）
   - 単一グループ: `## グループ {#grp-<slug>}` + `- elements: [[id1]], [[id2]], ...` + `- parallel: no`
   - 注釈節: `## 注釈` 配下に参照辺・モジュール接地・実行中の要素を自由 Markdown で記述
   - `request:` 行は書かない
 - [ ] generator.ts のテストを作成する（src/plan/generator.test.ts）:
   - 生成された plan が spec §8 の frontmatter スキーマに適合する
+  - frontmatter 直後に `# <slug>` の H1 見出しが含まれる
   - 全 designed 要素が elements 行に含まれる
   - 注釈節に参照辺・mod 接地・requested 一覧が含まれる
   - `request:` 行が含まれない
 
 **Acceptance Criteria**:
 - `generatePlan` が spec §8 適合の plan 文書文字列を返す
+- frontmatter 直後に `# <slug>` の H1 見出しがある
 - 注釈 3 種が含まれる
 - `request:` 行が含まれない
 - テストが 4 ケース以上存在し green
@@ -111,6 +114,7 @@ src/cli/commands/plan.ts を新規作成する。
 - [ ] `handlePlan(args: string[]): Promise<number>` を実装する:
   - `--help` / `-h` で usage を stderr に出力して return 0
   - `args[0]` を slug として取得。不足は stderr にエラー出力して return 2
+  - slug が `[a-z0-9]+(-[a-z0-9]+)*` の形式に適合しない場合は stderr にエラー出力して return 2（spec §4 の slug 文法を実行時に強制する。`../` 等のパストラバーサルを防ぐためにも必要）
   - `--dir <path>` フラグをパース（デフォルト: `./design`）
   - design ディレクトリ存在チェック → 不在は return 2
 - [ ] 段階ゲートの実装:
@@ -128,6 +132,7 @@ src/cli/commands/plan.ts を新規作成する。
 
 **Acceptance Criteria**:
 - `handlePlan` が export されている
+- slug が `[a-z0-9]+(-[a-z0-9]+)*` に適合しない場合は exit 2 を返す（spec §4 の形式検証）
 - 段階ゲート（loop 無効 / 既存 slug / designed 0 件）がそれぞれ正しい exit code を返す
 - 生成ファイルが spec §8 に適合する
 - stdout に何も出力しない
@@ -140,11 +145,13 @@ src/cli/commands/plan.test.ts を新規作成する。
 - [ ] 正常系テスト:
   - `handlePlan(["my-batch", "--dir", dir])` で plan ファイルが生成される
   - 生成ファイルの frontmatter に `id: plan-my-batch` / `status: open` が含まれる
+  - 生成ファイルの frontmatter 直後に `# my-batch` の H1 見出しが含まれる
   - 生成ファイルに `{#grp-my-batch}` グループが含まれる
   - `elements:` 行に designed 要素が含まれる
   - 注釈節に参照辺・mod 接地・requested 一覧が含まれる
 - [ ] 生成後に check が exit 0 であることをテストする（C1 / C2 / C10 を新文書が破らない）
 - [ ] 段階ゲートのテスト:
+  - 不正な slug 形式（例: `../evil`, `My Batch`, `UPPER`）で exit 2、ファイルが生成されない
   - loop 無効の fixture で exit 1、ファイルが生成されない
   - 既存 slug の fixture で exit 1、既存ファイルが変更されない
   - designed 0 件の fixture で exit 1、ファイルが生成されない
@@ -206,7 +213,7 @@ src/cli/commands/prompt.ts を新規作成する。
   - `--dir <path>` をパース（デフォルト: `./design`）
   - design ディレクトリ存在チェック → 不在は return 2
 - [ ] 段階ゲートの実装:
-  - `isLayerEnabled("loop", manifest)` → false なら stderr に案内出力して return 1
+  - `isLayerEnabled("loop", manifest)` → false なら stderr に案内出力して return 2（derive にとって loop 無効は設定不備 = 入力不正であり exit 2）
   - manifest frontmatter に `request-template` がなければ stderr に診断出力して return 2
   - manifest frontmatter に `request-output-dir` がなければ stderr に診断出力して return 2
 - [ ] plan ファイルの探索:
@@ -217,7 +224,7 @@ src/cli/commands/prompt.ts を新規作成する。
 - [ ] テンプレート取得:
   - `request-template` の値を design ディレクトリからの相対パスとして解決
   - ファイルが存在すれば内容を読み取る
-  - ファイルが存在しなければコマンドとして `Bun.spawn` で実行し stdout を取得。非ゼロ exit → return 2 + stderr 診断
+  - ファイルが存在しなければコマンドとして `Bun.spawn({ cmd: value, shell: true })` で実行し stdout を取得（`shell: true` はスペース区切りコマンドの動作保証に必要 — D7 参照）。非ゼロ exit → return 2 + stderr 診断
 - [ ] 指示テキストの組み立て:
   - グループの elements から対象要素の本文を `extractAllBodies` で取得
   - `computeNeighborhood(groupElements, graph, 2)` で 2 hop 近傍を計算
@@ -231,7 +238,7 @@ src/cli/commands/prompt.ts を新規作成する。
 - `handlePrompt` が export されている
 - `prompt derive --group <id>` で指示テキストが stdout に出力される
 - 設定欠落 / plan 不在 / グループ不在 / 未解決要素がそれぞれ exit 2
-- loop 無効が exit 1
+- loop 無効が exit 2（derive では設定不備として扱う）
 - ファイルシステムへの書き込みがない
 
 ## T-10: prompt derive コマンドのテスト
@@ -254,7 +261,7 @@ src/cli/commands/prompt.test.ts を新規作成する。
   - `request-template` がファイルパスの場合: ファイル内容がテンプレートとして使われる
   - `request-template` がコマンドの場合: コマンド stdout がテンプレートとして使われる
 - [ ] 段階ゲートのテスト:
-  - loop 無効 → exit 1
+  - loop 無効 → exit 2（derive では loop 無効は設定不備 = exit 2）
   - `request-template` 欠落 → exit 2 + stderr 診断
   - `request-output-dir` 欠落 → exit 2 + stderr 診断
   - plan 不在 → exit 2 + stderr 診断
@@ -265,6 +272,7 @@ src/cli/commands/prompt.test.ts を新規作成する。
 **Acceptance Criteria**:
 - stdout の全 6 節存在テストが存在する
 - テンプレートのデュアルモード（ファイル / コマンド）テストが存在する
+- loop 無効が exit 2 であるテストが存在する
 - 設定欠落 / plan 不在 / グループ不在のテストが存在する
 - ファイルシステム非書き込みテストが存在する
 

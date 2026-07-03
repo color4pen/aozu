@@ -117,19 +117,23 @@ manifest の `request-template` の値をデュアルモードで解釈する:
 
 判定ロジックは handler（mod-cli の derive コマンド handler）に置く。ファイル存在確認 → 存在すればファイル読み取り、存在しなければ `Bun.spawn` でコマンド実行。
 
+`Bun.spawn` によるコマンド実行は **`shell: true`** を指定する。`shell: false`（Bun のデフォルト）では値を単一の実行ファイル名として解釈するため、`echo "template"` や `specrunner request template` のようなスペース区切りのコマンドが正常に動作しない。`shell: true` ではシェルを介してコマンドを解釈するため、パイプやサブシェル展開も利用できる。manifest は人が管理するリポジトリ内の設計文書であり信頼境界内（ローカル CLI、外部入力なし）のため、シェルモードによる攻撃面の拡大は許容範囲内と判断する。
+
 パスは manifest ファイルからの相対パスで解決する（design ディレクトリ基準）。
 
-**Rationale**: ADR-0012 の設計。ファイルとコマンドの切り替えを明示フラグではなく実在性で判定することで、設定の簡潔さを保つ。
+**Rationale**: ADR-0012 の設計。ファイルとコマンドの切り替えを明示フラグではなく実在性で判定することで、設定の簡潔さを保つ。`shell: true` はスペース区切りコマンドの動作保証に必要であり、ローカル CLI の信頼境界においてセキュリティ上の懸念は限定的。
 
 ### D8: 段階ゲートの実装パターン
 
-plan / derive コマンドの handler 冒頭で `isLayerEnabled("loop", manifest)` を検査し、false なら stderr に案内メッセージを出力して exit 1 を返す。
+**plan コマンド**: handler 冒頭で `isLayerEnabled("loop", manifest)` を検査し、false なら stderr に案内メッセージを出力して **exit 1** を返す。loop 無効は plan にとって「検証不合格」（設計フローの前提条件不満足）であり exit 1 の規約に従う。
 
 plan の追加ゲート: 既存 `plans/<slug>.md` が存在する場合は exit 1、designed 要素が 0 件の場合は exit 1。
 
+**derive コマンド**: handler 冒頭で `isLayerEnabled("loop", manifest)` を検査し、false なら stderr に案内メッセージを出力して **exit 2** を返す。loop 無効は derive にとって「設定不備」（manifest の設定が不足している状態）であり、他の設定欠落ゲートと同じく入力不正 = exit 2 の規約に従う。
+
 derive の追加ゲート: plan ファイル不在・グループ不在・グループの elements に未解決要素がある場合は exit 2。`request-template` / `request-output-dir` が manifest に欠けている場合は exit 2。
 
-**Rationale**: ADR-0010「縮退して動くふりをしない」。exit code は spec/integration.md §5 の規約に従い、入力不正は exit 2、検証不合格は exit 1。derive は入力の設定不備が主因のため exit 2。
+**Rationale**: ADR-0010「縮退して動くふりをしない」。exit code は spec/integration.md §5 の規約に従い、入力不正は exit 2、検証不合格は exit 1。plan の loop 無効は設計フローの段階チェック（exit 1）、derive の loop 無効は実行の前提設定不備（exit 2）と位置づける。
 
 ### D9: plan の注釈構造
 

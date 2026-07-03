@@ -10,7 +10,7 @@
 
 **Given** a design directory with loop enabled, containing designed elements `mod-app` and `ent-order`
 **When** `aozu plan my-batch --dir <path>` is executed
-**Then** `plans/my-batch.md` is created with frontmatter `id: plan-my-batch`, `status: open`, and a group `{#grp-my-batch}` whose `elements:` line contains `[[mod-app]]` and `[[ent-order]]`
+**Then** `plans/my-batch.md` is created with frontmatter `id: plan-my-batch`, `status: open`, a title heading `# my-batch` immediately after the frontmatter, and a group `{#grp-my-batch}` whose `elements:` line contains `[[mod-app]]` and `[[ent-order]]`
 
 #### Scenario: generated plan file does not break check
 
@@ -115,6 +115,18 @@ Derive SHALL return exit 2 with diagnostic on stderr for: (a) loop not enabled, 
 **Given** a design directory with a plan file but no group matching `grp-nonexistent`
 **When** `aozu prompt derive --group grp-nonexistent --dir <path>` is executed
 **Then** exit code is 2 and stderr contains a diagnostic about group not found
+
+#### Scenario: derive rejects when loop is not enabled
+
+**Given** a design directory with `enabled: static, domain, dynamic` (no loop)
+**When** `aozu prompt derive --group grp-test --dir <path>` is executed
+**Then** exit code is 2 and stderr contains a message about loop being required
+
+#### Scenario: derive rejects when group elements do not resolve
+
+**Given** a plan file containing a group `grp-test` whose `elements:` line references `[[ent-nonexistent]]` that is not present in the graph
+**When** `aozu prompt derive --group grp-test --dir <path>` is executed
+**Then** exit code is 2 and stderr contains a diagnostic about unresolvable elements
 
 ### Requirement: derive SHALL NOT write any files or modify state
 
