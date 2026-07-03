@@ -1059,6 +1059,23 @@ describe("handleSession — normal case stdout", () => {
     }
   });
 
+  it("static mod condensed excludes 実装: lines", async () => {
+    const { designDir, baseDir } = await createSessionFixture();
+    try {
+      const proc = Bun.spawn(
+        ["bun", MAIN_TS, "prompt", "session", "--topic", "top-my-topic", "--dir", designDir],
+        { stdout: "pipe", stderr: "pipe" }
+      );
+      const exitCode = await proc.exited;
+      const stdout = await new Response(proc.stdout).text();
+      expect(exitCode).toBe(0);
+      // fixture modules.md has 実装: lines; condensed form is heading + 責務: only
+      expect(stdout).not.toContain("実装:");
+    } finally {
+      await rm(baseDir, { recursive: true });
+    }
+  });
+
   it("stdout contains format rules summary text", async () => {
     const { designDir, baseDir } = await createSessionFixture();
     try {
@@ -1278,6 +1295,24 @@ describe("handleSession — stage gates", () => {
       const stderr = await new Response(proc.stderr).text();
       expect(exitCode).toBe(2);
       expect(stderr).toContain("top-nonexistent");
+      expect(stdout).toBe("");
+    } finally {
+      await rm(baseDir, { recursive: true });
+    }
+  });
+
+  it("non-top prefix ID → exit 2 + stderr diagnostic", async () => {
+    const { designDir, baseDir } = await createSessionFixture();
+    try {
+      const proc = Bun.spawn(
+        ["bun", MAIN_TS, "prompt", "session", "--topic", "ent-order", "--dir", designDir],
+        { stdout: "pipe", stderr: "pipe" }
+      );
+      const exitCode = await proc.exited;
+      const stdout = await new Response(proc.stdout).text();
+      const stderr = await new Response(proc.stderr).text();
+      expect(exitCode).toBe(2);
+      expect(stderr).toContain("ent-order");
       expect(stdout).toBe("");
     } finally {
       await rm(baseDir, { recursive: true });

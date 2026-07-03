@@ -34,6 +34,8 @@ export const SESSION_MAX_HOPS = 2;
  * and frontmatter convention.
  */
 export const FORMAT_RULES_SUMMARY = `\
+Summary of spec/format.md (format-version: 0). When the spec changes, update this summary to match.
+
 ### Declaration syntax
 
 - **Heading element** (mod / term / ent / inv / act / grp): declared as a level-2 heading with \`{#id}\` suffix.
