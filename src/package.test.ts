@@ -8,7 +8,7 @@ import { join } from "path";
 import { readdir } from "fs/promises";
 
 describe("package.json", () => {
-  it("TC-013 TC-028 TC-039: package.json dependencies field is empty or absent", async () => {
+  it("TC-013 TC-028 TC-039 TC-053: package.json dependencies field is empty or absent", async () => {
     const pkgPath = join(import.meta.dir, "../package.json");
     const pkg = await Bun.file(pkgPath).json();
 
@@ -29,7 +29,7 @@ describe("package.json", () => {
   });
 });
 
-describe("regression — TC-037", () => {
+describe("regression — TC-037 TC-052", () => {
   it("TC-037: pre-existing test files are present after adding init/scaffold/status", async () => {
     // This change adds 3 new test files (init.test.ts, scaffold.test.ts, status.test.ts).
     // Verifying that no pre-existing test files were deleted.
@@ -40,5 +40,17 @@ describe("regression — TC-037", () => {
     );
     // 33 test files pre-existed; 3 new ones were added by this change
     expect(testFiles.length).toBeGreaterThanOrEqual(36);
+  });
+
+  it("TC-052: all new plan/prompt test files are present (plan-and-derive change)", async () => {
+    // plan-and-derive adds: generator.test.ts (plan), derive.test.ts (prompt),
+    // plan.test.ts, prompt.test.ts (cli commands). The pre-existing count was 36.
+    const srcDir = import.meta.dir;
+    const allEntries = await readdir(srcDir, { recursive: true });
+    const testFiles = (allEntries as string[]).filter((f) =>
+      f.endsWith(".test.ts")
+    );
+    // 36 pre-existed; at least 4 new ones added by plan-and-derive (plan, prompt, generator, derive)
+    expect(testFiles.length).toBeGreaterThanOrEqual(40);
   });
 });

@@ -172,7 +172,7 @@ describe("handleExport rules — subprocess output validation", () => {
 });
 
 describe("handleExport rules --verify", () => {
-  it("returns 0 when committed rules.json matches regenerated ruleset", async () => {
+  it("TC-050: returns 0 when committed rules.json matches regenerated ruleset", async () => {
     const dir = await createValidDesignFixture();
     try {
       // First generate the rules.json

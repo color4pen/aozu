@@ -133,10 +133,11 @@ describe("buildDeriveInstruction — terms and invariants", () => {
 // ---------------------------------------------------------------------------
 
 describe("buildDeriveInstruction — citation convention", () => {
-  it("output contains citation convention text in Japanese", () => {
+  it("TC-042: output contains citation convention text with [[id]] and coverage mention", () => {
     const output = buildDeriveInstruction(makeInput());
     expect(output).toContain("[[id]]");
     expect(output).toContain("引用は被覆の宣言");
+    expect(output).toContain("coverage");
   });
 
   it("output contains citation convention text in English", () => {

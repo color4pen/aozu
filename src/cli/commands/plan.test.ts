@@ -359,7 +359,7 @@ describe("handlePlan — annotation section", () => {
 // ---------------------------------------------------------------------------
 
 describe("handlePlan — check still passes after generation", () => {
-  it("runCheck returns no errors after plan generation (C1/C2/C10 not broken)", async () => {
+  it("TC-056: runCheck returns no errors after plan generation — annotation section does not violate C10", async () => {
     const designDir = await createLoopFixtureWithRefs();
     try {
       await handlePlan(["my-batch", "--dir", designDir]);

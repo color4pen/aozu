@@ -305,7 +305,7 @@ describe("architecture violation detection — fixtures", () => {
 // ---------------------------------------------------------------------------
 
 describe("aozu self-architecture", () => {
-  it("all src/ imports are permitted by design/rules.json", async () => {
+  it("TC-054: all src/ imports are permitted by design/rules.json (no forbidden dependency violations)", async () => {
     // 1. Load ruleset from design/
     const mdFiles = await readMarkdownFiles(DESIGN_DIR);
     const parsed = parseFiles(mdFiles);
