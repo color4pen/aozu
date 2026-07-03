@@ -94,3 +94,4 @@
 {"type":"step-attempt","step":"pr-create","sessionId":null,"outcome":{"verdict":"success","findingsPath":"specrunner/changes/invariant-teeth/pr-create-result.md","error":null,"toolResult":null,"followUpAttempts":0},"startedAt":"2026-07-03T00:46:51.781Z","endedAt":"2026-07-03T00:46:53.286Z"}
 {"type":"lineage","step":"pr-create","ts":"2026-07-03T00:46:53.286Z","outputs":[{"path":"specrunner/changes/invariant-teeth/pr-create-result.md","hash":"sha256:e8ada3bed5a672ab8b367d34bc5e43c5f82b30b44ef7ba34d4e528e6c55e28b5"}],"inputs":[{"path":"feat/invariant-teeth-aad6d5b3","hash":null}]}
 {"type":"transition","ts":"2026-07-03T00:46:53.294Z","step":"pipeline","status":"ok","message":"running → awaiting-archive: pipeline complete"}
+{"type":"transition","ts":"2026-07-03T00:50:32.943Z","step":"archive","status":"ok","message":"awaiting-archive → archived: change archived"}
