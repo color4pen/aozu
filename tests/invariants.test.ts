@@ -20,9 +20,10 @@
  */
 
 import { describe, it, expect } from "bun:test";
-import { resolve, join } from "path";
-import { readdir, readFile } from "fs/promises";
+import { resolve, join, basename } from "path";
+import { readdir, readFile, mkdtemp, rm, writeFile } from "fs/promises";
 import { existsSync } from "fs";
+import { tmpdir } from "os";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -192,7 +193,7 @@ export function detectNondeterministicViolation(content: string): boolean {
  * mod-cli and mod-prompt are intentionally excluded: composition root is
  * permitted to invoke subprocess for template retrieval.
  */
-function getVerdictModuleDirs(): string[] {
+export function getVerdictModuleDirs(): string[] {
   const dirs = [
     join(SRC_DIR, "check"),
     join(SRC_DIR, "export"),
@@ -241,6 +242,79 @@ describe("inv coverage table — completeness (T-01)", () => {
         validStatuses.includes(entry.status),
         `${id}: invalid status "${entry.status}"`
       ).toBe(true);
+    }
+  });
+});
+
+// ===========================================================================
+// TC-004: extractInvariantIds — unit tests
+// ===========================================================================
+
+describe("extractInvariantIds — unit tests (TC-004)", () => {
+  it("extracts all {#inv-*} IDs from a synthetic fixture", () => {
+    const fixture = [
+      "## inv-deterministic-verdict {#inv-deterministic-verdict}",
+      "## inv-immutable-id {#inv-immutable-id}",
+      "## inv-tool-writes-state {#inv-tool-writes-state}",
+    ].join("\n");
+
+    const ids = extractInvariantIds(fixture);
+    expect(ids).toContain("inv-deterministic-verdict");
+    expect(ids).toContain("inv-immutable-id");
+    expect(ids).toContain("inv-tool-writes-state");
+    expect(ids).toHaveLength(3);
+  });
+
+  it("returns empty array when no {#inv-*} IDs are present", () => {
+    const fixture = "## Some heading\n\nNo invariant IDs here.";
+    expect(extractInvariantIds(fixture)).toEqual([]);
+  });
+
+  it("does not match non-inv anchors like {#arch-001}", () => {
+    const fixture =
+      "Some text {#arch-001} and also {#inv-deterministic-verdict}";
+    const ids = extractInvariantIds(fixture);
+    expect(ids).toEqual(["inv-deterministic-verdict"]);
+  });
+});
+
+// ===========================================================================
+// TC-005: collectNonTestTsFiles — unit tests
+// ===========================================================================
+
+describe("collectNonTestTsFiles — excludes *.test.ts (TC-005)", () => {
+  it("includes plain *.ts files but excludes *.test.ts files from a mixed directory", async () => {
+    const tmpDir = await mkdtemp(join(tmpdir(), "invariant-tc005-"));
+    try {
+      await writeFile(join(tmpDir, "helper.ts"), "export const x = 1;");
+      await writeFile(
+        join(tmpDir, "helper.test.ts"),
+        "import { x } from './helper';"
+      );
+      await writeFile(join(tmpDir, "utils.ts"), "export const y = 2;");
+
+      const result = await collectNonTestTsFiles(tmpDir);
+      const names = result.map((f) => basename(f));
+
+      expect(names, "*.test.ts must be excluded").not.toContain(
+        "helper.test.ts"
+      );
+      expect(names, "plain .ts must be included").toContain("helper.ts");
+      expect(names, "plain .ts must be included").toContain("utils.ts");
+    } finally {
+      await rm(tmpDir, { recursive: true, force: true });
+    }
+  });
+
+  it("returns an empty array for a directory containing only *.test.ts files", async () => {
+    const tmpDir = await mkdtemp(join(tmpdir(), "invariant-tc005b-"));
+    try {
+      await writeFile(join(tmpDir, "foo.test.ts"), "// test only");
+
+      const result = await collectNonTestTsFiles(tmpDir);
+      expect(result).toEqual([]);
+    } finally {
+      await rm(tmpDir, { recursive: true, force: true });
     }
   });
 });
@@ -430,5 +504,41 @@ describe("inv-deterministic-verdict — verdict-owning modules scan (T-05)", () 
       violations,
       `Verdict-owning modules with subprocess/network calls: ${violations.join(", ")}`
     ).toEqual([]);
+  });
+});
+
+// ===========================================================================
+// TC-027: inv-deterministic-verdict — verdict module exclusions
+// ===========================================================================
+
+describe("inv-deterministic-verdict — verdict module exclusions (TC-027)", () => {
+  it("src/cli/ and src/prompt/ are not in the verdict-owning modules list", () => {
+    const dirs = getVerdictModuleDirs();
+    const cliDir = join(SRC_DIR, "cli");
+    const promptDir = join(SRC_DIR, "prompt");
+
+    expect(
+      dirs,
+      "src/cli/ must not be in verdict-owning modules (composition root)"
+    ).not.toContain(cliDir);
+
+    expect(
+      dirs,
+      "src/prompt/ must not be in verdict-owning modules (composition root)"
+    ).not.toContain(promptDir);
+  });
+
+  it("src/check/, src/export/, src/state/ are in the verdict-owning modules list", () => {
+    const dirs = getVerdictModuleDirs();
+
+    expect(dirs, "src/check/ must be a verdict-owning module").toContain(
+      join(SRC_DIR, "check")
+    );
+    expect(dirs, "src/export/ must be a verdict-owning module").toContain(
+      join(SRC_DIR, "export")
+    );
+    expect(dirs, "src/state/ must be a verdict-owning module").toContain(
+      join(SRC_DIR, "state")
+    );
   });
 });
