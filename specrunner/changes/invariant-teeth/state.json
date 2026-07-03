@@ -2,7 +2,7 @@
   "version": 2,
   "jobId": "aad6d5b3-3237-49cb-af10-803c455f6e15",
   "createdAt": "2026-07-02T23:55:40.151Z",
-  "updatedAt": "2026-07-03T00:32:57.414Z",
+  "updatedAt": "2026-07-03T00:35:48.465Z",
   "request": {
     "title": "aozu 自身の不変条件に決定的な歯を立てる",
     "type": "new-feature",
@@ -12,7 +12,7 @@
     "owner": "color4pen",
     "name": "aozu"
   },
-  "step": "code-fixer",
+  "step": "regression-gate",
   "status": "running",
   "branch": "feat/invariant-teeth-aad6d5b3",
   "error": null,
@@ -33,8 +33,22 @@
       ]
     }
   ],
+  "reviewerStatuses": [
+    {
+      "name": "adversarial-consistency",
+      "status": "skipped",
+      "approvedAtCommit": null,
+      "activationPaths": [
+        "adr/**",
+        "spec/**",
+        "design/**",
+        "docs/open-questions.md"
+      ],
+      "invalidatedByCommit": null
+    }
+  ],
   "_journal": {
-    "historyCount": 29,
+    "historyCount": 38,
     "stepCounts": {
       "request-review": 1,
       "design": 1,
@@ -42,7 +56,10 @@
       "test-case-gen": 1,
       "implementer": 1,
       "verification": 1,
-      "code-review": 1
+      "code-review": 1,
+      "code-fixer": 1,
+      "adversarial-consistency": 1,
+      "custom-reviewers": 1
     }
   }
 }

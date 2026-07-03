@@ -41,3 +41,16 @@
 {"type":"transition","ts":"2026-07-03T00:32:57.412Z","step":"code-review","status":"ok","message":"code-review iteration 1 completed with verdict: approved"}
 {"type":"transition","ts":"2026-07-03T00:32:57.412Z","step":"step-transition","status":"ok","message":"code-review → code-fixer"}
 {"type":"transition","ts":"2026-07-03T00:32:57.414Z","step":"code-fixer-started","status":"started","message":"Starting code-fixer step"}
+{"type":"transition","ts":"2026-07-03T00:35:48.426Z","step":"code-fixer-verdict","status":"ok","message":"code-fixer verdict: approved"}
+{"type":"step-attempt","step":"code-fixer","sessionId":"1143e4f7-7821-4a0b-a8a9-b50cae5eecf6","outcome":{"verdict":"approved","findingsPath":null,"error":null,"toolResult":{"ok":true,"status":"success"},"followUpAttempts":1,"transientRetryAttempts":0},"startedAt":"2026-07-03T00:32:57.426Z","endedAt":"2026-07-03T00:35:47.329Z"}
+{"type":"lineage","step":"code-fixer","ts":"2026-07-03T00:35:47.329Z","outputs":[{"path":"specrunner/changes/invariant-teeth","hash":null}],"inputs":[{"path":"specrunner/changes/invariant-teeth/review-feedback-001.md","hash":"sha256:f81195a1d93967597b99f9cb6d886ce26801380345093ee0d1fff48f87a79ee8"}]}
+{"type":"transition","ts":"2026-07-03T00:35:48.431Z","step":"step-transition","status":"ok","message":"code-fixer → custom-reviewers"}
+{"type":"transition","ts":"2026-07-03T00:35:48.432Z","step":"custom-reviewers","status":"started","message":"custom-reviewers iteration 1 started"}
+{"type":"transition","ts":"2026-07-03T00:35:48.442Z","step":"adversarial-consistency-started","status":"started","message":"Starting adversarial-consistency step"}
+{"type":"transition","ts":"2026-07-03T00:35:48.453Z","step":"adversarial-consistency-skipped","status":"warning","message":"adversarial-consistency skipped: no changed files matched paths [adr/**, spec/**, design/**, docs/open-questions.md]"}
+{"type":"step-attempt","step":"adversarial-consistency","sessionId":null,"outcome":{"verdict":"skipped","findingsPath":null,"error":null,"skipReason":"no changed files matched paths [adr/**, spec/**, design/**, docs/open-questions.md]"},"startedAt":"2026-07-03T00:35:48.453Z","endedAt":"2026-07-03T00:35:48.453Z"}
+{"type":"step-attempt","step":"custom-reviewers","sessionId":null,"outcome":{"verdict":"approved","findingsPath":null,"error":null},"startedAt":"2026-07-03T00:35:48.441Z","endedAt":"2026-07-03T00:35:48.462Z"}
+{"type":"transition","ts":"2026-07-03T00:35:48.463Z","step":"custom-reviewers","status":"ok","message":"custom-reviewers iteration 1 completed with verdict: approved"}
+{"type":"transition","ts":"2026-07-03T00:35:48.463Z","step":"step-transition","status":"ok","message":"custom-reviewers → regression-gate"}
+{"type":"transition","ts":"2026-07-03T00:35:48.464Z","step":"regression-gate","status":"started","message":"regression-gate iteration 1 started"}
+{"type":"transition","ts":"2026-07-03T00:35:48.465Z","step":"regression-gate-started","status":"started","message":"Starting regression-gate step"}
