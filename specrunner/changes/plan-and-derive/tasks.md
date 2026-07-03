@@ -213,7 +213,7 @@ src/cli/commands/prompt.ts を新規作成する。
   - `--dir <path>` をパース（デフォルト: `./design`）
   - design ディレクトリ存在チェック → 不在は return 2
 - [x] 段階ゲートの実装:
-  - `isLayerEnabled("loop", manifest)` → false なら stderr に案内出力して return 2（derive にとって loop 無効は設定不備 = 入力不正であり exit 2）
+  - `isLayerEnabled("loop", manifest)` → false なら stderr に案内出力して return 1（loop 無効は段階ゲート = 検証不合格であり exit 1。plan と同クラス）
   - manifest frontmatter に `request-template` がなければ stderr に診断出力して return 2
   - manifest frontmatter に `request-output-dir` がなければ stderr に診断出力して return 2
 - [x] plan ファイルの探索:
@@ -238,7 +238,7 @@ src/cli/commands/prompt.ts を新規作成する。
 - `handlePrompt` が export されている
 - `prompt derive --group <id>` で指示テキストが stdout に出力される
 - 設定欠落 / plan 不在 / グループ不在 / 未解決要素がそれぞれ exit 2
-- loop 無効が exit 2（derive では設定不備として扱う）
+- loop 無効が exit 1（derive では loop 無効は段階ゲート = 検証不合格として扱う）
 - ファイルシステムへの書き込みがない
 
 ## T-10: prompt derive コマンドのテスト
@@ -261,7 +261,7 @@ src/cli/commands/prompt.test.ts を新規作成する。
   - `request-template` がファイルパスの場合: ファイル内容がテンプレートとして使われる
   - `request-template` がコマンドの場合: コマンド stdout がテンプレートとして使われる
 - [x] 段階ゲートのテスト:
-  - loop 無効 → exit 2（derive では loop 無効は設定不備 = exit 2）
+  - loop 無効 → exit 1（derive では loop 無効は段階ゲート = 検証不合格 = exit 1）
   - `request-template` 欠落 → exit 2 + stderr 診断
   - `request-output-dir` 欠落 → exit 2 + stderr 診断
   - plan 不在 → exit 2 + stderr 診断
@@ -272,7 +272,7 @@ src/cli/commands/prompt.test.ts を新規作成する。
 **Acceptance Criteria**:
 - stdout の全 6 節存在テストが存在する
 - テンプレートのデュアルモード（ファイル / コマンド）テストが存在する
-- loop 無効が exit 2 であるテストが存在する
+- loop 無効が exit 1 であるテストが存在する
 - 設定欠落 / plan 不在 / グループ不在のテストが存在する
 - ファイルシステム非書き込みテストが存在する
 

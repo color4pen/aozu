@@ -138,7 +138,7 @@ plan の追加ゲート: 既存 `plans/<slug>.md` が存在する場合は exit 
 
 derive の追加ゲート: plan ファイル不在・グループ不在・グループの elements に未解決要素がある場合は exit 2。`request-template` / `request-output-dir` が manifest に欠けている場合は exit 2。
 
-**Rationale**: ADR-0010「縮退して動くふりをしない」。exit code は spec/integration.md §5 の規約に従い、入力不正は exit 2、検証不合格は exit 1。plan の loop 無効は設計フローの段階チェック（exit 1）、derive の loop 無効は実行の前提設定不備（exit 2）と位置づける。
+**Rationale**: ADR-0010「縮退して動くふりをしない」。loop 無効は plan にとっても derive にとっても設計フローの段階チェック（前提条件未充足）であり、**どちらも exit 1**。入力不正（plan 不在・グループ不在・設定欠落など）は exit 2。この分類は ADR-0010 の明示エラーの原則から自己完結する（spec/integration.md §5 共通規約は exit code 規約を規定しない）。
 
 ### D9: plan の注釈構造
 
