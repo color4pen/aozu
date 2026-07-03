@@ -2,7 +2,7 @@
   "version": 2,
   "jobId": "0d8b8cc0-e0fe-4568-b218-e6ca8155a3d8",
   "createdAt": "2026-07-03T11:54:34.925Z",
-  "updatedAt": "2026-07-03T12:05:51.102Z",
+  "updatedAt": "2026-07-03T12:13:47.857Z",
   "request": {
     "title": "prompt propagate / prompt review を実装し、prompt 動詞群を完成させる",
     "type": "new-feature",
@@ -33,11 +33,13 @@
       ]
     }
   ],
+  "resumePoint": null,
   "_journal": {
-    "historyCount": 9,
+    "historyCount": 15,
     "stepCounts": {
       "request-review": 1,
-      "design": 1
+      "design": 1,
+      "spec-review": 1
     }
   }
 }
