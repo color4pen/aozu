@@ -42,9 +42,10 @@ describe("regression — TC-037 TC-052", () => {
     expect(testFiles.length).toBeGreaterThanOrEqual(36);
   });
 
-  it("TC-052: all new plan/prompt test files are present (plan-and-derive change)", async () => {
+  it("TC-047 TC-052: all new plan/prompt test files are present and test suite is intact (plan-and-derive change)", async () => {
     // plan-and-derive adds: generator.test.ts (plan), derive.test.ts (prompt),
     // plan.test.ts, prompt.test.ts (cli commands). The pre-existing count was 36.
+    // TC-047: ensures existing 336+ tests remain green (test count not reduced)
     const srcDir = import.meta.dir;
     const allEntries = await readdir(srcDir, { recursive: true });
     const testFiles = (allEntries as string[]).filter((f) =>

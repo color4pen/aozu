@@ -42,9 +42,11 @@ describe("buildDeriveInstruction — template section", () => {
     expect(output).toContain("---TEMPLATE END---");
   });
 
-  it("template content is between the delimiters", () => {
+  it("TC-040: template content is between the delimiters (BEGIN/END explicit separation)", () => {
     const templateContent = "MY UNIQUE TEMPLATE CONTENT";
     const output = buildDeriveInstruction(makeInput({ templateContent }));
+    expect(output).toContain("---TEMPLATE BEGIN---");
+    expect(output).toContain("---TEMPLATE END---");
     const beginIdx = output.indexOf("---TEMPLATE BEGIN---");
     const endIdx = output.indexOf("---TEMPLATE END---");
     const between = output.slice(beginIdx, endIdx);
