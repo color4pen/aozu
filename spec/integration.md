@@ -22,7 +22,8 @@ request 文書中の設計要素引用を検証する。
 - state.json 中で `request` が `<slug>` に一致する要素のうち requested のものをすべて implemented に遷移し、`--pr <番号>` があれば記録する
 - **冪等**: 既に implemented の要素は no-op。再実行しても結果が変わらない
 - 「該当 0 件」の判定は **`request` の slug 一致で行い、要素の状態を問わない**: slug 一致が 1 件も無ければ未知の slug として exit 1、一致があり全件 implemented 済みなら no-op で exit 0（冪等の帰結）。部分適用状態を作らない（全遷移 or 全不変）
-- **exit code**: 0 = 遷移完了（no-op 含む）/ 1 = 未知の slug / 2 = 入力不正
+- **loop 層が無効な design でも exit 1**（状態機械が立っておらず遷移対象が存在しない）。呼び出し側は未知の slug と同様に「この request は aozu の状態管理下にない」として扱えばよい
+- **exit code**: 0 = 遷移完了（no-op 含む）/ 1 = 未知の slug または loop 層無効 / 2 = 入力不正
 
 ## 3. `export rules [--verify]` — 出口ゲートの供給
 

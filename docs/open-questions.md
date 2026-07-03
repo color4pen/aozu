@@ -11,12 +11,11 @@ v0 draft を起草済み（`spec/format.md`）。ID 文法・宣言/参照構文
 
 ## 5. 実装パイプライン側の受け口
 
-- request 検証からの `check --request` 呼び出し（入口ゲート）
-- 取り込み完了時の `mark implemented` hook（出口の状態遷移）
-- request テンプレートへの設計要素引用欄の追加
-- パイプライン起点 topic の排出（ADR-0006 / ADR-0013 が前提とする機械排出。排出主体はパイプライン側 — レビューの構造指摘・スコープ外 finding を spec §8 の topic スキーマで `topics/` に落とす。交換面契約（spec/integration.md）への追補が要る）
+入口ゲート（request 検証からの `check --request`）・出口 hook（取り込み完了時の `mark implemented`）・request テンプレートへの設計要素引用欄の 3 点は、spec-runner への変更 request として**起票済み**（spec-runner リポジトリ `specrunner/drafts/aozu-integration-gates`、2026-07-03）。契約面（CLI 署名・exit code・診断書式）は実装との一致を実機検証済み。
 
-いずれ実装パイプライン側への変更 request として起票する。
+残り:
+
+- パイプライン起点 topic の排出（ADR-0006 / ADR-0013 が前提とする機械排出。排出主体はパイプライン側 — レビューの構造指摘・スコープ外 finding を spec §8 の topic スキーマで `topics/` に落とす。交換面契約（spec/integration.md）への追補が要るため、追補後に別 request として起票する）
 
 ## 6. brownfield 導入経路
 
