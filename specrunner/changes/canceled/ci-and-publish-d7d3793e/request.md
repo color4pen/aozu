@@ -33,9 +33,9 @@ ADR-0016 はツール本体のリリースを「semver + release-please + conven
 <!-- 実装の最重量部を名指しする。 -->
 
 1. **CI workflow（最重量部）**: PR と main push で次を全部回し、いずれかの失敗で fail する: (a) `tsc --noEmit`、(b) `bun test`、(c) 自己記述の閉包検証 `check --dir design`（exit 0）、(d) `export rules --dir design --verify`（rules.json の同期検証）。runner には bun のセットアップを含める
-2. **release-please**: conventional commits から release PR を生成する workflow + config。pre-1.0 運用は `bump-minor-pre-major: true`（spec-runner と同型）。**package.json の `version` は本 request では `0.0.0` のまま触らない** — 初回リリース 0.1.0 は、本変更（feat コミット）を含む初回 release PR を release-please が `0.0.0 → 0.1.0` として生成することで実現する（`bump-minor-pre-major` の帰結）
+2. **release-please**: conventional commits から release PR を生成する workflow + config。pre-1.0 運用は `bump-minor-pre-major: true`（spec-runner と同型）。初回リリースは 0.1.0
 3. **publish workflow**: release 作成をトリガに npm publish。認証は `NPM_TOKEN` secret 参照（secret の登録自体は人側の作業でスコープ外）
-4. **package.json の整備**: `private` を外し、`description`（例: "設計レイヤ CLI — 設計文書の閉包検証・差分計算・request 導出支援"）/ `repository`（`{ "type": "git", "url": "git+https://github.com/color4pen/aozu.git" }`）/ `license`（`"MIT"`）/ `files`（src と README・LICENSE のみ。テストファイルは除外してよい）/ `engines.bun`（`">=1.3.14"` — devDependencies の `@types/bun: ^1.3.14` に整合させる）を追加。`dependencies` は空のまま（既存の歯を壊さない）
+4. **package.json の整備**: `private` を外し、`description` / `repository` / `license` / `files`（src と README・LICENSE のみ。テストファイルは除外してよい）/ `engines.bun` を追加。`dependencies` は空のまま（既存の歯を壊さない）
 5. **LICENSE**: MIT を追加（実装パイプラインと同じ）
 6. **README に導入節を追加**: `bunx aozu` / `bun add -g aozu` と、bun ランタイム必須である旨
 7. **packaging smoke**: `npm pack` の tarball から `--help` が動くことを検証するテスト（または CI ステップ）を足し、「publish したが動かない」を封じる
@@ -56,7 +56,7 @@ ADR-0016 はツール本体のリリースを「semver + release-please + conven
 - [ ] workflow YAML が上記 4 コマンドをジョブ定義に含むことを grep テストで固定する
 - [ ] `npm pack` の tarball に src・README・LICENSE・package.json のみが含まれる（`.test.ts`・design/・specrunner/ 等が混入しない）ことをテストで固定する
 - [ ] tarball から展開したパッケージで `bun <bin> --help` が exit 0 になることを検証する（packaging smoke）
-- [ ] package.json: `private` フィールドが存在せず、`version` は `0.0.0` のまま変更されていない（初回 0.1.0 への bump は release-please の release PR が行う）、`engines.bun` と `files` が定義されている
+- [ ] package.json: `private` フィールドが存在せず、`version` が `0.1.0`、`engines.bun` と `files` が定義されている
 - [ ] src/package.test.ts の既存の歯（name = "aozu"・dependencies 空）が無変更で green
 - [ ] release-please config と workflow が存在し、release-type: node / `bump-minor-pre-major: true` である
 - [ ] 既存テスト無変更で green / `tsc --noEmit && bun test` green / dependencies 空
