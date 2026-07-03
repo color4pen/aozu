@@ -60,3 +60,9 @@
 {"type":"transition","ts":"2026-07-03T00:38:28.020Z","step":"regression-gate","status":"ok","message":"regression-gate iteration 1 completed with verdict: approved"}
 {"type":"transition","ts":"2026-07-03T00:38:28.020Z","step":"step-transition","status":"ok","message":"regression-gate → code-fixer"}
 {"type":"transition","ts":"2026-07-03T00:38:28.023Z","step":"code-fixer-started","status":"started","message":"Starting code-fixer step"}
+{"type":"transition","ts":"2026-07-03T00:39:07.292Z","step":"code-fixer-verdict","status":"ok","message":"code-fixer verdict: approved"}
+{"type":"step-attempt","step":"code-fixer","sessionId":"1143e4f7-7821-4a0b-a8a9-b50cae5eecf6","outcome":{"verdict":"approved","findingsPath":null,"error":null,"toolResult":{"ok":true,"status":"success"},"followUpAttempts":1,"transientRetryAttempts":0},"startedAt":"2026-07-03T00:38:28.034Z","endedAt":"2026-07-03T00:39:06.072Z"}
+{"type":"lineage","step":"code-fixer","ts":"2026-07-03T00:39:06.072Z","outputs":[{"path":"specrunner/changes/invariant-teeth","hash":null}],"inputs":[{"path":"specrunner/changes/invariant-teeth/regression-gate-result-001.md","hash":"sha256:d8359f1146e68d4c07285ca5013a696a414474b6e556f9e16153dc7622a0e259"}]}
+{"type":"transition","ts":"2026-07-03T00:39:07.300Z","step":"step-transition","status":"ok","message":"code-fixer → regression-gate"}
+{"type":"transition","ts":"2026-07-03T00:39:07.302Z","step":"regression-gate","status":"started","message":"regression-gate iteration 2 started"}
+{"type":"transition","ts":"2026-07-03T00:39:07.303Z","step":"regression-gate-started","status":"started","message":"Starting regression-gate step"}
