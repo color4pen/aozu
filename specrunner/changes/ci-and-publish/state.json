@@ -2,7 +2,7 @@
   "version": 2,
   "jobId": "211782c1-029c-4cdc-a89e-4a819f934f4e",
   "createdAt": "2026-07-03T10:54:49.317Z",
-  "updatedAt": "2026-07-03T11:44:18.196Z",
+  "updatedAt": "2026-07-03T11:44:44.971Z",
   "request": {
     "title": "CI と npm publish の経路を立てる（ADR-0016 の実施）",
     "type": "new-feature",
@@ -12,8 +12,8 @@
     "owner": "color4pen",
     "name": "aozu"
   },
-  "step": "adr-gen",
-  "status": "running",
+  "step": "pr-create",
+  "status": "awaiting-archive",
   "branch": "feat/ci-and-publish-211782c1",
   "error": null,
   "pipelineId": "standard",
@@ -47,8 +47,13 @@
       "invalidatedByCommit": null
     }
   ],
+  "pullRequest": {
+    "url": "https://github.com/color4pen/aozu/pull/12",
+    "number": 12,
+    "createdAt": "2026-07-03T11:44:44.961Z"
+  },
   "_journal": {
-    "historyCount": 57,
+    "historyCount": 62,
     "stepCounts": {
       "request-review": 1,
       "design": 1,
@@ -61,7 +66,9 @@
       "adversarial-consistency": 1,
       "custom-reviewers": 1,
       "regression-gate": 1,
-      "conformance": 1
+      "conformance": 1,
+      "adr-gen": 1,
+      "pr-create": 1
     }
   }
 }
