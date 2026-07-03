@@ -47,37 +47,37 @@ export const IMPLEMENTATION_PREFIXES = new Set(["mod", "term", "ent", "inv", "ac
 // ---------------------------------------------------------------------------
 
 /**
- * Compute the three design frontiers from graph, state, enabled prefixes, and frontmatters.
+ * Compute the three design frontiers from graph, state, enabled prefixes,
+ * addressed topics, and frontmatters.
  *
  * @param graph            The element graph built from parseFiles.
  * @param stateMap         Contents of state.json (empty if file absent).
  * @param enabledPrefixes  Set of element prefixes that are active (from getEnabledPrefixes).
+ * @param addressedTopics  Set of top-* IDs cited in any ADR's `topics:` frontmatter.
+ *                         Computed by the caller (ADR-0018-3: caller injects the
+ *                         addressed set so this function stays pure and free of
+ *                         frontmatter parsing logic).
  * @param frontmatters     Frontmatter records keyed by file path (from parseFiles).
+ *                         Used only to retrieve the `source` field of open topics
+ *                         for display; NOT used for addressed/open status judgement.
  */
 export function computeFrontier(
   graph: Graph,
   stateMap: StateMap,
   enabledPrefixes: Set<string>,
+  addressedTopics: Set<string>,
   frontmatters: ParseResult["frontmatters"]
 ): Frontier {
-  // (a) Open topics: top elements whose frontmatter status === "open"
-  //
-  // NOTE (pre-ADR-0018 semantics, intentionally retained in this change):
-  // ADR-0018-3 replaces the frontmatter `status` field with a computed rule —
-  // "a top cited by any ADR's `topics:` frontmatter is addressed". Migrating
-  // this computation (and the scaffold topic template) is scoped to the
-  // coverage/mark request (adr/0018 Consequences, docs/open-questions.md 論点 12).
-  // plan/derive only consume `frontier.designed`, so this branch does not
-  // affect them.
+  // (a) Open topics: top elements NOT cited in any ADR's topics: frontmatter
+  //     (ADR-0018-3: "addressed" = cited in ADR topics: frontmatter)
+  //     frontmatter `status` field is intentionally ignored.
   const openTopics: Frontier["openTopics"] = [];
   for (const [id, el] of graph.elements) {
     if (el.prefix !== "top") continue;
+    if (addressedTopics.has(id)) continue; // cited in ADR topics: → addressed
     const fm = frontmatters.get(el.file);
-    const status = typeof fm?.["status"] === "string" ? fm["status"] : undefined;
-    if (status === "open") {
-      const source = typeof fm?.["source"] === "string" ? fm["source"] : undefined;
-      openTopics.push(source !== undefined ? { id, source } : { id });
-    }
+    const source = typeof fm?.["source"] === "string" ? fm["source"] : undefined;
+    openTopics.push(source !== undefined ? { id, source } : { id });
   }
 
   // (b) Designed: implementation elements not in stateMap or with state === "designed"

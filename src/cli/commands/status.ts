@@ -21,6 +21,7 @@ import { parseManifest, isLayerEnabled, getEnabledPrefixes } from "../../check/m
 import { buildGraph } from "../../graph/builder.ts";
 import { runCheck } from "../../check/checker.ts";
 import { readState } from "../../state/reader.ts";
+import { extractReferences } from "../../parse/references.ts";
 import { writeDiagnostics } from "../format.ts";
 import {
   computeFrontier as computeFrontierImpl,
@@ -34,13 +35,65 @@ import type { ParseResult } from "../../parse/types.ts";
 export type { Frontier };
 
 // ---------------------------------------------------------------------------
+// Addressed topics extraction (ADR-0018-3)
+// ---------------------------------------------------------------------------
+
+/**
+ * Extract the set of top-* IDs that are addressed (cited in any ADR's
+ * `topics:` frontmatter).
+ *
+ * Uses extractReferences on the raw frontmatter value string so that the
+ * [[...]] grammar is handled by mod-parse (inv-single-reference-grammar).
+ *
+ * @param frontmatters Frontmatter records keyed by file path.
+ * @param graph        Element graph (to identify ADR element files).
+ */
+export function extractAddressedTopics(
+  frontmatters: ParseResult["frontmatters"],
+  graph: Graph
+): Set<string> {
+  const addressed = new Set<string>();
+
+  // Collect all file paths that belong to adr elements
+  const adrFiles = new Set<string>();
+  for (const el of graph.rawElements) {
+    if (el.prefix === "adr") {
+      adrFiles.add(el.file);
+    }
+  }
+
+  // For each adr file, extract `topics:` frontmatter value and find top-* refs
+  for (const [filePath, fm] of frontmatters) {
+    if (!adrFiles.has(filePath)) continue;
+    const topicsValue = fm["topics"];
+    if (!topicsValue) continue;
+
+    // topics can be string or string[] (comma-split list from frontmatter)
+    const values = Array.isArray(topicsValue) ? topicsValue : [topicsValue];
+    for (const val of values) {
+      // Use extractReferences to parse [[top-*]] references from the value
+      // (delegates [[...]] interpretation to mod-parse per inv-single-reference-grammar)
+      const refs = extractReferences(val, "<synthetic>");
+      for (const ref of refs) {
+        if (ref.targetId.startsWith("top-")) {
+          addressed.add(ref.targetId);
+        }
+      }
+    }
+  }
+
+  return addressed;
+}
+
+// ---------------------------------------------------------------------------
 // Frontier computation (backward-compatible wrapper)
 // ---------------------------------------------------------------------------
 
 /**
  * Compute the three design frontiers from graph, state, manifest, and frontmatters.
  *
- * This wrapper converts `manifest` → `enabledPrefixes` before delegating to
+ * This wrapper converts `manifest` → `enabledPrefixes` and computes
+ * `addressedTopics` from the ADR frontmatters before delegating to
  * the implementation in src/plan/frontier.ts, keeping the caller API stable.
  *
  * @param graph        The element graph built from parseFiles.
@@ -55,7 +108,8 @@ export function computeFrontier(
   frontmatters: ParseResult["frontmatters"]
 ): Frontier {
   const enabledPrefixes = getEnabledPrefixes(manifest);
-  return computeFrontierImpl(graph, stateMap, enabledPrefixes, frontmatters);
+  const addressedTopics = extractAddressedTopics(frontmatters, graph);
+  return computeFrontierImpl(graph, stateMap, enabledPrefixes, addressedTopics, frontmatters);
 }
 
 // ---------------------------------------------------------------------------

@@ -140,9 +140,11 @@ export async function handlePlan(args: string[]): Promise<number> {
   }
 
   // Compute designed frontier
+  // `addressedTopics` is only used for openTopics computation; plan only consumes
+  // `frontier.designed` and `frontier.requested`, so an empty set is correct here.
   const stateMap = await readDesignState(designDir);
   const enabledPrefixes = getEnabledPrefixes(manifest);
-  const frontier = computeFrontier(graph, stateMap, enabledPrefixes, parsed.frontmatters);
+  const frontier = computeFrontier(graph, stateMap, enabledPrefixes, new Set<string>(), parsed.frontmatters);
 
   // Stage gate: at least one designed element required
   if (frontier.designed.length === 0) {

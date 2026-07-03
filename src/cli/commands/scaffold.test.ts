@@ -125,14 +125,15 @@ describe("handleScaffold — topic", () => {
     }
   });
 
-  it("generated topic has id: top-my-feature and status: open in frontmatter", async () => {
+  it("generated topic has id: top-my-feature in frontmatter but NO status: field (ADR-0018-3)", async () => {
     const designDir = await createLoopEnabledFixture();
     const baseDir = join(designDir, "..");
     try {
       await handleScaffold(["topic", "top-my-feature", "--dir", designDir]);
       const content = await Bun.file(join(designDir, "topics", "my-feature.md")).text();
       expect(content).toContain("id: top-my-feature");
-      expect(content).toContain("status: open");
+      // status: is no longer written to topic files (computed from ADR topics: frontmatter)
+      expect(content).not.toContain("status:");
     } finally {
       await rm(baseDir, { recursive: true });
     }

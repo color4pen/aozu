@@ -3,11 +3,11 @@
  *
  * T-08: Covers computeFrontier unit tests (open topics, designed, requested),
  *        handleStatus integration (loop enabled / disabled),
- *        and stdout/stderr separation.
+ *        stdout/stderr separation, and ADR-0018-3 openTopics semantics.
  */
 
 import { describe, it, expect } from "bun:test";
-import { computeFrontier, formatFrontier, formatSummary, handleStatus } from "./status.ts";
+import { computeFrontier, extractAddressedTopics, formatFrontier, formatSummary, handleStatus } from "./status.ts";
 import { join } from "path";
 import { mkdtemp, rm, mkdir, writeFile } from "fs/promises";
 import { tmpdir } from "os";
@@ -45,6 +45,7 @@ async function createLoopFixture(): Promise<string> {
   await mkdir(join(designDir, "domain"), { recursive: true });
   await mkdir(join(designDir, "dynamic"), { recursive: true });
   await mkdir(join(designDir, "topics"), { recursive: true });
+  await mkdir(join(designDir, "adr"), { recursive: true });
 
   // manifest: loop enabled
   await writeFile(
@@ -105,7 +106,9 @@ async function createLoopFixture(): Promise<string> {
     ].join("\n")
   );
 
-  // topics/open-topic.md: top-open-topic (open)
+  // topics/open-topic.md: top-open-topic
+  // NOT cited by any ADR → open (ADR-0018-3: open = not cited in ADR topics:)
+  // Retains `status: open` in frontmatter to verify that the STATUS FIELD IS IGNORED
   await writeFile(
     join(designDir, "topics", "open-topic.md"),
     [
@@ -118,7 +121,9 @@ async function createLoopFixture(): Promise<string> {
     ].join("\n")
   );
 
-  // topics/addressed-topic.md: top-addressed-topic (addressed)
+  // topics/addressed-topic.md: top-addressed-topic
+  // Cited in ADR below → addressed (ADR-0018-3).
+  // Retains `status: addressed` in frontmatter to verify that the STATUS FIELD IS IGNORED
   await writeFile(
     join(designDir, "topics", "addressed-topic.md"),
     [
@@ -127,6 +132,28 @@ async function createLoopFixture(): Promise<string> {
       "status: addressed",
       "---",
       "addressed な topic の説明",
+    ].join("\n")
+  );
+
+  // adr/0001-decision.md: cites top-addressed-topic in topics: frontmatter
+  // This makes top-addressed-topic addressed under ADR-0018-3 semantics.
+  await writeFile(
+    join(designDir, "adr", "0001-decision.md"),
+    [
+      "---",
+      "id: adr-0001-decision",
+      "topics: [[top-addressed-topic]]",
+      "---",
+      "# Decision about the addressed topic",
+      "",
+      "## Context",
+      "See [[top-addressed-topic]] for background.",
+      "",
+      "## Decision",
+      "Decided.",
+      "",
+      "## Consequences",
+      "None.",
     ].join("\n")
   );
 
@@ -146,8 +173,8 @@ async function createLoopFixture(): Promise<string> {
 // computeFrontier unit tests
 // ---------------------------------------------------------------------------
 
-describe("computeFrontier — open topics", () => {
-  it("includes topics with status: open", async () => {
+describe("computeFrontier — open topics (ADR-0018-3 semantics)", () => {
+  it("includes topics NOT cited in any ADR topics: frontmatter (open)", async () => {
     const designDir = await createLoopFixture();
     const baseDir = join(designDir, "..");
     try {
@@ -163,6 +190,7 @@ describe("computeFrontier — open topics", () => {
 
       const frontier = computeFrontier(graph, stateMap, manifest, parsed.frontmatters);
 
+      // top-open-topic is NOT cited in any ADR topics: → open
       expect(frontier.openTopics.length).toBe(1);
       expect(frontier.openTopics[0]!.id).toBe("top-open-topic");
       expect(frontier.openTopics[0]!.source).toBe("gh#1");
@@ -171,7 +199,7 @@ describe("computeFrontier — open topics", () => {
     }
   });
 
-  it("excludes topics with status: addressed", async () => {
+  it("excludes topics cited in ADR topics: frontmatter (addressed via ADR-0018-3)", async () => {
     const designDir = await createLoopFixture();
     const baseDir = join(designDir, "..");
     try {
@@ -184,10 +212,111 @@ describe("computeFrontier — open topics", () => {
 
       const frontier = computeFrontier(graph, stateMap, manifest, parsed.frontmatters);
 
+      // top-addressed-topic IS cited in adr/0001-decision.md topics: → addressed → not in open
       const addressedInOpenList = frontier.openTopics.some(
         (t) => t.id === "top-addressed-topic"
       );
       expect(addressedInOpenList).toBe(false);
+    } finally {
+      await rm(baseDir, { recursive: true });
+    }
+  });
+
+  it("treats topic as open when it has status: addressed frontmatter but is NOT in any ADR topics:", async () => {
+    // Create a fixture where a topic has `status: addressed` in its own frontmatter
+    // but is NOT referenced in any ADR's topics: line.
+    // Under ADR-0018-3, this topic should appear as OPEN (status field is ignored).
+    const baseDir = await mkdtemp(join(tmpdir(), "aozu-status-old-status-"));
+    const designDir = join(baseDir, "design");
+    await mkdir(join(designDir, "static"), { recursive: true });
+    await mkdir(join(designDir, "topics"), { recursive: true });
+    await mkdir(join(designDir, "adr"), { recursive: true });
+
+    await writeFile(
+      join(designDir, "manifest.md"),
+      ["---", "format-version: 0", "enabled: static, loop", "---"].join("\n")
+    );
+    await writeFile(
+      join(designDir, "static", "modules.md"),
+      ["## App {#mod-app}", "責務: app", "実装: src/"].join("\n")
+    );
+    await writeFile(join(designDir, "static", "dependencies.md"), "# 許可依存\n");
+
+    // Topic with `status: addressed` in its OWN frontmatter (old style)
+    await writeFile(
+      join(designDir, "topics", "old-style.md"),
+      ["---", "id: top-old-style", "status: addressed", "---", "old style addressed"].join("\n")
+    );
+
+    // ADR with topics: citing a DIFFERENT topic (not top-old-style)
+    await writeFile(
+      join(designDir, "adr", "0001-other.md"),
+      [
+        "---",
+        "id: adr-0001-other",
+        "topics: [[top-nonexistent]]",
+        "---",
+        "# Other ADR",
+        "## Context",
+        "nothing",
+        "## Decision",
+        "done",
+        "## Consequences",
+        "none",
+      ].join("\n")
+    );
+
+    try {
+      const files = await (await import("../../fs/reader.ts")).readMarkdownFiles(designDir);
+      const parsed = parseFiles(files);
+      const manifestPath = join(designDir, "manifest.md");
+      const manifest = parseManifest(parsed.frontmatters, manifestPath);
+      const graph = buildGraph(parsed, manifestPath);
+
+      const frontier = computeFrontier(graph, {}, manifest, parsed.frontmatters);
+
+      // top-old-style has status: addressed in its OWN frontmatter BUT is not in any ADR topics:
+      // → under ADR-0018-3, it is OPEN (status field is ignored)
+      const isOpen = frontier.openTopics.some((t) => t.id === "top-old-style");
+      expect(isOpen).toBe(true);
+    } finally {
+      await rm(baseDir, { recursive: true });
+    }
+  });
+
+  it("treats topic as open when it has no status frontmatter at all", async () => {
+    const baseDir = await mkdtemp(join(tmpdir(), "aozu-status-nostatus-"));
+    const designDir = join(baseDir, "design");
+    await mkdir(join(designDir, "static"), { recursive: true });
+    await mkdir(join(designDir, "topics"), { recursive: true });
+
+    await writeFile(
+      join(designDir, "manifest.md"),
+      ["---", "format-version: 0", "enabled: static, loop", "---"].join("\n")
+    );
+    await writeFile(
+      join(designDir, "static", "modules.md"),
+      ["## App {#mod-app}", "責務: app", "実装: src/"].join("\n")
+    );
+    await writeFile(join(designDir, "static", "dependencies.md"), "# 許可依存\n");
+
+    // Topic with NO status field
+    await writeFile(
+      join(designDir, "topics", "no-status.md"),
+      ["---", "id: top-no-status", "---", "topic without status field"].join("\n")
+    );
+
+    try {
+      const files = await (await import("../../fs/reader.ts")).readMarkdownFiles(designDir);
+      const parsed = parseFiles(files);
+      const manifestPath = join(designDir, "manifest.md");
+      const manifest = parseManifest(parsed.frontmatters, manifestPath);
+      const graph = buildGraph(parsed, manifestPath);
+
+      const frontier = computeFrontier(graph, {}, manifest, parsed.frontmatters);
+
+      // No ADR cites it → open
+      expect(frontier.openTopics.some((t) => t.id === "top-no-status")).toBe(true);
     } finally {
       await rm(baseDir, { recursive: true });
     }
@@ -530,5 +659,159 @@ describe("formatSummary", () => {
   it("includes loop-not-enabled note", () => {
     const output = formatSummary(5, 3, true);
     expect(output).toContain("loop not enabled");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// extractAddressedTopics unit tests (T-08: ADR-0018-3)
+// ---------------------------------------------------------------------------
+
+describe("extractAddressedTopics — ADR-0018-3 addressed topic computation", () => {
+  it("returns empty set when no ADR files exist", async () => {
+    const baseDir = await mkdtemp(join(tmpdir(), "aozu-addressed-empty-"));
+    const designDir = join(baseDir, "design");
+    await mkdir(join(designDir, "static"), { recursive: true });
+    await writeFile(
+      join(designDir, "manifest.md"),
+      ["---", "format-version: 0", "enabled: static, loop", "---"].join("\n")
+    );
+    await writeFile(
+      join(designDir, "static", "modules.md"),
+      ["## App {#mod-app}", "責務: app", "実装: src/"].join("\n")
+    );
+    await writeFile(join(designDir, "static", "dependencies.md"), "# 許可依存\n");
+
+    try {
+      const files = await (await import("../../fs/reader.ts")).readMarkdownFiles(designDir);
+      const parsed = parseFiles(files);
+      const graph = buildGraph(parsed, join(designDir, "manifest.md"));
+      const addressed = extractAddressedTopics(parsed.frontmatters, graph);
+      expect(addressed.size).toBe(0);
+    } finally {
+      await rm(baseDir, { recursive: true });
+    }
+  });
+
+  it("includes top-* IDs from ADR topics: frontmatter", async () => {
+    const designDir = await createLoopFixture();
+    const baseDir = join(designDir, "..");
+    try {
+      const files = await (await import("../../fs/reader.ts")).readMarkdownFiles(designDir);
+      const parsed = parseFiles(files);
+      const graph = buildGraph(parsed, join(designDir, "manifest.md"));
+      const addressed = extractAddressedTopics(parsed.frontmatters, graph);
+
+      // adr/0001-decision.md has topics: [[top-addressed-topic]]
+      expect(addressed.has("top-addressed-topic")).toBe(true);
+    } finally {
+      await rm(baseDir, { recursive: true });
+    }
+  });
+
+  it("does not include top-* IDs only referenced in ADR body text (not topics: frontmatter)", async () => {
+    const baseDir = await mkdtemp(join(tmpdir(), "aozu-addressed-body-"));
+    const designDir = join(baseDir, "design");
+    await mkdir(join(designDir, "static"), { recursive: true });
+    await mkdir(join(designDir, "topics"), { recursive: true });
+    await mkdir(join(designDir, "adr"), { recursive: true });
+
+    await writeFile(
+      join(designDir, "manifest.md"),
+      ["---", "format-version: 0", "enabled: static, loop", "---"].join("\n")
+    );
+    await writeFile(
+      join(designDir, "static", "modules.md"),
+      ["## App {#mod-app}", "責務: app", "実装: src/"].join("\n")
+    );
+    await writeFile(join(designDir, "static", "dependencies.md"), "# 許可依存\n");
+    await writeFile(
+      join(designDir, "topics", "body-only.md"),
+      ["---", "id: top-body-only", "---", "topic"].join("\n")
+    );
+
+    // ADR cites top-body-only in the BODY but NOT in topics: frontmatter
+    await writeFile(
+      join(designDir, "adr", "0001.md"),
+      [
+        "---",
+        "id: adr-0001-test",
+        "topics: [[top-nonexistent]]",
+        "---",
+        "# ADR",
+        "## Context",
+        "See [[top-body-only]] for background (body reference, not topics: frontmatter).",
+        "## Decision",
+        "done",
+        "## Consequences",
+        "none",
+      ].join("\n")
+    );
+
+    try {
+      const files = await (await import("../../fs/reader.ts")).readMarkdownFiles(designDir);
+      const parsed = parseFiles(files);
+      const graph = buildGraph(parsed, join(designDir, "manifest.md"));
+      const addressed = extractAddressedTopics(parsed.frontmatters, graph);
+
+      // top-body-only is only in the body, NOT in topics: frontmatter → NOT addressed
+      expect(addressed.has("top-body-only")).toBe(false);
+    } finally {
+      await rm(baseDir, { recursive: true });
+    }
+  });
+
+  it("handles frontmatter topics: as comma-separated list", async () => {
+    const baseDir = await mkdtemp(join(tmpdir(), "aozu-addressed-multi-"));
+    const designDir = join(baseDir, "design");
+    await mkdir(join(designDir, "static"), { recursive: true });
+    await mkdir(join(designDir, "topics"), { recursive: true });
+    await mkdir(join(designDir, "adr"), { recursive: true });
+
+    await writeFile(
+      join(designDir, "manifest.md"),
+      ["---", "format-version: 0", "enabled: static, loop", "---"].join("\n")
+    );
+    await writeFile(
+      join(designDir, "static", "modules.md"),
+      ["## App {#mod-app}", "責務: app", "実装: src/"].join("\n")
+    );
+    await writeFile(join(designDir, "static", "dependencies.md"), "# 許可依存\n");
+
+    for (const slug of ["topic-a", "topic-b"]) {
+      await writeFile(
+        join(designDir, "topics", `${slug}.md`),
+        ["---", `id: top-${slug}`, "---", "topic"].join("\n")
+      );
+    }
+
+    // ADR with comma-separated topics:
+    await writeFile(
+      join(designDir, "adr", "0001.md"),
+      [
+        "---",
+        "id: adr-0001-multi",
+        "topics: [[top-topic-a]], [[top-topic-b]]",
+        "---",
+        "# Multi-topic ADR",
+        "## Context",
+        "multiple topics",
+        "## Decision",
+        "done",
+        "## Consequences",
+        "none",
+      ].join("\n")
+    );
+
+    try {
+      const files = await (await import("../../fs/reader.ts")).readMarkdownFiles(designDir);
+      const parsed = parseFiles(files);
+      const graph = buildGraph(parsed, join(designDir, "manifest.md"));
+      const addressed = extractAddressedTopics(parsed.frontmatters, graph);
+
+      expect(addressed.has("top-topic-a")).toBe(true);
+      expect(addressed.has("top-topic-b")).toBe(true);
+    } finally {
+      await rm(baseDir, { recursive: true });
+    }
   });
 });
