@@ -81,7 +81,7 @@ const SRC_DIR = join(REPO_ROOT, "src");
  * Recursively collect non-test `.ts` files under `dir`.
  * Returns absolute paths of files whose names end with `.ts` but not `.test.ts`.
  */
-export async function collectNonTestTsFiles(dir: string): Promise<string[]> {
+async function collectNonTestTsFiles(dir: string): Promise<string[]> {
   const out: string[] = [];
   await _collectRec(dir, out);
   return out;
