@@ -79,3 +79,4 @@
 {"type":"step-attempt","step":"pr-create","sessionId":null,"outcome":{"verdict":"success","findingsPath":"specrunner/changes/prompt-propagate-review/pr-create-result.md","error":null,"toolResult":null,"followUpAttempts":0},"startedAt":"2026-07-03T12:47:25.985Z","endedAt":"2026-07-03T12:47:27.681Z"}
 {"type":"lineage","step":"pr-create","ts":"2026-07-03T12:47:27.681Z","outputs":[{"path":"specrunner/changes/prompt-propagate-review/pr-create-result.md","hash":"sha256:4408db97d6aed2d1f9a32b124bbb14e1108a6e490a945b53aa9cbdbcffda8298"}],"inputs":[{"path":"feat/prompt-propagate-review-0d8b8cc0","hash":null}]}
 {"type":"transition","ts":"2026-07-03T12:47:27.695Z","step":"pipeline","status":"ok","message":"running → awaiting-archive: pipeline complete"}
+{"type":"transition","ts":"2026-07-03T12:49:17.017Z","step":"archive","status":"ok","message":"awaiting-archive → archived: change archived"}

@@ -2,7 +2,7 @@
   "version": 2,
   "jobId": "0d8b8cc0-e0fe-4568-b218-e6ca8155a3d8",
   "createdAt": "2026-07-03T11:54:34.925Z",
-  "updatedAt": "2026-07-03T12:47:27.695Z",
+  "updatedAt": "2026-07-03T12:49:17.017Z",
   "request": {
     "title": "prompt propagate / prompt review を実装し、prompt 動詞群を完成させる",
     "type": "new-feature",
@@ -13,7 +13,7 @@
     "name": "aozu"
   },
   "step": "pr-create",
-  "status": "awaiting-archive",
+  "status": "archived",
   "branch": "feat/prompt-propagate-review-0d8b8cc0",
   "error": null,
   "pipelineId": "standard",
@@ -54,7 +54,7 @@
     "createdAt": "2026-07-03T12:47:27.680Z"
   },
   "_journal": {
-    "historyCount": 55,
+    "historyCount": 56,
     "stepCounts": {
       "request-review": 1,
       "design": 1,
