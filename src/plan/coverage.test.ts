@@ -291,6 +291,39 @@ describe("verifyCoverage — cross-group reference warning", () => {
     expect(result.warnings).toHaveLength(0);
   });
 
+  it("does not attribute a sibling element's reference in the same file (per-element attribution)", () => {
+    // modules.md declares mod-cli (line 3, in group A) and mod-other (line 7,
+    // ungrouped). The reference at line 9 belongs to mod-other's section, not
+    // mod-cli's. Without per-element attribution the warning would fire for
+    // mod-cli (same class as the C11 misattribution bug fixed in R7).
+    const graph = makeGraph(
+      [
+        { id: "mod-cli", prefix: "mod", file: "static/modules.md", line: 3 },
+        { id: "mod-other", prefix: "mod", file: "static/modules.md", line: 7 },
+        { id: "mod-core", prefix: "mod", file: "static/core.md", line: 3 },
+      ],
+      [
+        { targetId: "mod-core", file: "static/modules.md", line: 9 },
+      ]
+    );
+    const draftRefs = new Set(["mod-cli"]);
+    const stateMap: StateMap = {};
+
+    const groupGraph: GroupGraph = {
+      groupElements: new Map([
+        ["grp-group-a", new Set(["mod-cli"])],
+        ["grp-group-b", new Set(["mod-core"])],
+      ]),
+      afterEdges: new Set(),
+    };
+
+    const result = verifyCoverage(["mod-cli"], draftRefs, graph, stateMap, groupGraph);
+
+    // The cross-group reference belongs to mod-other, not mod-cli → no warning
+    expect(result.pass).toBe(true);
+    expect(result.warnings).toHaveLength(0);
+  });
+
   it("does not warn for references to elements not in any group", () => {
     // References to elements outside any group should not trigger cross-group warning
     const graph = makeGraph(

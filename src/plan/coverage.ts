@@ -13,6 +13,7 @@
 
 import type { Graph } from "../graph/types.ts";
 import type { StateMap } from "../state/types.ts";
+import { findOwningElement } from "../graph/attribution.ts";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -133,13 +134,20 @@ export function verifyCoverage(
     // Deduplicate warnings per (sourceElement, targetGroup) pair
     const warnedPairs = new Set<string>();
 
+    // For per-element attribution in multi-element files (same derivation the
+    // check rules and plan annotations use — do not attribute a sibling
+    // element's references to this element)
+    const allElements = [...graph.elements.values()];
+
     for (const elemId of groupElementIds) {
       const elem = graph.elements.get(elemId);
       if (!elem) continue;
 
-      // Get all references from this element's file
+      // Get references from this element's file, attributed to this element
       const refs = graph.references.bySource.get(elem.file) ?? [];
       for (const ref of refs) {
+        const owner = findOwningElement(allElements, ref.file, ref.line);
+        if (owner?.id !== elemId) continue;
         const refGroupId = elementToGroup.get(ref.targetId);
         if (refGroupId === undefined || refGroupId === targetGroupId) {
           // Not a cross-group reference
