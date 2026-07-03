@@ -29,6 +29,33 @@ describe("package.json", () => {
   });
 });
 
+describe("package.json — publish readiness (ci-and-publish)", () => {
+  it("private field is undefined (package is publishable)", async () => {
+    const pkgPath = join(import.meta.dir, "../package.json");
+    const pkg = await Bun.file(pkgPath).json();
+    expect(pkg.private).toBeUndefined();
+  });
+
+  it("version is 0.0.0 (release-please manages bumps)", async () => {
+    const pkgPath = join(import.meta.dir, "../package.json");
+    const pkg = await Bun.file(pkgPath).json();
+    expect(pkg.version).toBe("0.0.0");
+  });
+
+  it("engines.bun is defined", async () => {
+    const pkgPath = join(import.meta.dir, "../package.json");
+    const pkg = await Bun.file(pkgPath).json();
+    expect(pkg.engines).toBeDefined();
+    expect(pkg.engines.bun).toBeDefined();
+  });
+
+  it("files is defined", async () => {
+    const pkgPath = join(import.meta.dir, "../package.json");
+    const pkg = await Bun.file(pkgPath).json();
+    expect(pkg.files).toBeDefined();
+  });
+});
+
 describe("regression — TC-037 TC-052", () => {
   it("TC-037: pre-existing test files are present after adding init/scaffold/status", async () => {
     // This change adds 3 new test files (init.test.ts, scaffold.test.ts, status.test.ts).

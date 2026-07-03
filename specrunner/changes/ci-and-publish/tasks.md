@@ -2,14 +2,14 @@
 
 ## T-01: package.json を公開用に整備する
 
-- [ ] `private: true` を削除する
-- [ ] `description` を追加する: `"設計レイヤ CLI — 設計文書の閉包検証・差分計算・request 導出支援"`
-- [ ] `repository` を追加する: `{ "type": "git", "url": "git+https://github.com/color4pen/aozu.git" }`
-- [ ] `license` を追加する: `"MIT"`
-- [ ] `files` を追加する: `["src", "README.md", "LICENSE"]`
-- [ ] `engines` を追加する: `{ "bun": ">=1.3.14" }`
-- [ ] `version` が `"0.0.0"` のまま変更されていないことを確認する
-- [ ] `dependencies` が `{}` のまま変更されていないことを確認する
+- [x] `private: true` を削除する
+- [x] `description` を追加する: `"設計レイヤ CLI — 設計文書の閉包検証・差分計算・request 導出支援"`
+- [x] `repository` を追加する: `{ "type": "git", "url": "git+https://github.com/color4pen/aozu.git" }`
+- [x] `license` を追加する: `"MIT"`
+- [x] `files` を追加する: `["src", "README.md", "LICENSE"]`
+- [x] `engines` を追加する: `{ "bun": ">=1.3.14" }`
+- [x] `version` が `"0.0.0"` のまま変更されていないことを確認する
+- [x] `dependencies` が `{}` のまま変更されていないことを確認する
 
 **Acceptance Criteria**:
 - `private` フィールドが package.json に存在しない
@@ -21,8 +21,8 @@
 
 ## T-02: .npmignore を追加する
 
-- [ ] プロジェクトルートに `.npmignore` を作成する
-- [ ] 以下のパターンを記載する:
+- [x] プロジェクトルートに `.npmignore` を作成する
+- [x] 以下のパターンを記載する:
   - `**/*.test.ts` — テストファイルを除外
   - `design/` — 設計文書を除外
   - `specrunner/` — specrunner 関連を除外
@@ -38,6 +38,8 @@
   - `.specrunner/` — specrunner ローカル設定を除外
   - `.claude/` — Claude 設定を除外
 
+**Note**: `package.json` の `files` フィールドがある場合、npm は root の `.npmignore` を無視する（npm-packlist の仕様）。`src/` 内のテストファイル除外は `src/.npmignore` で実装している。
+
 **Acceptance Criteria**:
 - `.npmignore` が存在する
 - `npm pack --json` の出力に `*.test.ts` ファイルが含まれない
@@ -45,8 +47,8 @@
 
 ## T-03: LICENSE ファイルを追加する
 
-- [ ] プロジェクトルートに `LICENSE` を作成する（MIT License）
-- [ ] 年は `2026`、著作権者は `color4pen` とする
+- [x] プロジェクトルートに `LICENSE` を作成する（MIT License）
+- [x] 年は `2026`、著作権者は `color4pen` とする
 
 **Acceptance Criteria**:
 - `LICENSE` ファイルが存在する
@@ -55,10 +57,10 @@
 
 ## T-04: CI workflow を追加する
 
-- [ ] `.github/workflows/ci.yml` を作成する
-- [ ] トリガ: `push: branches: [main]` に `paths-ignore: ["specrunner/changes/**"]` を設定、`pull_request` も設定する
-- [ ] ジョブ `ci` を `ubuntu-latest` で定義する
-- [ ] ステップ:
+- [x] `.github/workflows/ci.yml` を作成する
+- [x] トリガ: `push: branches: [main]` に `paths-ignore: ["specrunner/changes/**"]` を設定、`pull_request` も設定する
+- [x] ジョブ `ci` を `ubuntu-latest` で定義する
+- [x] ステップ:
   1. `actions/checkout@v4`
   2. `oven-sh/setup-bun@v2`
   3. `bun install --frozen-lockfile`
@@ -75,7 +77,7 @@
 
 ## T-05: release-please の config と workflow を追加する
 
-- [ ] `release-please-config.json` を作成する:
+- [x] `release-please-config.json` を作成する:
   ```json
   {
     "packages": {
@@ -87,13 +89,13 @@
     }
   }
   ```
-- [ ] `.release-please-manifest.json` を作成する:
+- [x] `.release-please-manifest.json` を作成する:
   ```json
   {
     ".": "0.0.0"
   }
   ```
-- [ ] `.github/workflows/release-please.yml` を作成する:
+- [x] `.github/workflows/release-please.yml` を作成する:
   - トリガ: `push: branches: [main]`
   - permissions: `contents: write`, `pull-requests: write`
   - `google-github-actions/release-please-action@v4` を使用
@@ -109,7 +111,7 @@
 
 ## T-06: publish workflow を追加する
 
-- [ ] `.github/workflows/publish.yml` を作成する:
+- [x] `.github/workflows/publish.yml` を作成する:
   - トリガ: `push: tags: ["v*"]` + `workflow_dispatch`（手動再実行用、tag 入力あり）
   - permissions: `contents: read`, `id-token: write`（provenance 用）
   - ステップ:
@@ -128,8 +130,8 @@
 
 ## T-07: README に導入節を追加する
 
-- [ ] README.md の「使い方」セクション（`## 使い方`）の直前に「導入」セクション（`## 導入`）を追加する
-- [ ] 内容:
+- [x] README.md の「使い方」セクション（`## 使い方`）の直前に「導入」セクション（`## 導入`）を追加する
+- [x] 内容:
   - bun ランタイムが必須である旨
   - `bunx aozu`（npx 相当でインストール不要の実行）
   - `bun add -g aozu`（グローバルインストール）
@@ -141,16 +143,16 @@
 
 ## T-08: packaging smoke テストを追加する
 
-- [ ] `tests/packaging.test.ts` を作成する
-- [ ] **tarball 内容検証テスト**: `npm pack --json` を実行し、tarball のファイル一覧を検証する:
+- [x] `tests/packaging.test.ts` を作成する
+- [x] **tarball 内容検証テスト**: `npm pack --json` を実行し、tarball のファイル一覧を検証する:
   - `package.json` が含まれる
   - `README.md` が含まれる
   - `LICENSE` が含まれる
   - `src/cli/main.ts` が含まれる（bin エントリポイント）
   - `*.test.ts` ファイルが 1 つも含まれない
   - `design/` / `specrunner/` / `tools/` / `tests/` / `adr/` / `docs/` / `spec/` 配下のファイルが含まれない
-- [ ] **--help 動作検証テスト**: `npm pack` で tarball を生成し、一時ディレクトリに展開後、`bun <展開先>/src/cli/main.ts --help` が exit 0 になることを検証する
-- [ ] テスト実行後に生成した tarball と一時ディレクトリをクリーンアップする
+- [x] **--help 動作検証テスト**: `npm pack` で tarball を生成し、一時ディレクトリに展開後、`bun <展開先>/src/cli/main.ts --help` が exit 0 になることを検証する
+- [x] テスト実行後に生成した tarball と一時ディレクトリをクリーンアップする
 
 **Acceptance Criteria**:
 - `tests/packaging.test.ts` が存在する
@@ -160,8 +162,8 @@
 
 ## T-09: workflow YAML の grep テストを追加する
 
-- [ ] `tests/packaging.test.ts`（T-08 と同一ファイル）に workflow YAML の grep テストを追加する
-- [ ] `.github/workflows/ci.yml` の内容を読み込み、以下の 4 文字列が含まれることを検証する:
+- [x] `tests/packaging.test.ts`（T-08 と同一ファイル）に workflow YAML の grep テストを追加する
+- [x] `.github/workflows/ci.yml` の内容を読み込み、以下の 4 文字列が含まれることを検証する:
   - `tsc --noEmit`
   - `bun test`
   - `check --dir design`
@@ -173,12 +175,12 @@
 
 ## T-10: 既存テストの不変検証 + package.json の歯の追加
 
-- [ ] `src/package.test.ts` に以下のテストケースを **新規追加** する（既存テストは一切変更しない）:
+- [x] `src/package.test.ts` に以下のテストケースを **新規追加** する（既存テストは一切変更しない）:
   - `private` フィールドが `undefined` であること（公開パッケージとして `private` が削除されていること）
   - `version` が `"0.0.0"` であること（release-please に bump を委ねるため未変更であること）
   - `engines.bun` が定義されていること
   - `files` が定義されていること
-- [ ] 既存の 2 テスト（dependencies 空 / name + bin 定義）が無変更であることを確認する
+- [x] 既存の 2 テスト（dependencies 空 / name + bin 定義）が無変更であることを確認する
 
 **Acceptance Criteria**:
 - 新規テストケースが green
@@ -187,14 +189,14 @@
 
 ## T-11: 最終検証
 
-- [ ] `tsc --noEmit` が成功する
-- [ ] `bun test` が全テスト green（既存 607 件 + 新規テスト）
-- [ ] `bun src/cli/main.ts check --dir design` が exit 0
-- [ ] `bun src/cli/main.ts export rules --dir design --verify` が exit 0
-- [ ] `package.json` の `dependencies` が `{}` のまま
-- [ ] `package.json` の `version` が `"0.0.0"` のまま
-- [ ] `package.json` に `private` フィールドが存在しない
-- [ ] `src/package.test.ts` の既存の歯が無変更で green
+- [x] `tsc --noEmit` が成功する
+- [x] `bun test` が全テスト green（既存 607 件 + 新規テスト）
+- [x] `bun src/cli/main.ts check --dir design` が exit 0
+- [x] `bun src/cli/main.ts export rules --dir design --verify` が exit 0
+- [x] `package.json` の `dependencies` が `{}` のまま
+- [x] `package.json` の `version` が `"0.0.0"` のまま
+- [x] `package.json` に `private` フィールドが存在しない
+- [x] `src/package.test.ts` の既存の歯が無変更で green
 
 **Acceptance Criteria**:
 - `tsc --noEmit && bun test` が exit 0
