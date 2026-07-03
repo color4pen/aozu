@@ -78,3 +78,4 @@
 {"type":"step-attempt","step":"pr-create","sessionId":null,"outcome":{"verdict":"success","findingsPath":"specrunner/changes/coverage-and-mark/pr-create-result.md","error":null,"toolResult":null,"followUpAttempts":0},"startedAt":"2026-07-03T04:05:44.802Z","endedAt":"2026-07-03T04:05:46.774Z"}
 {"type":"lineage","step":"pr-create","ts":"2026-07-03T04:05:46.774Z","outputs":[{"path":"specrunner/changes/coverage-and-mark/pr-create-result.md","hash":"sha256:17d42f58d7c55583c291f36750645abe5511c3c9d86079dfac68f3ea8a1df219"}],"inputs":[{"path":"feat/coverage-and-mark-d444707d","hash":null}]}
 {"type":"transition","ts":"2026-07-03T04:05:46.782Z","step":"pipeline","status":"ok","message":"running → awaiting-archive: pipeline complete"}
+{"type":"transition","ts":"2026-07-03T04:09:48.541Z","step":"archive","status":"ok","message":"awaiting-archive → archived: change archived"}
