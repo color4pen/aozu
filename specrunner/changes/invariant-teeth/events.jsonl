@@ -17,3 +17,8 @@
 {"type":"transition","ts":"2026-07-03T00:14:02.899Z","step":"spec-review","status":"ok","message":"spec-review iteration 1 completed with verdict: approved"}
 {"type":"transition","ts":"2026-07-03T00:14:02.899Z","step":"step-transition","status":"ok","message":"spec-review → test-case-gen"}
 {"type":"transition","ts":"2026-07-03T00:14:02.902Z","step":"test-case-gen-started","status":"started","message":"Starting test-case-gen step"}
+{"type":"transition","ts":"2026-07-03T00:16:36.914Z","step":"test-case-gen-verdict","status":"ok","message":"test-case-gen verdict: success"}
+{"type":"step-attempt","step":"test-case-gen","sessionId":"ee5e7e50-6a28-4bfa-a650-70deddf32922","outcome":{"verdict":"success","findingsPath":null,"error":null,"toolResult":{"ok":true,"status":"success"},"followUpAttempts":1,"transientRetryAttempts":0},"startedAt":"2026-07-03T00:14:02.915Z","endedAt":"2026-07-03T00:16:35.695Z"}
+{"type":"lineage","step":"test-case-gen","ts":"2026-07-03T00:16:35.695Z","outputs":[{"path":"specrunner/changes/invariant-teeth/test-cases.md","hash":"sha256:21c9dc2143f374ab3a5d06bdf1a4c264f496c07545af2c373e71e39116d9437e"}],"inputs":[{"path":"specrunner/changes/invariant-teeth/design.md","hash":"sha256:3a4cf3e006e7f1d5f5b38ac28e1056f6f084896a205d98f14ffa6541ce64fb16"},{"path":"specrunner/changes/invariant-teeth/tasks.md","hash":"sha256:afea278815a39663aeaf6a75f3ead3497af3844572552b7e7c9ce050f7f62944"}]}
+{"type":"transition","ts":"2026-07-03T00:16:36.923Z","step":"step-transition","status":"ok","message":"spec-review complete → implementer (iter 1)"}
+{"type":"transition","ts":"2026-07-03T00:16:36.926Z","step":"implementer-started","status":"started","message":"Starting implementer step"}
