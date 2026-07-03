@@ -2,7 +2,7 @@
   "version": 2,
   "jobId": "d444707d-6558-4f41-bb66-0ae7cd638c3f",
   "createdAt": "2026-07-03T03:02:49.893Z",
-  "updatedAt": "2026-07-03T04:00:47.378Z",
+  "updatedAt": "2026-07-03T04:01:02.784Z",
   "request": {
     "title": "coverage / mark implemented を実装し、状態機械の書き込み経路を立てる",
     "type": "new-feature",
@@ -12,7 +12,7 @@
     "owner": "color4pen",
     "name": "aozu"
   },
-  "step": "regression-gate",
+  "step": "conformance",
   "status": "running",
   "branch": "feat/coverage-and-mark-d444707d",
   "error": null,
@@ -49,7 +49,7 @@
     }
   ],
   "_journal": {
-    "historyCount": 41,
+    "historyCount": 46,
     "stepCounts": {
       "request-review": 1,
       "design": 1,
@@ -59,7 +59,8 @@
       "verification": 1,
       "code-review": 1,
       "adversarial-consistency": 1,
-      "custom-reviewers": 1
+      "custom-reviewers": 1,
+      "regression-gate": 1
     }
   }
 }
