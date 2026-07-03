@@ -70,6 +70,15 @@ Examples: \`ent-order\`, \`inv-order-valid\`, \`mod-core\`, \`top-my-topic\`
 | plan   | Plan | loop |
 | grp    | Group (within plan) | loop |
 | adr    | Architecture Decision Record | always |
+| uc     | Use case | views |
+| scr    | Screen | views |
+| api    | API | views |
+| dat    | Data | views |
+| flow   | Dataflow | views |
+| evt    | Event | views |
+| ext    | External | views |
+| perm   | Permission | views |
+| dpl    | Deployment | views |
 
 ### Frontmatter convention
 
