@@ -49,6 +49,9 @@ enabled: static, domain, dynamic, loop, use-case
 ```
 
 - `enabled` は単一のリスト。層（static / domain / dynamic）、ループ（loop = topic・plan・state）、ビュー型を並べる
+- 任意キー（loop 有効時の導出設定）:
+  - `request-template`: 値がファイルパス（design dir からの相対）なら内容を、存在しなければシェルコマンドとして実行し stdout をテンプレートとして使用する
+  - `request-output-dir`: `prompt derive` が指示に含める草稿の出力先パス
 - 型の前提関係は次表を正とし、check（C7）が組み合わせの不正を検出する:
 
 | 型 | 前提 |

@@ -25,7 +25,7 @@
 実装: src/state/
 
 ## 導出 {#mod-plan}
-責務: plan の生成・coverage 検証・グループへの request 記録。
+責務: plan の生成・coverage 検証。
 実装: src/plan/
 
 ## 指示 {#mod-prompt}

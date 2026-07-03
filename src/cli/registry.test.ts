@@ -1,5 +1,9 @@
 import { describe, it, expect } from "bun:test";
 import { createRegistry, register, dispatch, helpText } from "./registry.ts";
+import { resolve } from "path";
+
+/** Absolute path to CLI entry point for subprocess tests. */
+const MAIN_TS = resolve(import.meta.dir, "main.ts");
 
 describe("createRegistry", () => {
   it("returns an empty registry", () => {
@@ -47,5 +51,24 @@ describe("helpText", () => {
     const text = helpText(r);
     expect(text).toContain("aozu");
     expect(text).toContain("command");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// TC-043: aozu --help lists plan and prompt (subprocess)
+// ---------------------------------------------------------------------------
+
+describe("aozu --help (TC-043)", () => {
+  it("lists 'plan' and 'prompt' commands in --help output", async () => {
+    const proc = Bun.spawn(["bun", MAIN_TS, "--help"], {
+      stdout: "pipe",
+      stderr: "pipe",
+    });
+    const exitCode = await proc.exited;
+    // main.ts writes help to stderr and exits 0
+    const stderr = await new Response(proc.stderr).text();
+    expect(exitCode).toBe(0);
+    expect(stderr).toContain("plan");
+    expect(stderr).toContain("prompt");
   });
 });

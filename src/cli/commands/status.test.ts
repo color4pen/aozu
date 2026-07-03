@@ -218,6 +218,36 @@ describe("computeFrontier — designed elements", () => {
     }
   });
 
+  it("includes act elements in the designed frontier (ADR-0015 × ADR-0005)", async () => {
+    const designDir = await createLoopFixture();
+    const baseDir = join(designDir, "..");
+    try {
+      // Add an actor — a first-class domain element that must participate in
+      // the state machine like any other element.
+      await writeFile(
+        join(designDir, "domain", "actors.md"),
+        [
+          "# アクター",
+          "",
+          "## 営業 {#act-sales}",
+          "受注の入力に責任を持つ。",
+        ].join("\n")
+      );
+
+      const files = await (await import("../../fs/reader.ts")).readMarkdownFiles(designDir);
+      const parsed = parseFiles(files);
+      const manifestPath = join(designDir, "manifest.md");
+      const manifest = parseManifest(parsed.frontmatters, manifestPath);
+      const graph = buildGraph(parsed, manifestPath);
+
+      const frontier = computeFrontier(graph, {}, manifest, parsed.frontmatters);
+
+      expect(frontier.designed).toContain("act-sales");
+    } finally {
+      await rm(baseDir, { recursive: true });
+    }
+  });
+
   it("excludes elements with state: requested or implemented", async () => {
     const designDir = await createLoopFixture();
     const baseDir = join(designDir, "..");
