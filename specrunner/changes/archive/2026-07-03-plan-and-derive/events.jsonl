@@ -223,3 +223,4 @@
 {"type":"step-attempt","step":"pr-create","sessionId":null,"outcome":{"verdict":"success","findingsPath":"specrunner/changes/plan-and-derive/pr-create-result.md","error":null,"toolResult":null,"followUpAttempts":0},"startedAt":"2026-07-03T02:54:29.012Z","endedAt":"2026-07-03T02:54:31.154Z"}
 {"type":"lineage","step":"pr-create","ts":"2026-07-03T02:54:31.154Z","outputs":[{"path":"specrunner/changes/plan-and-derive/pr-create-result.md","hash":"sha256:ab2d274febf41fb4fd17bbcaca64305a140f823acecfb8f143d3218dc5607309"}],"inputs":[{"path":"feat/plan-and-derive-89603d5d","hash":null}]}
 {"type":"transition","ts":"2026-07-03T02:54:31.164Z","step":"pipeline","status":"ok","message":"running → awaiting-archive: pipeline complete"}
+{"type":"transition","ts":"2026-07-03T02:57:21.638Z","step":"archive","status":"ok","message":"awaiting-archive → archived: change archived"}
