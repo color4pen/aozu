@@ -88,9 +88,19 @@ When `request-template` is a path to an existing file, derive SHALL read that fi
 **When** `aozu prompt derive --group grp-test --dir <path>` is executed
 **Then** stdout contains `template from command` between template delimiters
 
+### Requirement: derive SHALL fail with exit 1 when loop is not enabled
+
+When loop is not enabled in the manifest, derive SHALL return exit 1 with a diagnostic on stderr. This mirrors the same gate applied to `plan` (see plan's fail-closed requirement above); both commands treat loop-not-enabled as a stage-gate failure (前提条件未充足) rather than a configuration-input error.
+
+#### Scenario: derive rejects when loop is not enabled
+
+**Given** a design directory with `enabled: static, domain, dynamic` (no loop)
+**When** `aozu prompt derive --group grp-test --dir <path>` is executed
+**Then** exit code is 1 and stderr contains a message about loop being required
+
 ### Requirement: derive SHALL fail with exit 2 for missing configuration or invalid input
 
-Derive SHALL return exit 2 with diagnostic on stderr for: (a) loop not enabled, (b) `request-template` missing from manifest, (c) `request-output-dir` missing from manifest, (d) plan file not found, (e) specified group ID not found in any plan, (f) group elements that do not resolve to existing elements in the graph.
+Derive SHALL return exit 2 with diagnostic on stderr for: (a) `request-template` missing from manifest, (b) `request-output-dir` missing from manifest, (c) plan file not found, (d) specified group ID not found in any plan, (e) group elements that do not resolve to existing elements in the graph.
 
 #### Scenario: derive rejects when request-template is missing
 
@@ -115,12 +125,6 @@ Derive SHALL return exit 2 with diagnostic on stderr for: (a) loop not enabled, 
 **Given** a design directory with a plan file but no group matching `grp-nonexistent`
 **When** `aozu prompt derive --group grp-nonexistent --dir <path>` is executed
 **Then** exit code is 2 and stderr contains a diagnostic about group not found
-
-#### Scenario: derive rejects when loop is not enabled
-
-**Given** a design directory with `enabled: static, domain, dynamic` (no loop)
-**When** `aozu prompt derive --group grp-test --dir <path>` is executed
-**Then** exit code is 2 and stderr contains a message about loop being required
 
 #### Scenario: derive rejects when group elements do not resolve
 
