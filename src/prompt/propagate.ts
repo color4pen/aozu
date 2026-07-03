@@ -1,50 +1,42 @@
 /**
- * Session instruction builder (mod-prompt).
+ * Propagate instruction builder (mod-prompt).
  *
- * Assembles the instruction text that injects context for a design session
- * starting from a topic. The instruction is a pure function of the inputs;
- * the caller (mod-cli) handles all I/O (reading files, writing to stdout).
+ * Assembles the instruction text that tells a consumer how to reflect an ADR
+ * decision across all relevant design layers. The instruction is a pure function
+ * of the inputs; the caller (mod-cli) handles all I/O.
  *
- * ADR-0008: `prompt session` is a prompt verb — writes nothing, outputs to stdout.
- * Injection scope follows the rule in docs/open-questions.md §8 (initial version):
- *   - Topic body
- *   - Seed elements (topic's [[id]] citations) + 2-hop neighborhood, body in full
+ * ADR-0008: `prompt propagate` is a prompt verb — writes nothing, outputs to stdout.
+ * Injection scope follows ADR-0019 rules applied to an ADR as the starting point:
+ *   - ADR body (id + topics frontmatter)
+ *   - Seed elements (ADR [[id]] citations) + 2-hop neighborhood, body in full
  *   - inv / term: always full
  *   - static mod: heading + 責務: line only (condensed)
  *   - manifest enabled list
  *   - Format rules summary
- *   - Session guidance
+ *   - Propagation guidance
+ *
+ * No loop gate: ADR is an always-layer type (C11). propagate succeeds regardless
+ * of whether `loop` is in the manifest enabled list.
  */
 
 // ---------------------------------------------------------------------------
-// Constants (re-exported from shared.ts for backward compatibility)
+// Constants
 // ---------------------------------------------------------------------------
-
-// SESSION_MAX_HOPS and FORMAT_RULES_SUMMARY have been moved to shared.ts
-// (renamed to SCOPE_MAX_HOPS) so propagate and review can share them.
-// Re-export here under the original names so existing imports are not broken.
-export { SCOPE_MAX_HOPS as SESSION_MAX_HOPS, FORMAT_RULES_SUMMARY } from "./shared.ts";
 
 /**
- * Session guidance injected at the end of every session instruction.
- * Tells the agent how to conduct the design session.
+ * Guidance injected at the end of every propagate instruction.
+ * Tells the consumer how to reflect the ADR decision across design layers.
  */
-export const SESSION_GUIDANCE = `\
-Follow these conventions for the design session:
+export const PROPAGATE_GUIDANCE = `\
+Follow these steps to propagate the ADR decision across the design:
 
-1. **Create new elements with scaffold**: Use \`aozu scaffold <prefix> <slug>\` to create new design elements with the correct file structure and frontmatter.
+1. **Reflect the decision in all relevant design layers**: Read the ADR body above and identify which design elements in the corpus need to be updated or created to be consistent with this decision. Update each element's body so that it aligns with the decision.
 
-2. **Run check while editing**: Run \`aozu check\` frequently to verify that all references resolve, IDs are valid, and closures are satisfied. Fix check errors before proceeding.
+2. **Run \`aozu check\` after each change**: After every modification, run \`aozu check\` to verify that all references resolve, IDs are valid, and closures are satisfied. Fix any check errors before proceeding to the next element.
 
-3. **Record decisions in ADRs**: When a significant design decision is made, record it as an ADR using \`aozu scaffold adr <slug>\`. ADRs capture the decision, alternatives considered, and rationale.
+3. **Cite changed elements with \`[[id]]\`**: When referencing a design element in your changes, use \`[[id]]\` notation. This declares coverage and is verified by \`aozu check\`.
 
-4. **Address topics via ADR citation**: A topic is considered addressed when an ADR's frontmatter references it via the \`topics:\` key (ADR-0018). Example:
-   \`\`\`
-   ---
-   id: adr-0042
-   topics: top-my-topic
-   ---
-   \`\`\`\
+4. **Completion condition**: Propagation is complete when \`aozu check\` exits with code 0 AND the decision described in the ADR is consistent across all affected design layers. Both conditions must hold.\
 `;
 
 // ---------------------------------------------------------------------------
@@ -52,16 +44,16 @@ Follow these conventions for the design session:
 // ---------------------------------------------------------------------------
 
 /**
- * All inputs needed to build a session instruction text.
+ * All inputs needed to build a propagate instruction text.
  */
-export interface SessionInput {
-  /** Topic element ID (e.g. "top-my-topic"). */
-  topicId: string;
-  /** Topic body text (frontmatter excluded; source information should appear in the body). */
-  topicBody: string;
-  /** Seed element bodies: elements directly cited by [[id]] in the topic body. */
+export interface PropagateInput {
+  /** ADR element ID (e.g. "adr-0019"). */
+  adrId: string;
+  /** ADR body text (frontmatter excluded). */
+  adrBody: string;
+  /** Seed element bodies: elements directly cited by [[id]] in the ADR body. */
   seedBodies: Map<string, string>;
-  /** 2-hop neighborhood element bodies: reachable from seed elements within SESSION_MAX_HOPS hops. */
+  /** 2-hop neighborhood element bodies: reachable from seed elements within SCOPE_MAX_HOPS hops. */
   neighborBodies: Map<string, string>;
   /** Combined text of all term and inv elements (pre-formatted by caller). */
   termsAndInvariants: string;
@@ -71,8 +63,8 @@ export interface SessionInput {
   enabledLayers: string[];
   /** Format rules summary text. */
   formatRulesSummary: string;
-  /** Session guidance text. */
-  sessionGuidance: string;
+  /** Propagation guidance text. */
+  propagateGuidance: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -80,38 +72,39 @@ export interface SessionInput {
 // ---------------------------------------------------------------------------
 
 /**
- * Build the session instruction text from the given inputs.
+ * Build the propagate instruction text from the given inputs.
  *
  * Assembles 8 sections:
- *   1. Topic (id + body)
- *   2. Seed Element Bodies (direct [[id]] citations in the topic)
+ *   1. ADR (id + body)
+ *   2. Seed Element Bodies (direct [[id]] citations in the ADR)
  *   3. Neighborhood Element Bodies (2-hop from seeds)
  *   4. Terms and Invariants (always full)
  *   5. Static Modules (condensed: heading + 責務: line)
  *   6. Enabled Layers (from manifest)
- *   7. Format Rules (summary of declaration / reference / ID / type / frontmatter rules)
- *   8. Session Guidance (how to conduct the session)
+ *   7. Format Rules (summary)
+ *   8. Propagation Guidance (how to reflect the decision)
  *
  * Output is deterministic: same input → byte-identical output.
+ * Map iteration order is determined by the caller (IDs must be sorted before passing).
  *
  * @param input  All materials needed to build the instruction.
  * @returns      Instruction text string (ready for stdout).
  */
-export function buildSessionInstruction(input: SessionInput): string {
+export function buildPropagateInstruction(input: PropagateInput): string {
   const parts: string[] = [];
 
-  parts.push("# Design Session Instruction");
+  parts.push("# ADR Propagation Instruction");
   parts.push("");
 
-  // --- Section 1: Topic ---
-  parts.push("## Topic");
+  // --- Section 1: ADR ---
+  parts.push("## ADR");
   parts.push("");
-  parts.push(`Topic ID: ${input.topicId}`);
+  parts.push(`ADR ID: ${input.adrId}`);
   parts.push("");
-  if (input.topicBody.trim() !== "") {
-    parts.push(input.topicBody.trim());
+  if (input.adrBody.trim() !== "") {
+    parts.push(input.adrBody.trim());
   } else {
-    parts.push("(no topic body)");
+    parts.push("(no ADR body)");
   }
   parts.push("");
 
@@ -119,7 +112,7 @@ export function buildSessionInstruction(input: SessionInput): string {
   parts.push("## Seed Element Bodies");
   parts.push("");
   if (input.seedBodies.size === 0) {
-    parts.push("(no seed elements — topic has no [[id]] citations)");
+    parts.push("(no seed elements — ADR has no [[id]] citations)");
     parts.push("");
   } else {
     for (const [id, body] of input.seedBodies) {
@@ -189,10 +182,10 @@ export function buildSessionInstruction(input: SessionInput): string {
   parts.push(input.formatRulesSummary.trim());
   parts.push("");
 
-  // --- Section 8: Session Guidance ---
-  parts.push("## Session Guidance");
+  // --- Section 8: Propagation Guidance ---
+  parts.push("## Propagation Guidance");
   parts.push("");
-  parts.push(input.sessionGuidance.trim());
+  parts.push(input.propagateGuidance.trim());
   parts.push("");
 
   return parts.join("\n");
