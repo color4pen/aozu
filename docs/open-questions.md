@@ -59,18 +59,18 @@ v0 draft を起草済み（`spec/format.md`）。ID 文法・宣言/参照構文
 | 対象 | 検証するもの | 位置づけ |
 |---|---|---|
 | 本ツール自身 | 文法が回るか（ID・参照・check・self-hosting の閉包） | **完了**: `design/` に static + domain + dynamic を自己記述（初版 25 要素、mod-fsread 追加で現在 26）。閉包検証の成立を確認。発見（コード内参照の除外・term/ent 重複・層間参照方向 C11・アクター問題）は仕様 v0 に還流済み |
-| 業務 SaaS（ドメイン・画面・ユースケース・権限を持つ Web アプリ。実装パイプライン適用済み） | 粒度（ADR-0017 で決着）とフルループ（topic → 設計 → plan → request → run → implemented）の一周 | **書き起こしは完了**（2026-07-02、経緯ゼロの別 agent が実施）: 69 要素・check exit 0。findings 11 件は docs/findings/clearflow-2026-07-02.md。**フルループの一周は未検証**（loop 動詞が未実装のため） |
+| 業務 SaaS（ドメイン・画面・ユースケース・権限を持つ Web アプリ。実装パイプライン適用済み） | 粒度（ADR-0017 で決着）とフルループ（topic → 設計 → plan → request → run → implemented）の一周 | **書き起こしは完了**（2026-07-02、経緯ゼロの別 agent が実施）: 69 要素・check exit 0。findings 11 件は docs/findings/clearflow-2026-07-02.md。loop 動詞は実装済み（PR #9 / #10）で合成 fixture での一周（plan → derive → coverage → mark → フロンティア空）は検証済み。**実地のフルループ一周が未検証**（clearflow の design/ commit が前提） |
 | 実装パイプラインプロジェクト自身 | 段階①の in-place 形式化（ADR-0010）。architecture フォルダへの ID 付与と rules export への差し替え | 最小プロファイルの検証。範囲が小さいので時期は柔軟 |
 
-残: 実装パイプラインプロジェクトでの段階①検証と、loop 動詞実装後のフルループ一周検証。
+残: 実装パイプラインプロジェクトでの段階①検証と、clearflow でのフルループ一周の実地検証。
 
 ## 11. 実装への敵対的検証（アプリの穴）
 
 検証が設計記録の整合に偏っており、実装への横断的な敵対検証が per-request レビュー任せになっている。三層で対応する:
 
-1. **既知の実装穴の修正**（即応）: 未知 prefix 参照の fail-open（実証済み: `[[zzz-typo]]` が無診断通過）と C11 診断の要素帰属バグ（複数要素ファイルでファイル先頭要素に誤帰属）→ bug-fix request で修正
+1. ~~**既知の実装穴の修正**~~ — **完了**（PR #7）: 未知 prefix 参照の fail-open と C11 診断の要素帰属バグを修正。帰属導出は src/graph/attribution.ts に一元化済み（PR #9 で graph へ移設）
 2. **仕様適合の反証定型**（未作成）: `docs/review/adversarial-conformance.md` — spec/format.md・integration.md の各節に対し「実装がそれを破る入力」を構成・実行して findings にする。設計記録用の定型と同じ三殻（subagent / takt / spec-runner reviewer）で運用
-3. **aozu 自身の不変条件の歯**: 現在の歯は依存構造のみで狭い（findings-takt #7 の指摘どおり）。design/domain/invariants.md の inv-*（決定的 verdict・状態はツールのみが書く・fail-closed 等）を grep ベースの architecture test に落とす。実装パイプラインプロジェクトの core-invariants と同じパターン
+3. ~~**aozu 自身の不変条件の歯**~~ — **完了**（PR #8）: tests/invariants.test.ts に inv 5 本の対応表（機械検証つき）と grep の歯 3 本（state 書き込み封じ・参照文法一元・verdict 決定性）。inv-immutable-id のみ mod-diff 実装まで機械化不能として記録
 
 ## 10. 業務系ドッグフーディングの設計課題（clearflow findings より）
 

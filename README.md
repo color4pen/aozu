@@ -98,7 +98,7 @@ bun add -g aozu
 
 実装中。動詞の実装状況:
 
-- **実装済み**: `init` / `scaffold` / `check`（`--request` 含む）/ `status` / `export rules`（`--verify` 含む）
-- **未実装**: `diff` / `trace` / prompt 4 種 / `plan` / `coverage` / `mark implemented`（loop 動詞。フルループ一周の検証はこれ待ち）
+- **実装済み**: `init` / `scaffold` / `check`（`--request` 含む）/ `status` / `export rules`（`--verify` 含む）/ `plan` / `prompt derive` / `coverage` / `mark implemented`
+- **未実装**: `diff` / `trace` / `prompt session` / `prompt propagate` / `prompt review`
 
-検証状況: 自己記述ドッグフード（design/ 26 要素）と業務 SaaS の書き起こし（74 要素）で check exit 0。既知の実装穴（未知 prefix の fail-open・C11 誤帰属）は修正済み（PR #7）。
+検証状況: 自己記述ドッグフード（design/ 26 要素）と業務 SaaS の書き起こし（74 要素）で check exit 0。状態機械の一周（plan → derive → coverage → mark → フロンティア空）は合成 fixture で検証済み。不変条件の歯は tests/invariants.test.ts（PR #8）。実地のフルループ検証と publish（CI + npm）が残り。
