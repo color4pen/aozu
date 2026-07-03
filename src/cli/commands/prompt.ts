@@ -1,22 +1,23 @@
 /**
  * `prompt` command handler.
  *
- * Currently supports one sub-command:
- *   prompt derive --group <grp-id> [--dir <path>]
+ * Supports two sub-commands:
+ *   prompt derive  --group <grp-id>  [--dir <path>]
+ *   prompt session --topic <top-id>  [--dir <path>]
  *
- * `prompt derive` writes nothing to the filesystem; it outputs the derive
- * instruction text to stdout (ADR-0008 — prompt verb semantics).
+ * Both verbs write nothing to the filesystem; they output instruction text to
+ * stdout (ADR-0008 — prompt verb semantics).
  *
- * Template and output-dir configuration is injected via manifest frontmatter
+ * `prompt derive` configuration is injected via manifest frontmatter
  * (ADR-0012 — consumer-agnostic derivation):
  *   request-template:    file path (relative to design dir) or shell command
  *   request-output-dir:  output directory path for the generated draft
  *
- * Exit codes:
+ * Exit codes (both verbs):
  *   0 = instruction text written to stdout
  *   1 = stage-gate failure (loop disabled — ADR-0010 explicit error, same class as `plan`)
- *   2 = input error or configuration error (missing config / plan not found /
- *       group not found / unresolved elements)
+ *   2 = input error or configuration error (missing design dir / element not found /
+ *       missing required argument)
  */
 
 import { join, resolve } from "path";
@@ -26,9 +27,16 @@ import { parseFiles } from "../../parse/parser.ts";
 import { parseManifest, isLayerEnabled } from "../../check/manifest.ts";
 import { buildGraph } from "../../graph/builder.ts";
 import { findOwningElement } from "../../graph/attribution.ts";
-import { extractAllBodies } from "../../graph/body.ts";
+import { extractAllBodies, extractElementBody } from "../../graph/body.ts";
 import { computeNeighborhood } from "../../graph/neighborhood.ts";
 import { buildDeriveInstruction } from "../../prompt/derive.ts";
+import {
+  buildSessionInstruction,
+  SESSION_MAX_HOPS,
+  FORMAT_RULES_SUMMARY,
+  SESSION_GUIDANCE,
+} from "../../prompt/session.ts";
+import { extractReferences } from "../../parse/references.ts";
 import type { Element } from "../../graph/index.ts";
 
 // ---------------------------------------------------------------------------
@@ -53,7 +61,8 @@ async function dirExists(path: string): Promise<boolean> {
  * Handle the `prompt` command.
  *
  * Dispatches to sub-command handlers:
- *   - `derive`: generate a derive instruction for a plan group
+ *   - `derive`:  generate a derive instruction for a plan group
+ *   - `session`: start a design session for a topic
  */
 export async function handlePrompt(args: string[]): Promise<number> {
   if (args.includes("--help") || args.includes("-h")) {
@@ -62,9 +71,10 @@ export async function handlePrompt(args: string[]): Promise<number> {
         "Usage: aozu prompt <subcommand> [options]",
         "",
         "Sub-commands:",
-        "  derive  Generate a derive instruction for a plan group",
+        "  derive   Generate a derive instruction for a plan group",
+        "  session  Start a design session for a topic",
         "",
-        "Run 'aozu prompt derive --help' for details.",
+        "Run 'aozu prompt derive --help' or 'aozu prompt session --help' for details.",
         "",
         "Exit codes: 0 = success / 1 = loop disabled / 2 = input or configuration error",
       ].join("\n") + "\n"
@@ -75,7 +85,7 @@ export async function handlePrompt(args: string[]): Promise<number> {
   const subcommand = args[0];
   if (!subcommand) {
     process.stderr.write(
-      "ERROR INPUT - missing subcommand\nUsage: aozu prompt <subcommand> [options]\nAvailable: derive\n"
+      "ERROR INPUT - missing subcommand\nUsage: aozu prompt <subcommand> [options]\nAvailable: derive, session\n"
     );
     return 2;
   }
@@ -84,8 +94,12 @@ export async function handlePrompt(args: string[]): Promise<number> {
     return handleDerive(args.slice(1));
   }
 
+  if (subcommand === "session") {
+    return handleSession(args.slice(1));
+  }
+
   process.stderr.write(
-    `ERROR INPUT - unknown subcommand: "${subcommand}"\nAvailable subcommands: derive\n`
+    `ERROR INPUT - unknown subcommand: "${subcommand}"\nAvailable subcommands: derive, session\n`
   );
   return 2;
 }
@@ -274,6 +288,180 @@ export async function handleDerive(args: string[]): Promise<number> {
     termsAndInvariants,
     templateContent,
     outputDir,
+  });
+
+  // Write to stdout (no file I/O)
+  process.stdout.write(instruction);
+  return 0;
+}
+
+// ---------------------------------------------------------------------------
+// `prompt session` handler
+// ---------------------------------------------------------------------------
+
+/**
+ * Handle `prompt session --topic <top-id> [--dir <path>]`.
+ *
+ * Reads the design directory, finds the topic, collects the injection scope
+ * (topic body, seed + 2-hop neighborhood bodies, inv/term full, static mod
+ * condensed, manifest enabled list, format rules summary, session guidance),
+ * then writes the instruction to stdout. Never writes to the filesystem.
+ *
+ * Injection scope rules (docs/open-questions.md §8 initial implementation):
+ *   - seed = topic body's [[id]] citations, filtered to existing elements
+ *   - neighborhood = in/out SESSION_MAX_HOPS hops from seeds
+ *   - inv/term: always full (all elements in the graph)
+ *   - mod: condensed — heading + 責務: line only
+ *   - manifest enabled list, format rules summary, session guidance: always injected
+ *
+ * Exit codes: 0 = success / 1 = loop disabled / 2 = input or design error
+ */
+export async function handleSession(args: string[]): Promise<number> {
+  if (args.includes("--help") || args.includes("-h")) {
+    process.stderr.write(
+      [
+        "Usage: aozu prompt session --topic <top-id> [--dir <path>]",
+        "",
+        "Start a design session for a topic.",
+        "",
+        "Outputs an instruction text to stdout with the full injection scope:",
+        "  - Topic body",
+        "  - Seed elements (topic [[id]] citations) + 2-hop neighborhood, body in full",
+        "  - inv / term: always full",
+        "  - static mod: heading + 責務: line (condensed)",
+        "  - manifest enabled list, format rules summary, session guidance",
+        "",
+        "No files are written. No design dir mutations.",
+        "",
+        "Options:",
+        "  --topic <top-id>  Topic element ID (required)",
+        "  --dir <path>      Design directory (default: ./design)",
+        "  -h, --help        Show this help",
+        "",
+        "Exit codes: 0 = success / 1 = loop disabled / 2 = input or design error",
+      ].join("\n") + "\n"
+    );
+    return 0;
+  }
+
+  // Parse --topic
+  const topicIdx = args.indexOf("--topic");
+  const topicId = topicIdx >= 0 ? args[topicIdx + 1] : undefined;
+  if (!topicId) {
+    process.stderr.write(
+      "ERROR INPUT - missing --topic argument\nUsage: aozu prompt session --topic <top-id> [--dir <path>]\n"
+    );
+    return 2;
+  }
+
+  // Parse --dir
+  const dirIdx = args.indexOf("--dir");
+  const designDir = dirIdx >= 0 ? (args[dirIdx + 1] ?? "./design") : "./design";
+
+  // Design directory must exist
+  if (!(await dirExists(designDir))) {
+    process.stderr.write(`ERROR INPUT - design directory not found: ${designDir}\n`);
+    return 2;
+  }
+
+  // Build pipeline
+  const files = await readMarkdownFiles(designDir);
+  const parsed = parseFiles(files);
+  const manifestPath = join(designDir, "manifest.md");
+  const manifest = parseManifest(parsed.frontmatters, manifestPath);
+  const graph = buildGraph(parsed, manifestPath);
+
+  // Stage gate: loop must be enabled
+  if (!isLayerEnabled("loop", manifest)) {
+    process.stderr.write(
+      [
+        "ERROR - loop layer is not enabled in manifest.",
+        "Add 'loop' to the enabled list in design/manifest.md:",
+        "  enabled: static, domain, dynamic, loop",
+        "prompt session requires loop to be enabled.",
+      ].join("\n") + "\n"
+    );
+    return 1;
+  }
+
+  // Find and validate the topic element
+  const topicEl = graph.elements.get(topicId);
+  if (!topicEl || topicEl.prefix !== "top") {
+    process.stderr.write(
+      `ERROR INPUT - topic not found: "${topicId}"\n` +
+        `Check that a topic with this ID exists in ${join(designDir, "topics")}\n`
+    );
+    return 2;
+  }
+
+  // Extract topic body (content after frontmatter)
+  const topicBody = extractElementBody(topicId, graph, files) ?? "";
+
+  // Extract seed IDs from [[id]] citations in the topic body
+  const topicFile = topicEl.file;
+  const rawRefs = extractReferences(topicBody, topicFile);
+  const seedIdSet = new Set<string>();
+  for (const ref of rawRefs) {
+    // Only include IDs that exist in the graph
+    if (graph.elements.has(ref.targetId)) {
+      seedIdSet.add(ref.targetId);
+    }
+  }
+  const seedIds = [...seedIdSet].sort();
+
+  // Extract seed bodies
+  const seedBodies = extractAllBodies(seedIds, graph, files);
+
+  // Compute 2-hop neighborhood (excludes seeds themselves)
+  const neighborIdSet = computeNeighborhood(seedIds, graph, SESSION_MAX_HOPS);
+  const sortedNeighborIds = [...neighborIdSet].sort();
+
+  // Extract neighbor bodies
+  const neighborBodies = extractAllBodies(sortedNeighborIds, graph, files);
+
+  // Collect term/inv bodies (always full, all elements in graph)
+  const termInvIds = [...graph.elements.keys()]
+    .filter((id) => {
+      const prefix = graph.elements.get(id)?.prefix;
+      return prefix === "term" || prefix === "inv";
+    })
+    .sort();
+  const termInvBodies = extractAllBodies(termInvIds, graph, files);
+  const termsAndInvariants = termInvIds
+    .map((id) => {
+      const body = termInvBodies.get(id);
+      return `### ${id}\n${body?.trim() ?? "(body not available)"}`;
+    })
+    .join("\n\n");
+
+  // Collect static mod condensed summary (heading + 責務: line only)
+  const modIds = [...graph.elements.keys()]
+    .filter((id) => graph.elements.get(id)?.prefix === "mod")
+    .sort();
+  const staticModulesSummary = modIds
+    .map((id) => {
+      const body = extractElementBody(id, graph, files) ?? "";
+      const dutyLine = body
+        .split("\n")
+        .find((line) => line.trimStart().startsWith("責務:"));
+      if (dutyLine) {
+        return `### ${id}\n${dutyLine.trim()}`;
+      }
+      return `### ${id}\n(no 責務: line found)`;
+    })
+    .join("\n\n");
+
+  // Build the session instruction
+  const instruction = buildSessionInstruction({
+    topicId,
+    topicBody,
+    seedBodies,
+    neighborBodies,
+    termsAndInvariants,
+    staticModulesSummary,
+    enabledLayers: manifest.enabled,
+    formatRulesSummary: FORMAT_RULES_SUMMARY,
+    sessionGuidance: SESSION_GUIDANCE,
   });
 
   // Write to stdout (no file I/O)
