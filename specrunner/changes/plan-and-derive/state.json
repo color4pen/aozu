@@ -2,7 +2,7 @@
   "version": 2,
   "jobId": "89603d5d-0d9c-4dce-8fa1-7efabd67a7f5",
   "createdAt": "2026-07-02T23:55:23.481Z",
-  "updatedAt": "2026-07-03T00:30:45.097Z",
+  "updatedAt": "2026-07-03T00:36:38.084Z",
   "request": {
     "title": "plan / prompt derive を実装し、designed 要素から request 草稿までの導出経路を立てる",
     "type": "new-feature",
@@ -12,7 +12,7 @@
     "owner": "color4pen",
     "name": "aozu"
   },
-  "step": "test-case-gen",
+  "step": "implementer",
   "status": "running",
   "branch": "feat/plan-and-derive-89603d5d",
   "error": null,
@@ -34,12 +34,13 @@
     }
   ],
   "_journal": {
-    "historyCount": 21,
+    "historyCount": 24,
     "stepCounts": {
       "request-review": 1,
       "design": 1,
       "spec-review": 2,
-      "spec-fixer": 1
+      "spec-fixer": 1,
+      "test-case-gen": 1
     }
   }
 }

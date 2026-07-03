@@ -13,3 +13,6 @@ export { validateId, extractPrefix, KNOWN_PREFIXES } from "../parse/id.ts";
 
 // Re-export parse types so consumers can import via graph without depending on parse directly
 export type { ParseResult, Element, FileInput } from "../parse/types.ts";
+
+// Re-export attribution utility so mod-plan / mod-prompt can use it via mod-graph
+export { findOwningElement } from "./attribution.ts";
