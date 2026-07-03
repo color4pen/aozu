@@ -1,6 +1,6 @@
 # Verification Result — plan-and-derive — iter 1
 
-## Verdict: passed
+## Verdict: failed
 
 ## Phase Results
 
@@ -11,7 +11,7 @@
 | 3 | test | skipped | — | — |
 | 4 | lint | skipped | — | — |
 | 5 | security | skipped | — | — |
-| 6 | test-coverage | passed | 0.0s | 0 |
+| 6 | test-coverage | failed | 0.0s | 1 |
 
 ## Phase: build
 
@@ -35,6 +35,9 @@ _(skipped — script not found in package.json)_
 
 ## Phase: test-coverage
 
+Step 'test-coverage' failed
+
 ```
-test-coverage: 39/39 must TCs covered
+test-coverage: 34/37 must TCs covered
+Missing: TC-040, TC-046, TC-047
 ```
