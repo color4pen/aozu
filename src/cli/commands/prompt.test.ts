@@ -622,7 +622,7 @@ describe("handleDerive — filesystem non-write", () => {
 });
 
 // ---------------------------------------------------------------------------
-// handlePrompt dispatch
+// handlePrompt dispatch (T-05: updated to include session)
 // ---------------------------------------------------------------------------
 
 describe("handlePrompt dispatch", () => {
@@ -639,6 +639,744 @@ describe("handlePrompt dispatch", () => {
   it("--help → exit 0", async () => {
     const code = await handlePrompt(["--help"]);
     expect(code).toBe(0);
+  });
+
+  it("--help output contains 'session' subcommand", async () => {
+    // Capture stderr by temporarily replacing process.stderr.write
+    let stderrOutput = "";
+    const origWrite = process.stderr.write.bind(process.stderr);
+    // Simplified mock: capture string chunks, return true (valid for WritableStream.write)
+    (process.stderr as NodeJS.WriteStream).write = (chunk: string | Uint8Array): boolean => {
+      if (typeof chunk === "string") stderrOutput += chunk;
+      return true;
+    };
+    try {
+      await handlePrompt(["--help"]);
+    } finally {
+      process.stderr.write = origWrite;
+    }
+    expect(stderrOutput).toContain("session");
+  });
+
+  it("no subcommand error message contains 'session' in Available list", async () => {
+    let stderrOutput = "";
+    const origWrite = process.stderr.write.bind(process.stderr);
+    (process.stderr as NodeJS.WriteStream).write = (chunk: string | Uint8Array): boolean => {
+      if (typeof chunk === "string") stderrOutput += chunk;
+      return true;
+    };
+    try {
+      await handlePrompt([]);
+    } finally {
+      process.stderr.write = origWrite;
+    }
+    expect(stderrOutput).toContain("session");
+  });
+
+  it("unknown subcommand error message contains 'session' in Available list", async () => {
+    let stderrOutput = "";
+    const origWrite = process.stderr.write.bind(process.stderr);
+    (process.stderr as NodeJS.WriteStream).write = (chunk: string | Uint8Array): boolean => {
+      if (typeof chunk === "string") stderrOutput += chunk;
+      return true;
+    };
+    try {
+      await handlePrompt(["unknown-sub"]);
+    } finally {
+      process.stderr.write = origWrite;
+    }
+    expect(stderrOutput).toContain("session");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Session fixture helpers (T-04)
+// ---------------------------------------------------------------------------
+
+/**
+ * Create a full session-ready fixture:
+ *   - manifest: loop enabled
+ *   - static/modules.md: mod-core (責務: あり), mod-cli (責務: あり)
+ *   - static/dependencies.md: [[mod-cli]] -> [[mod-core]]
+ *   - domain/model.md: ent-order (refs [[inv-order-valid]]), ent-hop2 (refs [[ent-hop3]])
+ *   - domain/invariants.md: inv-order-valid (refs [[ent-hop2]])
+ *   - domain/glossary.md: term-status
+ *   - topics/my-topic.md: id=top-my-topic, body references [[ent-order]]
+ *
+ * Hop chain from seed (ent-order):
+ *   ent-order →(ref)→ inv-order-valid  [1-hop = in neighborhood]
+ *   inv-order-valid →(ref)→ ent-hop2   [2-hop = in neighborhood]
+ *   ent-hop2 →(ref)→ ent-hop3          [3-hop = OUT OF NEIGHBORHOOD]
+ */
+async function createSessionFixture(): Promise<{ designDir: string; baseDir: string }> {
+  const baseDir = await mkdtemp(join(tmpdir(), "aozu-session-test-"));
+  const designDir = join(baseDir, "design");
+
+  await mkdir(join(designDir, "static"), { recursive: true });
+  await mkdir(join(designDir, "domain"), { recursive: true });
+  await mkdir(join(designDir, "topics"), { recursive: true });
+
+  // manifest: loop enabled
+  await writeFile(
+    join(designDir, "manifest.md"),
+    [
+      "---",
+      "format-version: 0",
+      "enabled: static, domain, dynamic, loop",
+      "---",
+      "",
+      "# manifest",
+    ].join("\n")
+  );
+
+  // static/modules.md: mod-core, mod-cli
+  await writeFile(
+    join(designDir, "static", "modules.md"),
+    [
+      "# モジュール構成",
+      "",
+      "## コア {#mod-core}",
+      "責務: コアロジック",
+      "実装: src/core/",
+      "",
+      "## CLI {#mod-cli}",
+      "責務: CLI インターフェース",
+      "実装: src/cli/",
+    ].join("\n")
+  );
+
+  // static/dependencies.md
+  await writeFile(
+    join(designDir, "static", "dependencies.md"),
+    [
+      "# 許可依存",
+      "",
+      "- [[mod-cli]] -> [[mod-core]]",
+    ].join("\n")
+  );
+
+  // domain/model.md: ent-order, ent-hop2, ent-hop3
+  await writeFile(
+    join(designDir, "domain", "model.md"),
+    [
+      "# ドメインモデル",
+      "",
+      "## 注文 {#ent-order}",
+      "注文エンティティ。[[inv-order-valid]] を満たす必要がある。",
+      "",
+      "## ホップ2要素 {#ent-hop2}",
+      "ホップ 2 要素。[[ent-hop3]] を参照。",
+      "",
+      "## ホップ3要素 {#ent-hop3}",
+      "ホップ 3 要素 — これはスコープ外。UNIQUE_SCOPE_BOUNDARY_MARKER",
+    ].join("\n")
+  );
+
+  // domain/invariants.md: inv-order-valid (refs [[ent-hop2]])
+  await writeFile(
+    join(designDir, "domain", "invariants.md"),
+    [
+      "# 不変条件",
+      "",
+      "## 注文有効性 {#inv-order-valid}",
+      "注文は必ず顧客 ID を持つ。[[ent-hop2]] も参照。",
+    ].join("\n")
+  );
+
+  // domain/glossary.md: term-status
+  await writeFile(
+    join(designDir, "domain", "glossary.md"),
+    [
+      "# 用語集",
+      "",
+      "## ステータス {#term-status}",
+      "注文の状態を表す。",
+    ].join("\n")
+  );
+
+  // topics/my-topic.md: top-my-topic, body refs [[ent-order]]
+  await writeFile(
+    join(designDir, "topics", "my-topic.md"),
+    [
+      "---",
+      "id: top-my-topic",
+      "---",
+      "",
+      "# マイトピック",
+      "",
+      "このトピックは [[ent-order]] に関する設計課題を提起する。",
+    ].join("\n")
+  );
+
+  return { designDir, baseDir };
+}
+
+/**
+ * Create a session fixture where the topic has no [[id]] citations (引用 0 件).
+ */
+async function createSessionNoRefsFixture(): Promise<{ designDir: string; baseDir: string }> {
+  const baseDir = await mkdtemp(join(tmpdir(), "aozu-session-norefs-"));
+  const designDir = join(baseDir, "design");
+
+  await mkdir(join(designDir, "static"), { recursive: true });
+  await mkdir(join(designDir, "domain"), { recursive: true });
+  await mkdir(join(designDir, "topics"), { recursive: true });
+
+  // manifest: loop enabled
+  await writeFile(
+    join(designDir, "manifest.md"),
+    [
+      "---",
+      "format-version: 0",
+      "enabled: static, domain, dynamic, loop",
+      "---",
+      "",
+      "# manifest",
+    ].join("\n")
+  );
+
+  // static/modules.md
+  await writeFile(
+    join(designDir, "static", "modules.md"),
+    [
+      "# モジュール構成",
+      "",
+      "## コア {#mod-core}",
+      "責務: コアロジック",
+      "実装: src/core/",
+    ].join("\n")
+  );
+
+  // static/dependencies.md
+  await writeFile(join(designDir, "static", "dependencies.md"), "# 許可依存\n");
+
+  // domain/model.md
+  await writeFile(
+    join(designDir, "domain", "model.md"),
+    [
+      "# ドメインモデル",
+      "",
+      "## 注文 {#ent-order}",
+      "注文エンティティの説明。",
+    ].join("\n")
+  );
+
+  // domain/invariants.md
+  await writeFile(
+    join(designDir, "domain", "invariants.md"),
+    [
+      "# 不変条件",
+      "",
+      "## 注文有効性 {#inv-order-valid}",
+      "注文は必ず顧客 ID を持つ。",
+    ].join("\n")
+  );
+
+  // domain/glossary.md
+  await writeFile(
+    join(designDir, "domain", "glossary.md"),
+    [
+      "# 用語集",
+      "",
+      "## ステータス {#term-status}",
+      "注文の状態を表す。",
+    ].join("\n")
+  );
+
+  // topics/my-topic.md: no [[id]] citations in body
+  await writeFile(
+    join(designDir, "topics", "my-topic.md"),
+    [
+      "---",
+      "id: top-my-topic",
+      "---",
+      "",
+      "# マイトピック",
+      "",
+      "このトピックには引用がない。新規 greenfield の設計課題。",
+    ].join("\n")
+  );
+
+  return { designDir, baseDir };
+}
+
+/**
+ * Create a loop-disabled session fixture.
+ */
+async function createSessionLoopDisabledFixture(): Promise<{ designDir: string; baseDir: string }> {
+  const baseDir = await mkdtemp(join(tmpdir(), "aozu-session-noloop-"));
+  const designDir = join(baseDir, "design");
+
+  await mkdir(join(designDir, "static"), { recursive: true });
+  await mkdir(join(designDir, "topics"), { recursive: true });
+
+  await writeFile(
+    join(designDir, "manifest.md"),
+    [
+      "---",
+      "format-version: 0",
+      "enabled: static",
+      "---",
+      "# manifest",
+    ].join("\n")
+  );
+
+  await writeFile(
+    join(designDir, "static", "modules.md"),
+    ["# モジュール", "", "## コア {#mod-core}", "責務: コアロジック"].join("\n")
+  );
+  await writeFile(join(designDir, "static", "dependencies.md"), "# 許可依存\n");
+
+  await writeFile(
+    join(designDir, "topics", "my-topic.md"),
+    ["---", "id: top-my-topic", "---", "", "トピック本文。"].join("\n")
+  );
+
+  return { designDir, baseDir };
+}
+
+// ---------------------------------------------------------------------------
+// handleSession — normal case stdout (T-04)
+// ---------------------------------------------------------------------------
+
+describe("handleSession — normal case stdout", () => {
+  it("exit 0 on normal case", async () => {
+    const { designDir, baseDir } = await createSessionFixture();
+    try {
+      const proc = Bun.spawn(
+        ["bun", MAIN_TS, "prompt", "session", "--topic", "top-my-topic", "--dir", designDir],
+        { stdout: "pipe", stderr: "pipe" }
+      );
+      const exitCode = await proc.exited;
+      expect(exitCode).toBe(0);
+    } finally {
+      await rm(baseDir, { recursive: true });
+    }
+  });
+
+  it("stdout contains topic body text", async () => {
+    const { designDir, baseDir } = await createSessionFixture();
+    try {
+      const proc = Bun.spawn(
+        ["bun", MAIN_TS, "prompt", "session", "--topic", "top-my-topic", "--dir", designDir],
+        { stdout: "pipe", stderr: "pipe" }
+      );
+      const exitCode = await proc.exited;
+      const stdout = await new Response(proc.stdout).text();
+      expect(exitCode).toBe(0);
+      expect(stdout).toContain("このトピックは");
+    } finally {
+      await rm(baseDir, { recursive: true });
+    }
+  });
+
+  it("stdout contains seed element (ent-order) body", async () => {
+    const { designDir, baseDir } = await createSessionFixture();
+    try {
+      const proc = Bun.spawn(
+        ["bun", MAIN_TS, "prompt", "session", "--topic", "top-my-topic", "--dir", designDir],
+        { stdout: "pipe", stderr: "pipe" }
+      );
+      const exitCode = await proc.exited;
+      const stdout = await new Response(proc.stdout).text();
+      expect(exitCode).toBe(0);
+      // ent-order body contains "注文エンティティ"
+      expect(stdout).toContain("注文エンティティ");
+    } finally {
+      await rm(baseDir, { recursive: true });
+    }
+  });
+
+  it("stdout contains 1-hop neighbor (inv-order-valid) body", async () => {
+    const { designDir, baseDir } = await createSessionFixture();
+    try {
+      const proc = Bun.spawn(
+        ["bun", MAIN_TS, "prompt", "session", "--topic", "top-my-topic", "--dir", designDir],
+        { stdout: "pipe", stderr: "pipe" }
+      );
+      const exitCode = await proc.exited;
+      const stdout = await new Response(proc.stdout).text();
+      expect(exitCode).toBe(0);
+      // inv-order-valid body contains "顧客 ID"
+      expect(stdout).toContain("顧客 ID");
+    } finally {
+      await rm(baseDir, { recursive: true });
+    }
+  });
+
+  it("stdout contains 2-hop neighbor (ent-hop2) body", async () => {
+    const { designDir, baseDir } = await createSessionFixture();
+    try {
+      const proc = Bun.spawn(
+        ["bun", MAIN_TS, "prompt", "session", "--topic", "top-my-topic", "--dir", designDir],
+        { stdout: "pipe", stderr: "pipe" }
+      );
+      const exitCode = await proc.exited;
+      const stdout = await new Response(proc.stdout).text();
+      expect(exitCode).toBe(0);
+      // ent-hop2 body contains "ホップ 2 要素"
+      expect(stdout).toContain("ホップ 2 要素");
+    } finally {
+      await rm(baseDir, { recursive: true });
+    }
+  });
+
+  it("stdout contains term/inv full content (term-status and inv-order-valid)", async () => {
+    const { designDir, baseDir } = await createSessionFixture();
+    try {
+      const proc = Bun.spawn(
+        ["bun", MAIN_TS, "prompt", "session", "--topic", "top-my-topic", "--dir", designDir],
+        { stdout: "pipe", stderr: "pipe" }
+      );
+      const exitCode = await proc.exited;
+      const stdout = await new Response(proc.stdout).text();
+      expect(exitCode).toBe(0);
+      // term-status body
+      expect(stdout).toContain("注文の状態を表す");
+      // inv-order-valid appears in terms & invariants section
+      expect(stdout).toContain("inv-order-valid");
+    } finally {
+      await rm(baseDir, { recursive: true });
+    }
+  });
+
+  it("stdout contains static mod condensed (mod-core / mod-cli heading + 責務: line)", async () => {
+    const { designDir, baseDir } = await createSessionFixture();
+    try {
+      const proc = Bun.spawn(
+        ["bun", MAIN_TS, "prompt", "session", "--topic", "top-my-topic", "--dir", designDir],
+        { stdout: "pipe", stderr: "pipe" }
+      );
+      const exitCode = await proc.exited;
+      const stdout = await new Response(proc.stdout).text();
+      expect(exitCode).toBe(0);
+      expect(stdout).toContain("mod-core");
+      expect(stdout).toContain("コアロジック");
+      expect(stdout).toContain("mod-cli");
+      expect(stdout).toContain("CLI インターフェース");
+    } finally {
+      await rm(baseDir, { recursive: true });
+    }
+  });
+
+  it("stdout contains format rules summary text", async () => {
+    const { designDir, baseDir } = await createSessionFixture();
+    try {
+      const proc = Bun.spawn(
+        ["bun", MAIN_TS, "prompt", "session", "--topic", "top-my-topic", "--dir", designDir],
+        { stdout: "pipe", stderr: "pipe" }
+      );
+      const exitCode = await proc.exited;
+      const stdout = await new Response(proc.stdout).text();
+      expect(exitCode).toBe(0);
+      expect(stdout).toContain("Declaration syntax");
+    } finally {
+      await rm(baseDir, { recursive: true });
+    }
+  });
+
+  it("stdout contains session guidance text", async () => {
+    const { designDir, baseDir } = await createSessionFixture();
+    try {
+      const proc = Bun.spawn(
+        ["bun", MAIN_TS, "prompt", "session", "--topic", "top-my-topic", "--dir", designDir],
+        { stdout: "pipe", stderr: "pipe" }
+      );
+      const exitCode = await proc.exited;
+      const stdout = await new Response(proc.stdout).text();
+      expect(exitCode).toBe(0);
+      expect(stdout).toContain("scaffold");
+      expect(stdout).toContain("topics:");
+    } finally {
+      await rm(baseDir, { recursive: true });
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// handleSession — 2-hop scope boundary (T-04)
+// ---------------------------------------------------------------------------
+
+describe("handleSession — 2-hop scope boundary", () => {
+  it("3-hop element body (ent-hop3) is NOT in stdout", async () => {
+    const { designDir, baseDir } = await createSessionFixture();
+    try {
+      const proc = Bun.spawn(
+        ["bun", MAIN_TS, "prompt", "session", "--topic", "top-my-topic", "--dir", designDir],
+        { stdout: "pipe", stderr: "pipe" }
+      );
+      const exitCode = await proc.exited;
+      const stdout = await new Response(proc.stdout).text();
+      expect(exitCode).toBe(0);
+      // UNIQUE_SCOPE_BOUNDARY_MARKER is in ent-hop3's body (3-hop = out of scope)
+      expect(stdout).not.toContain("UNIQUE_SCOPE_BOUNDARY_MARKER");
+    } finally {
+      await rm(baseDir, { recursive: true });
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// handleSession — no-refs topic (引用 0 件) (T-04)
+// ---------------------------------------------------------------------------
+
+describe("handleSession — no-refs topic", () => {
+  it("exit 0 for topic with no [[id]] citations", async () => {
+    const { designDir, baseDir } = await createSessionNoRefsFixture();
+    try {
+      const proc = Bun.spawn(
+        ["bun", MAIN_TS, "prompt", "session", "--topic", "top-my-topic", "--dir", designDir],
+        { stdout: "pipe", stderr: "pipe" }
+      );
+      const exitCode = await proc.exited;
+      expect(exitCode).toBe(0);
+    } finally {
+      await rm(baseDir, { recursive: true });
+    }
+  });
+
+  it("stdout contains topic body for no-refs topic", async () => {
+    const { designDir, baseDir } = await createSessionNoRefsFixture();
+    try {
+      const proc = Bun.spawn(
+        ["bun", MAIN_TS, "prompt", "session", "--topic", "top-my-topic", "--dir", designDir],
+        { stdout: "pipe", stderr: "pipe" }
+      );
+      await proc.exited;
+      const stdout = await new Response(proc.stdout).text();
+      expect(stdout).toContain("このトピックには引用がない");
+    } finally {
+      await rm(baseDir, { recursive: true });
+    }
+  });
+
+  it("stdout contains seed placeholder for no-refs topic", async () => {
+    const { designDir, baseDir } = await createSessionNoRefsFixture();
+    try {
+      const proc = Bun.spawn(
+        ["bun", MAIN_TS, "prompt", "session", "--topic", "top-my-topic", "--dir", designDir],
+        { stdout: "pipe", stderr: "pipe" }
+      );
+      await proc.exited;
+      const stdout = await new Response(proc.stdout).text();
+      expect(stdout).toContain("no seed elements");
+    } finally {
+      await rm(baseDir, { recursive: true });
+    }
+  });
+
+  it("stdout contains neighborhood placeholder for no-refs topic", async () => {
+    const { designDir, baseDir } = await createSessionNoRefsFixture();
+    try {
+      const proc = Bun.spawn(
+        ["bun", MAIN_TS, "prompt", "session", "--topic", "top-my-topic", "--dir", designDir],
+        { stdout: "pipe", stderr: "pipe" }
+      );
+      await proc.exited;
+      const stdout = await new Response(proc.stdout).text();
+      expect(stdout).toContain("no neighborhood elements");
+    } finally {
+      await rm(baseDir, { recursive: true });
+    }
+  });
+
+  it("stdout contains term/inv full content for no-refs topic", async () => {
+    const { designDir, baseDir } = await createSessionNoRefsFixture();
+    try {
+      const proc = Bun.spawn(
+        ["bun", MAIN_TS, "prompt", "session", "--topic", "top-my-topic", "--dir", designDir],
+        { stdout: "pipe", stderr: "pipe" }
+      );
+      await proc.exited;
+      const stdout = await new Response(proc.stdout).text();
+      expect(stdout).toContain("注文の状態を表す");
+      expect(stdout).toContain("inv-order-valid");
+    } finally {
+      await rm(baseDir, { recursive: true });
+    }
+  });
+
+  it("stdout contains static mod condensed for no-refs topic", async () => {
+    const { designDir, baseDir } = await createSessionNoRefsFixture();
+    try {
+      const proc = Bun.spawn(
+        ["bun", MAIN_TS, "prompt", "session", "--topic", "top-my-topic", "--dir", designDir],
+        { stdout: "pipe", stderr: "pipe" }
+      );
+      await proc.exited;
+      const stdout = await new Response(proc.stdout).text();
+      expect(stdout).toContain("mod-core");
+      expect(stdout).toContain("コアロジック");
+    } finally {
+      await rm(baseDir, { recursive: true });
+    }
+  });
+
+  it("stdout contains format rules summary for no-refs topic", async () => {
+    const { designDir, baseDir } = await createSessionNoRefsFixture();
+    try {
+      const proc = Bun.spawn(
+        ["bun", MAIN_TS, "prompt", "session", "--topic", "top-my-topic", "--dir", designDir],
+        { stdout: "pipe", stderr: "pipe" }
+      );
+      await proc.exited;
+      const stdout = await new Response(proc.stdout).text();
+      expect(stdout).toContain("Declaration syntax");
+    } finally {
+      await rm(baseDir, { recursive: true });
+    }
+  });
+
+  it("stdout contains session guidance for no-refs topic", async () => {
+    const { designDir, baseDir } = await createSessionNoRefsFixture();
+    try {
+      const proc = Bun.spawn(
+        ["bun", MAIN_TS, "prompt", "session", "--topic", "top-my-topic", "--dir", designDir],
+        { stdout: "pipe", stderr: "pipe" }
+      );
+      await proc.exited;
+      const stdout = await new Response(proc.stdout).text();
+      expect(stdout).toContain("scaffold");
+    } finally {
+      await rm(baseDir, { recursive: true });
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// handleSession — stage gates (T-04)
+// ---------------------------------------------------------------------------
+
+describe("handleSession — stage gates", () => {
+  it("loop disabled → exit 1 + stderr diagnostic", async () => {
+    const { designDir, baseDir } = await createSessionLoopDisabledFixture();
+    try {
+      const proc = Bun.spawn(
+        ["bun", MAIN_TS, "prompt", "session", "--topic", "top-my-topic", "--dir", designDir],
+        { stdout: "pipe", stderr: "pipe" }
+      );
+      const exitCode = await proc.exited;
+      const stderr = await new Response(proc.stderr).text();
+      expect(exitCode).toBe(1);
+      expect(stderr).toContain("loop");
+    } finally {
+      await rm(baseDir, { recursive: true });
+    }
+  });
+
+  it("topic not found → exit 2 + stderr diagnostic", async () => {
+    const { designDir, baseDir } = await createSessionFixture();
+    try {
+      const proc = Bun.spawn(
+        ["bun", MAIN_TS, "prompt", "session", "--topic", "top-nonexistent", "--dir", designDir],
+        { stdout: "pipe", stderr: "pipe" }
+      );
+      const exitCode = await proc.exited;
+      const stderr = await new Response(proc.stderr).text();
+      expect(exitCode).toBe(2);
+      expect(stderr).toContain("top-nonexistent");
+    } finally {
+      await rm(baseDir, { recursive: true });
+    }
+  });
+
+  it("design directory not found → exit 2", async () => {
+    const proc = Bun.spawn(
+      ["bun", MAIN_TS, "prompt", "session", "--topic", "top-my-topic", "--dir", "/nonexistent/design"],
+      { stdout: "pipe", stderr: "pipe" }
+    );
+    const exitCode = await proc.exited;
+    expect(exitCode).toBe(2);
+  });
+
+  it("missing --topic argument → exit 2", async () => {
+    const { designDir, baseDir } = await createSessionFixture();
+    try {
+      const proc = Bun.spawn(
+        ["bun", MAIN_TS, "prompt", "session", "--dir", designDir],
+        { stdout: "pipe", stderr: "pipe" }
+      );
+      const exitCode = await proc.exited;
+      expect(exitCode).toBe(2);
+    } finally {
+      await rm(baseDir, { recursive: true });
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// handleSession — deterministic output (T-04)
+// ---------------------------------------------------------------------------
+
+describe("handleSession — deterministic output", () => {
+  it("two runs with same fixture produce byte-identical stdout", async () => {
+    const { designDir, baseDir } = await createSessionFixture();
+    try {
+      const run = async () => {
+        const proc = Bun.spawn(
+          ["bun", MAIN_TS, "prompt", "session", "--topic", "top-my-topic", "--dir", designDir],
+          { stdout: "pipe", stderr: "pipe" }
+        );
+        await proc.exited;
+        return new Response(proc.stdout).text();
+      };
+      const first = await run();
+      const second = await run();
+      expect(first).toBe(second);
+    } finally {
+      await rm(baseDir, { recursive: true });
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// handleSession — stdout/stderr separation (T-04)
+// ---------------------------------------------------------------------------
+
+describe("handleSession — stdout/stderr separation", () => {
+  it("normal case: stdout is non-empty, stderr is empty", async () => {
+    const { designDir, baseDir } = await createSessionFixture();
+    try {
+      const proc = Bun.spawn(
+        ["bun", MAIN_TS, "prompt", "session", "--topic", "top-my-topic", "--dir", designDir],
+        { stdout: "pipe", stderr: "pipe" }
+      );
+      const exitCode = await proc.exited;
+      const stdout = await new Response(proc.stdout).text();
+      const stderr = await new Response(proc.stderr).text();
+      expect(exitCode).toBe(0);
+      expect(stdout.length).toBeGreaterThan(0);
+      expect(stderr).toBe("");
+    } finally {
+      await rm(baseDir, { recursive: true });
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// handleSession — filesystem non-write (T-04)
+// ---------------------------------------------------------------------------
+
+describe("handleSession — filesystem non-write", () => {
+  it("does not write any files to the design directory", async () => {
+    const { designDir, baseDir } = await createSessionFixture();
+    try {
+      // Snapshot before
+      const before = await listAllFiles(designDir);
+
+      const proc = Bun.spawn(
+        ["bun", MAIN_TS, "prompt", "session", "--topic", "top-my-topic", "--dir", designDir],
+        { stdout: "pipe", stderr: "pipe" }
+      );
+      await proc.exited;
+
+      // Snapshot after
+      const after = await listAllFiles(designDir);
+
+      expect(after.sort()).toEqual(before.sort());
+    } finally {
+      await rm(baseDir, { recursive: true });
+    }
   });
 });
 

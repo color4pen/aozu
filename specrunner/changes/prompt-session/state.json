@@ -2,7 +2,7 @@
   "version": 2,
   "jobId": "70a24f62-e838-4f2c-bec1-f934642c4223",
   "createdAt": "2026-07-03T08:10:44.301Z",
-  "updatedAt": "2026-07-03T08:31:51.127Z",
+  "updatedAt": "2026-07-03T08:34:18.294Z",
   "request": {
     "title": "prompt session を実装し、topic から設計セッションへの経路を立てる",
     "type": "new-feature",
@@ -12,7 +12,7 @@
     "owner": "color4pen",
     "name": "aozu"
   },
-  "step": "test-case-gen",
+  "step": "implementer",
   "status": "running",
   "branch": "feat/prompt-session-70a24f62",
   "error": null,
@@ -34,11 +34,12 @@
     }
   ],
   "_journal": {
-    "historyCount": 13,
+    "historyCount": 16,
     "stepCounts": {
       "request-review": 1,
       "design": 1,
-      "spec-review": 1
+      "spec-review": 1,
+      "test-case-gen": 1
     }
   }
 }

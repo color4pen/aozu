@@ -4,7 +4,7 @@
 
 src/prompt/session.ts を新規作成し、セッション指示テキストの組み立てロジックを実装する。
 
-- [ ] `SessionInput` インターフェースを定義する:
+- [x] `SessionInput` インターフェースを定義する:
   - `topicId: string` — topic の ID
   - `topicBody: string` — topic の本文（frontmatter 含まず、source 情報は本文に含まれる）
   - `seedBodies: Map<string, string>` — topic が引用する要素の本文（ID → 本文）
@@ -14,7 +14,7 @@ src/prompt/session.ts を新規作成し、セッション指示テキストの�
   - `enabledLayers: string[]` — manifest の enabled 一覧
   - `formatRulesSummary: string` — 形式規則の要約テキスト
   - `sessionGuidance: string` — セッション作法指示テキスト
-- [ ] `buildSessionInstruction(input: SessionInput): string` を実装する。8 セクションを組み立てる:
+- [x] `buildSessionInstruction(input: SessionInput): string` を実装する。8 セクションを組み立てる:
   1. `## Topic` — `input.topicId` + `input.topicBody`
   2. `## Seed Element Bodies` — seedBodies の各エントリを `### <id>` + body で列挙。空なら "(no seed elements — topic has no [[id]] citations)"
   3. `## Neighborhood Element Bodies (2-hop)` — neighborBodies の各エントリ。空なら "(no neighborhood elements)"
@@ -23,18 +23,18 @@ src/prompt/session.ts を新規作成し、セッション指示テキストの�
   6. `## Enabled Layers` — enabledLayers をカンマ区切りで列挙
   7. `## Format Rules` — formatRulesSummary
   8. `## Session Guidance` — sessionGuidance
-- [ ] `FORMAT_RULES_SUMMARY` 定数を定義する。内容:
+- [x] `FORMAT_RULES_SUMMARY` 定数を定義する。内容:
   - 宣言構文（見出し要素 / 文書要素）
   - 参照構文（`[[id]]`、コード内除外）
   - ID 文法（prefix-slug）
   - 型プレフィクス表（mod / term / ent / inv / act / seq / top / plan / grp / adr と各層）
   - frontmatter 規約（flat key: value のみ）
-- [ ] `SESSION_GUIDANCE` 定数を定義する。内容:
+- [x] `SESSION_GUIDANCE` 定数を定義する。内容:
   - scaffold で新要素を作る
   - check を回しながら編集する
   - 判断は ADR に記録する
   - topic は ADR の `topics:` 引用で addressed になる（ADR-0018）
-- [ ] `SESSION_MAX_HOPS` 定数を定義する（値: `2`）。export する（handler が使用）
+- [x] `SESSION_MAX_HOPS` 定数を定義する（値: `2`）。export する（handler が使用）
 
 **Acceptance Criteria**:
 - `buildSessionInstruction` が全 8 セクションを含む文字列を返す
@@ -48,8 +48,8 @@ src/prompt/session.ts を新規作成し、セッション指示テキストの�
 
 src/prompt/session.test.ts を新規作成する。
 
-- [ ] `makeInput` ヘルパーを作成する（derive.test.ts と同パターン。デフォルト値を持つ `Partial<SessionInput>` オーバーライド）
-- [ ] セクション存在テスト:
+- [x] `makeInput` ヘルパーを作成する（derive.test.ts と同パターン。デフォルト値を持つ `Partial<SessionInput>` オーバーライド）
+- [x] セクション存在テスト:
   - 出力に "## Topic" セクションが含まれ、topicId と topicBody の内容が含まれる
   - 出力に "## Seed Element Bodies" セクションと seed 本文が含まれる
   - 出力に "## Neighborhood Element Bodies (2-hop)" セクションと近傍本文が含まれる
@@ -58,12 +58,12 @@ src/prompt/session.test.ts を新規作成する。
   - 出力に "## Enabled Layers" セクションと enabled 一覧が含まれる
   - 出力に "## Format Rules" セクションと形式規則テキストが含まれる
   - 出力に "## Session Guidance" セクションと作法テキストが含まれる
-- [ ] 空入力のフォールバックテスト:
+- [x] 空入力のフォールバックテスト:
   - seedBodies が空 → プレースホルダが出力される
   - neighborBodies が空 → "(no neighborhood elements)" が出力される
   - termsAndInvariants が空 → "(no terms or invariants defined)" が出力される
-- [ ] 全 8 セクションが 1 出力に含まれることの統合テスト
-- [ ] 決定的出力テスト: 同一入力で 2 回呼び出し、出力がバイト同一であることを assert
+- [x] 全 8 セクションが 1 出力に含まれることの統合テスト
+- [x] 決定的出力テスト: 同一入力で 2 回呼び出し、出力がバイト同一であることを assert
 
 **Acceptance Criteria**:
 - 8 セクションの存在テストが各 1 件以上
@@ -76,21 +76,21 @@ src/prompt/session.test.ts を新規作成する。
 
 src/cli/commands/prompt.ts に `handleSession` を追加し、`handlePrompt` の dispatch に `session` 分岐を追加する。
 
-- [ ] `handlePrompt` の help テキストに `session` サブコマンドを追加する:
+- [x] `handlePrompt` の help テキストに `session` サブコマンドを追加する:
   - `"  session  Start a design session for a topic"` を Sub-commands に追加
   - Available リストに `session` を追加
-- [ ] `handlePrompt` の dispatch に `session` 分岐を追加する:
+- [x] `handlePrompt` の dispatch に `session` 分岐を追加する:
   ```typescript
   if (subcommand === "session") {
     return handleSession(args.slice(1));
   }
   ```
-- [ ] `handleSession(args: string[]): Promise<number>` を実装する:
+- [x] `handleSession(args: string[]): Promise<number>` を実装する:
   - `--help` / `-h`: session の usage を stderr に出力して return 0
   - `--topic <top-id>` をパース。不足は stderr エラー出力して return 2
   - `--dir <path>` をパース（デフォルト: `./design`）
   - design ディレクトリ存在チェック → 不在は return 2
-- [ ] パイプライン（段階ゲート + データ組み立て）を実装する:
+- [x] パイプライン（段階ゲート + データ組み立て）を実装する:
   1. `readMarkdownFiles` → `parseFiles` → `buildGraph` → `parseManifest`
   2. 段階ゲート: `isLayerEnabled("loop", manifest)` → false なら stderr 診断 + return 1
   3. topic 検索: `graph.elements.get(topicId)` → 不在 or prefix !== "top" なら stderr 診断 + return 2
@@ -104,7 +104,7 @@ src/cli/commands/prompt.ts に `handleSession` を追加し、`handlePrompt` の
   11. enabled 一覧: `manifest.enabled`
   12. `buildSessionInstruction` で指示テキストを組み立て
   13. `process.stdout.write(instruction)` で出力、return 0
-- [ ] `handleSession` を export する（テストから呼べるように）
+- [x] `handleSession` を export する（テストから呼べるように）
 
 **Acceptance Criteria**:
 - `handlePrompt(["session", "--topic", "top-xxx", "--dir", dir])` が動作する
@@ -120,7 +120,7 @@ src/cli/commands/prompt.ts に `handleSession` を追加し、`handlePrompt` の
 
 既存の prompt.test.ts に session のテストを追加する。
 
-- [ ] session 用 fixture ヘルパーを作成する（`createSessionFixture`）:
+- [x] session 用 fixture ヘルパーを作成する（`createSessionFixture`）:
   - manifest: loop 有効（`enabled: static, domain, dynamic, loop`）
   - static/modules.md: mod-core（責務行あり）、mod-cli（責務行あり）
   - static/dependencies.md: `[[mod-cli]] -> [[mod-core]]`
@@ -128,9 +128,9 @@ src/cli/commands/prompt.ts に `handleSession` を追加し、`handlePrompt` の
   - domain/invariants.md: inv-order-valid
   - domain/glossary.md: term-status
   - topics/my-topic.md: frontmatter `id: top-my-topic`、本文に `[[ent-order]]` 引用
-- [ ] 引用 0 件 fixture ヘルパーを作成する（`createSessionNoRefsFixture`）:
+- [x] 引用 0 件 fixture ヘルパーを作成する（`createSessionNoRefsFixture`）:
   - 上記と同じだが topic 本文に `[[id]]` 引用を含まない
-- [ ] 正常系テスト（subprocess 実行、stdout 検証）:
+- [x] 正常系テスト（subprocess 実行、stdout 検証）:
   - exit 0
   - stdout に topic 本文が含まれる
   - stdout に seed 要素（ent-order）の本文が含まれる
@@ -139,24 +139,24 @@ src/cli/commands/prompt.ts に `handleSession` を追加し、`handlePrompt` の
   - stdout に static mod 縮約（mod-core / mod-cli の見出し + 責務行）が含まれる
   - stdout に形式規則要約テキストが含まれる
   - stdout に作法指示テキストが含まれる
-- [ ] スコープの上限テスト:
+- [x] スコープの上限テスト:
   - 2 hop 近傍の外の要素本文が stdout に含まれないことを検証する（fixture に 3 hop 先の要素を配置し、その本文が出力に含まれないことを assert）
-- [ ] 引用 0 件 topic テスト:
+- [x] 引用 0 件 topic テスト:
   - exit 0
   - stdout に topic 本文が含まれる
   - stdout に seed / neighbor のプレースホルダが含まれる
   - stdout に term/inv 全量・static 縮約・形式規則要約・作法指示が含まれる
-- [ ] 段階ゲートテスト:
+- [x] 段階ゲートテスト:
   - loop 無効 fixture で exit 1
   - topic 不存在（`--topic top-nonexistent`）で exit 2 + stderr 診断
   - design ディレクトリ不在で exit 2
   - `--topic` 引数なしで exit 2
-- [ ] 決定的出力テスト:
+- [x] 決定的出力テスト:
   - 同一 fixture で 2 回 subprocess 実行し、stdout がバイト同一であることを assert
-- [ ] stdout/stderr 分離テスト:
+- [x] stdout/stderr 分離テスト:
   - subprocess 実行し、stderr に診断が含まれないこと（正常系）
   - 正常系で stdout が非空、stderr が空であること
-- [ ] ファイルシステム非書き込みテスト:
+- [x] ファイルシステム非書き込みテスト:
   - 実行前後でファイルシステムの内容が同一であることを検証する
 
 **Acceptance Criteria**:
@@ -173,9 +173,9 @@ src/cli/commands/prompt.ts に `handleSession` を追加し、`handlePrompt` の
 
 既存の `handlePrompt dispatch` テストで `Available subcommands: derive` のような文言をハードコードしている箇所がある場合は `session` を含む形に更新する。
 
-- [ ] `handlePrompt(["unknown-sub"])` のエラーメッセージに `session` が含まれることを確認する（Available リストの更新により自動的に変わる）
-- [ ] `handlePrompt(["--help"])` の出力に `session` が含まれることを確認するテストを追加する
-- [ ] `handlePrompt([])` のエラーメッセージに `session` が含まれることを確認する
+- [x] `handlePrompt(["unknown-sub"])` のエラーメッセージに `session` が含まれることを確認する（Available リストの更新により自動的に変わる）
+- [x] `handlePrompt(["--help"])` の出力に `session` が含まれることを確認するテストを追加する
+- [x] `handlePrompt([])` のエラーメッセージに `session` が含まれることを確認する
 
 **Acceptance Criteria**:
 - help テキストに `session` が含まれる
@@ -186,9 +186,9 @@ src/cli/commands/prompt.ts に `handleSession` を追加し、`handlePrompt` の
 
 docs/open-questions.md の論点 8「プロンプト注入のスコープ規則」に、初版実装済みの注記を追加する。
 
-- [ ] 論点 8 の冒頭（「規則案（実装時に調整）」の部分）に以下の注記を追加する:
+- [x] 論点 8 の冒頭（「規則案（実装時に調整）」の部分）に以下の注記を追加する:
   - 「**初版実装済み**: `prompt session` が本規則案（2 hop・inv/term 全量・static 縮約）を実装した。規則値は src/prompt/session.ts の定数 `SESSION_MAX_HOPS` に集約されている。高度化（戦略 3）は窓に収まらなくなった実例の証拠を待つ。」
-- [ ] 論点自体は閉じない（高度化が未解決のため）
+- [x] 論点自体は閉じない（高度化が未解決のため）
 
 **Acceptance Criteria**:
 - docs/open-questions.md 論点 8 に初版実装済みの注記がある
@@ -198,15 +198,15 @@ docs/open-questions.md の論点 8「プロンプト注入のスコープ規則�
 
 既存テストと設計整合性の最終確認。
 
-- [ ] `tsc --noEmit` が green
-- [ ] `bun test` が全テスト green（既存テスト + 新規テスト）
-- [ ] `package.json` の `dependencies` が空のまま
-- [ ] 新規ファイルの import が許可依存に違反しないことを確認する:
+- [x] `tsc --noEmit` が green
+- [x] `bun test` が全テスト green（既存テスト + 新規テスト）
+- [x] `package.json` の `dependencies` が空のまま
+- [x] 新規ファイルの import が許可依存に違反しないことを確認する:
   - src/prompt/session.ts（mod-prompt）: 外部依存なし（引数を受け取る純粋関数 + 定数）
   - src/cli/commands/prompt.ts（mod-cli）の追加 import: `extractReferences`（mod-parse、mod-cli -> mod-parse は許可済み）、`buildSessionInstruction` / `SESSION_MAX_HOPS`（mod-prompt、mod-cli -> mod-prompt は許可済み）。他の import（mod-graph、mod-check、mod-fsread）は既存の derive handler で使用済み
-- [ ] `bun src/cli/main.ts check` が exit 0（本リポジトリの design/ に対して。ただし loop 無効のため topic/plan は check 対象外）
-- [ ] architecture test（tests/architecture.test.ts）が green
-- [ ] `bun src/cli/main.ts export rules --verify` が exit 0（mod-prompt のパスに変更なし。session.ts は同一ディレクトリに追加されるだけ）
+- [x] `bun src/cli/main.ts check` が exit 0（本リポジトリの design/ に対して。ただし loop 無効のため topic/plan は check 対象外）
+- [x] architecture test（tests/architecture.test.ts）が green
+- [x] `bun src/cli/main.ts export rules --verify` が exit 0（mod-prompt のパスに変更なし。session.ts は同一ディレクトリに追加されるだけ）
 
 **Acceptance Criteria**:
 - `tsc --noEmit && bun test` が exit 0
