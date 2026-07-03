@@ -2,7 +2,7 @@
   "version": 2,
   "jobId": "70a24f62-e838-4f2c-bec1-f934642c4223",
   "createdAt": "2026-07-03T08:10:44.301Z",
-  "updatedAt": "2026-07-03T10:17:06.202Z",
+  "updatedAt": "2026-07-03T10:36:40.814Z",
   "request": {
     "title": "prompt session を実装し、topic から設計セッションへの経路を立てる",
     "type": "new-feature",
@@ -13,7 +13,7 @@
     "name": "aozu"
   },
   "step": "pr-create",
-  "status": "awaiting-archive",
+  "status": "archived",
   "branch": "feat/prompt-session-70a24f62",
   "error": null,
   "pipelineId": "standard",
@@ -54,7 +54,7 @@
     "createdAt": "2026-07-03T10:17:06.191Z"
   },
   "_journal": {
-    "historyCount": 90,
+    "historyCount": 91,
     "stepCounts": {
       "request-review": 1,
       "design": 1,
