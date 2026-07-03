@@ -9,7 +9,7 @@ src/state/writer.ts に state.json の書き込み関数を実装する。spec/f
   - `${designDir}/state.json` にファイル名を閉じる（readDesignState と対称）
   - キーを `Object.keys(stateMap).sort()` で辞書順にソートする
   - 手組み JSON で 1 要素 1 行の書式を出力する。各エントリは `  "${key}": ${JSON.stringify(value)}` の形式
-  - 空の stateMap は `{}` の 2 行（`{\n}` ではなく `{}\n`）として書く。ただし state.json が存在しなければファイルを作らない（全 designed のデフォルトに一致）
+  - 空の stateMap は `{}` 形式（1 行、`{}\n`）で書く。展開形式 `{\n}` は使わない。ただし state.json が存在しなければファイルを作らない（全 designed のデフォルトに一致）
 - [ ] src/state/index.ts に `writeDesignState` の re-export を追加する
 - [ ] src/state/writer.test.ts を新規作成し、以下のテストを実装する:
   - round-trip テスト: writeDesignState → readDesignState で元の StateMap と一致する
@@ -180,15 +180,15 @@ src/cli/commands/mark.test.ts を新規作成する。
 
 src/plan/frontier.ts の openTopics 計算を frontmatter `status` 依存から計算導出に変更する。
 
-- [ ] computeFrontier のシグネチャを変更する:
+- [ ] computeFrontier のシグネチャを変更する（design.md D9 と同一の 5 パラメータ）:
   - 旧: `computeFrontier(graph, stateMap, enabledPrefixes, frontmatters)`
-  - 新: `computeFrontier(graph, stateMap, enabledPrefixes, addressedTopics: Set<string>)`
+  - 新: `computeFrontier(graph, stateMap, enabledPrefixes, addressedTopics: Set<string>, frontmatters)`
 - [ ] openTopics の計算ロジックを変更する:
   - 旧: frontmatter の `status === "open"` で判定
   - 新: graph.elements 中の全 top 要素のうち、`addressedTopics` に含まれないものを openTopics とする
   - `source` フィールドは top 要素自身の frontmatter から取得する（addressedTopics の計算とは独立）
 - [ ] NOTE コメント（frontier.ts:63-69）を除去する
-- [ ] Frontier 型の openTopics に source フィールドの取得ロジックを維持する。addressedTopics には含まれていないので、source は引き続き graph.elements の top 要素ファイルの frontmatter から取得する必要がある。このため frontmatters パラメータを完全に除去するのではなく、source 取得のために残すか、あるいは source 情報を別パラメータ（topicSources: Map<string, string>）で受けるかを判断する。
+- [ ] Frontier 型の openTopics の source フィールド取得ロジックを維持する。source は引き続き top 要素ファイルの frontmatter から取得するため、**frontmatters パラメータは残す**（判断済み — design.md D9。除去すると status 出力から出典が無音で消える回帰になる）
 
   **判断**: source 取得のために frontmatters を残す。ただしパラメータ名は意味を明確にするため、シグネチャを `computeFrontier(graph, stateMap, enabledPrefixes, addressedTopics, frontmatters)` とする（addressedTopics を追加、frontmatters は source 専用に残す）。
 

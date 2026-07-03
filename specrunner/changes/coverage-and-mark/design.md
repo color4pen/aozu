@@ -138,7 +138,7 @@ interface GroupGraph {
 }
 ```
 
-after: 行はパース結果の graph.references から取得する。plan ファイル内の grp 要素から grp-* への参照が after: 辺に相当する。
+after: 行はパース結果の graph.references から取得する。識別基準: **`graph.references.all` のうち、plan ファイル内の grp 要素セクションを源とし、targetId の prefix が `grp` である参照 = `after:` 辺、それ以外（実装要素への参照）= `elements:` 辺**とする（spec/format.md §8 のスキーマ上、`elements:` は実装要素のみ、`after:` は grp 要素のみを列挙するため、targetId の prefix で一意に識別できる。行番号でのフィルタは行わない）。
 
 **Rationale**: 読み取り専用の参照など正当な並列分割でも辺は残り得るため、不合格にすると偽陽性が多い。順序判断は人の領分（request.md architect 評価済み）。
 
@@ -200,17 +200,18 @@ function computeFrontier(
 ): Frontier;
 ```
 
-変更後のシグネチャ:
+変更後のシグネチャ（T-07 の判断と同一。5 パラメータ）:
 ```typescript
 function computeFrontier(
   graph: Graph,
   stateMap: StateMap,
   enabledPrefixes: Set<string>,
-  addressedTopics: Set<string>
+  addressedTopics: Set<string>,
+  frontmatters: ParseResult["frontmatters"]
 ): Frontier;
 ```
 
-`frontmatters` パラメータを `addressedTopics: Set<string>` に置換する。openTopics の計算に frontmatter を直接読む必要がなくなるため、依存を削減する。
+`addressedTopics: Set<string>` を追加する。**`frontmatters` は残す** — openTopics の open/addressed 判定には使わないが、open topic の `source` フィールド（出典表示）の取得に引き続き必要であり、外すと status 出力から出典が無音で消える回帰になる。
 
 caller 側の変更:
 - status.ts の `computeFrontier` wrapper: `frontmatters` の代わりに `addressedTopics` を計算して渡す
@@ -237,7 +238,7 @@ function extractAddressedTopics(
 3. 値が文字列ならその文字列から、配列なら各要素から `[[top-*]]` パターンを抽出
 4. 抽出した top-* ID の Set を返す
 
-配置場所: src/cli/commands/status.ts（status と coverage の両方が使う。coverage handler からは import する）。あるいは共通ユーティリティとして独立ファイルに切り出す。
+配置場所: src/cli/commands/status.ts（使用者は status handler のみ。coverage は computeFrontier / addressedTopics を必要としない）。独立ユーティリティファイルへの切り出しも可。
 
 `[[top-*]]` の抽出には extractReferences は使わない。frontmatter の値は単純な文字列であり、`/\[\[(top-[a-z0-9-]+)\]\]/g` で直接抽出できる。ただし T-04 の歯が `\\[\\[` パターンを src/parse/ 外で禁止しているため、この正規表現を src/cli/ に書くと歯テストに引っかかる可能性がある。
 
