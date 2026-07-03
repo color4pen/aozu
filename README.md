@@ -102,4 +102,4 @@ bun add -g aozu
 - **実装済み**: `init` / `scaffold` / `check`（`--request` 含む）/ `status` / `export rules`（`--verify` 含む）/ `plan` / `prompt derive` / `coverage` / `mark implemented` / `prompt session`
 - **未実装**: `diff` / `trace` / `prompt propagate` / `prompt review`
 
-検証状況: 自己記述ドッグフード（design/ 26 要素）と業務 SaaS の書き起こし（74 要素）で check exit 0。状態機械の一周（plan → derive → coverage → mark → フロンティア空）は合成 fixture で検証済み。不変条件の歯は tests/invariants.test.ts（PR #8）。実地のフルループ検証と publish（CI + npm）が残り。
+検証状況: 自己記述ドッグフード（design/ 26 要素）と業務 SaaS の書き起こし（74 要素）で check exit 0。状態機械の一周（plan → derive → coverage → mark → フロンティア空）は合成 fixture で検証済み。不変条件の歯は tests/invariants.test.ts（PR #8）。CI（4 ゲート）と release 基盤（release-please + npm publish）は整備済み（PR #12）で、初回 publish は secrets 登録と release PR の merge 待ち。実地のフルループ検証が残り。
