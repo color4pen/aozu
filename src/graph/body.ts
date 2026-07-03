@@ -6,7 +6,9 @@
  * Two element categories (spec/format.md §5):
  *   - Heading elements (mod / term / ent / inv / act / grp): body is the content
  *     from the line after the `## Heading {#id}` declaration up to (but not
- *     including) the next `##` or `###` heading in the same file, or end of file.
+ *     including) the next same-level `##` heading in the same file, or end of file.
+ *     h3 sub-headings within the body are part of the body (spec/format.md §5:
+ *     "見出しから次の同レベル見出しまでが要素の本文").
  *   - Document elements (seq / top / plan / adr): body is the entire file content
  *     after the closing `---` of the frontmatter block (frontmatter excluded).
  */
@@ -24,8 +26,8 @@ const HEADING_PREFIXES = new Set(["mod", "term", "ent", "inv", "act", "grp"]);
 /** Prefixes that use the document element format (frontmatter `id:` key). */
 const DOCUMENT_PREFIXES = new Set(["seq", "top", "plan", "adr"]);
 
-/** Pattern that marks the start of a new heading element (h2 or h3). */
-const HEADING_ELEMENT_RE = /^#{2,3} /;
+/** Pattern that marks the start of a new h2 heading element (same-level boundary). */
+const HEADING_ELEMENT_RE = /^## /;
 
 // ---------------------------------------------------------------------------
 // Body extraction

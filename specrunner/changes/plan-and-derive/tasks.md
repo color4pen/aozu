@@ -40,7 +40,7 @@ src/graph/body.ts に要素本文を切り出す関数を実装する。
 
 - [x] `extractElementBody(elementId: string, graph: Graph, files: FileInput[]): string | null` を実装する
   - Element.file と Element.line から開始位置を特定する
-  - 見出し要素（prefix が mod / term / ent / inv / act / grp）: 宣言行の次の行から、同じファイル内の次の同レベル以上の見出し（`^#{2,3} ` で始まる行）の直前まで、またはファイル末尾まで
+  - 見出し要素（prefix が mod / term / ent / inv / act / grp）: 宣言行の次の行から、同じファイル内の次の同レベル見出し（`^## ` で始まる行）の直前まで、またはファイル末尾まで（h3 サブ見出しは本文の一部として含める — spec/format.md §5「見出しから次の同レベル見出しまでが要素の本文」）
   - 文書要素（prefix が seq / top / plan / adr）: frontmatter 終了後の本文全体（id 宣言行からではなくファイル内容全体を返す。frontmatter 部分は除外する）
   - 対象ファイルが files 内に見つからない場合は null を返す
 - [x] `extractAllBodies(ids: string[], graph: Graph, files: FileInput[]): Map<string, string>` を実装する（複数要素の本文を一括取得する便利関数）
