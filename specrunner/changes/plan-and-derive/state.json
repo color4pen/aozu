@@ -2,7 +2,7 @@
   "version": 2,
   "jobId": "89603d5d-0d9c-4dce-8fa1-7efabd67a7f5",
   "createdAt": "2026-07-02T23:55:23.481Z",
-  "updatedAt": "2026-07-03T01:37:20.301Z",
+  "updatedAt": "2026-07-03T01:47:35.520Z",
   "request": {
     "title": "plan / prompt derive を実装し、designed 要素から request 草稿までの導出経路を立てる",
     "type": "new-feature",
@@ -12,7 +12,7 @@
     "owner": "color4pen",
     "name": "aozu"
   },
-  "step": "adversarial-consistency",
+  "step": "regression-gate",
   "status": "running",
   "branch": "feat/plan-and-derive-89603d5d",
   "error": null,
@@ -36,8 +36,8 @@
   "reviewerStatuses": [
     {
       "name": "adversarial-consistency",
-      "status": "pending",
-      "approvedAtCommit": null,
+      "status": "approved",
+      "approvedAtCommit": "543bcea716e46393db2fdeff97d63993956095d4",
       "activationPaths": [
         "adr/**",
         "spec/**",
@@ -49,7 +49,7 @@
   ],
   "resumePoint": null,
   "_journal": {
-    "historyCount": 63,
+    "historyCount": 68,
     "stepCounts": {
       "request-review": 1,
       "design": 1,
@@ -61,8 +61,8 @@
       "build-fixer": 1,
       "code-review": 2,
       "code-fixer": 2,
-      "adversarial-consistency": 1,
-      "custom-reviewers": 1
+      "adversarial-consistency": 2,
+      "custom-reviewers": 2
     }
   }
 }
