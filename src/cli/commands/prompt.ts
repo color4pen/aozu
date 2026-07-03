@@ -1,11 +1,13 @@
 /**
  * `prompt` command handler.
  *
- * Supports two sub-commands:
- *   prompt derive  --group <grp-id>  [--dir <path>]
- *   prompt session --topic <top-id>  [--dir <path>]
+ * Supports sub-commands:
+ *   prompt derive    --group <grp-id>  [--dir <path>]
+ *   prompt session   --topic <top-id>  [--dir <path>]
+ *   prompt propagate --adr   <adr-id>  [--dir <path>]
+ *   prompt review             [--dir <path>]
  *
- * Both verbs write nothing to the filesystem; they output instruction text to
+ * All verbs write nothing to the filesystem; they output instruction text to
  * stdout (ADR-0008 — prompt verb semantics).
  *
  * `prompt derive` configuration is injected via manifest frontmatter
@@ -13,9 +15,9 @@
  *   request-template:    file path (relative to design dir) or shell command
  *   request-output-dir:  output directory path for the generated draft
  *
- * Exit codes (both verbs):
+ * Exit codes:
  *   0 = instruction text written to stdout
- *   1 = stage-gate failure (loop disabled — ADR-0010 explicit error, same class as `plan`)
+ *   1 = stage-gate failure (loop disabled — ADR-0010, only for derive/session)
  *   2 = input error or configuration error (missing design dir / element not found /
  *       missing required argument)
  */
@@ -33,9 +35,16 @@ import { buildDeriveInstruction } from "../../prompt/derive.ts";
 import {
   buildSessionInstruction,
   SESSION_MAX_HOPS,
-  FORMAT_RULES_SUMMARY,
   SESSION_GUIDANCE,
 } from "../../prompt/session.ts";
+import {
+  SCOPE_MAX_HOPS,
+  FORMAT_RULES_SUMMARY,
+  collectTermsAndInvariants,
+  collectStaticModulesSummary,
+} from "../../prompt/shared.ts";
+import { buildPropagateInstruction, PROPAGATE_GUIDANCE } from "../../prompt/propagate.ts";
+import { buildReviewInstruction, REVIEW_GUIDANCE } from "../../prompt/review.ts";
 import { extractReferences } from "../../parse/references.ts";
 import type { Element } from "../../graph/index.ts";
 
@@ -71,12 +80,14 @@ export async function handlePrompt(args: string[]): Promise<number> {
         "Usage: aozu prompt <subcommand> [options]",
         "",
         "Sub-commands:",
-        "  derive   Generate a derive instruction for a plan group",
-        "  session  Start a design session for a topic",
+        "  derive     Generate a derive instruction for a plan group",
+        "  session    Start a design session for a topic",
+        "  propagate  Reflect an ADR decision across all design layers",
+        "  review     Review the design corpus for contradictions",
         "",
-        "Run 'aozu prompt derive --help' or 'aozu prompt session --help' for details.",
+        "Run 'aozu prompt <subcommand> --help' for details.",
         "",
-        "Exit codes: 0 = success / 1 = loop disabled / 2 = input or configuration error",
+        "Exit codes: 0 = success / 1 = loop disabled (derive/session only) / 2 = input or configuration error",
       ].join("\n") + "\n"
     );
     return 0;
@@ -85,7 +96,7 @@ export async function handlePrompt(args: string[]): Promise<number> {
   const subcommand = args[0];
   if (!subcommand) {
     process.stderr.write(
-      "ERROR INPUT - missing subcommand\nUsage: aozu prompt <subcommand> [options]\nAvailable: derive, session\n"
+      "ERROR INPUT - missing subcommand\nUsage: aozu prompt <subcommand> [options]\nAvailable: derive, session, propagate, review\n"
     );
     return 2;
   }
@@ -98,8 +109,16 @@ export async function handlePrompt(args: string[]): Promise<number> {
     return handleSession(args.slice(1));
   }
 
+  if (subcommand === "propagate") {
+    return handlePropagate(args.slice(1));
+  }
+
+  if (subcommand === "review") {
+    return handleReview(args.slice(1));
+  }
+
   process.stderr.write(
-    `ERROR INPUT - unknown subcommand: "${subcommand}"\nAvailable subcommands: derive, session\n`
+    `ERROR INPUT - unknown subcommand: "${subcommand}"\nAvailable subcommands: derive, session, propagate, review\n`
   );
   return 2;
 }
@@ -419,37 +438,9 @@ export async function handleSession(args: string[]): Promise<number> {
   // Extract neighbor bodies
   const neighborBodies = extractAllBodies(sortedNeighborIds, graph, files);
 
-  // Collect term/inv bodies (always full, all elements in graph)
-  const termInvIds = [...graph.elements.keys()]
-    .filter((id) => {
-      const prefix = graph.elements.get(id)?.prefix;
-      return prefix === "term" || prefix === "inv";
-    })
-    .sort();
-  const termInvBodies = extractAllBodies(termInvIds, graph, files);
-  const termsAndInvariants = termInvIds
-    .map((id) => {
-      const body = termInvBodies.get(id);
-      return `### ${id}\n${body?.trim() ?? "(body not available)"}`;
-    })
-    .join("\n\n");
-
-  // Collect static mod condensed summary (heading + 責務: line only)
-  const modIds = [...graph.elements.keys()]
-    .filter((id) => graph.elements.get(id)?.prefix === "mod")
-    .sort();
-  const staticModulesSummary = modIds
-    .map((id) => {
-      const body = extractElementBody(id, graph, files) ?? "";
-      const dutyLine = body
-        .split("\n")
-        .find((line) => line.trimStart().startsWith("責務:"));
-      if (dutyLine) {
-        return `### ${id}\n${dutyLine.trim()}`;
-      }
-      return `### ${id}\n(no 責務: line found)`;
-    })
-    .join("\n\n");
+  // Collect term/inv full content and static mod condensed summary (shared helpers)
+  const termsAndInvariants = collectTermsAndInvariants(graph, files);
+  const staticModulesSummary = collectStaticModulesSummary(graph, files);
 
   // Build the session instruction
   const instruction = buildSessionInstruction({
@@ -462,6 +453,211 @@ export async function handleSession(args: string[]): Promise<number> {
     enabledLayers: manifest.enabled,
     formatRulesSummary: FORMAT_RULES_SUMMARY,
     sessionGuidance: SESSION_GUIDANCE,
+  });
+
+  // Write to stdout (no file I/O)
+  process.stdout.write(instruction);
+  return 0;
+}
+
+// ---------------------------------------------------------------------------
+// `prompt propagate` handler
+// ---------------------------------------------------------------------------
+
+/**
+ * Handle `prompt propagate --adr <adr-id> [--dir <path>]`.
+ *
+ * Reads the design directory, finds the specified ADR element, extracts its body
+ * and [[id]] citations as seeds, computes the 2-hop neighborhood from seeds,
+ * assembles the always-full context frame (inv/term full, static mod condensed,
+ * manifest enabled list, format rules summary, propagation guidance), then writes
+ * the instruction to stdout. Never writes to the filesystem.
+ *
+ * No loop gate: ADR is an always-layer type (C11). propagate succeeds regardless
+ * of whether `loop` is in the manifest enabled list.
+ *
+ * Exit codes: 0 = success / 2 = input or design error
+ */
+export async function handlePropagate(args: string[]): Promise<number> {
+  if (args.includes("--help") || args.includes("-h")) {
+    process.stderr.write(
+      [
+        "Usage: aozu prompt propagate --adr <adr-id> [--dir <path>]",
+        "",
+        "Output a propagation instruction for an ADR decision.",
+        "",
+        "Outputs instruction text to stdout (no files are written).",
+        "Injection scope (ADR-0019 rules, ADR-based):",
+        "  - ADR body (id + topics frontmatter)",
+        "  - Seed elements ([[id]] citations in ADR body) + 2-hop neighborhood, body in full",
+        "  - inv / term: always full",
+        "  - static mod: heading + 責務: line (condensed)",
+        "  - manifest enabled list, format rules summary, propagation guidance",
+        "",
+        "No loop gate: ADR is an always-layer type (C11).",
+        "No files are written. No design dir mutations.",
+        "",
+        "Options:",
+        "  --adr <adr-id>  ADR element ID (required)",
+        "  --dir <path>    Design directory (default: ./design)",
+        "  -h, --help      Show this help",
+        "",
+        "Exit codes: 0 = success / 2 = input or design error",
+      ].join("\n") + "\n"
+    );
+    return 0;
+  }
+
+  // Parse --adr
+  const adrIdx = args.indexOf("--adr");
+  const adrId = adrIdx >= 0 ? args[adrIdx + 1] : undefined;
+  if (!adrId) {
+    process.stderr.write(
+      "ERROR INPUT - missing --adr argument\nUsage: aozu prompt propagate --adr <adr-id> [--dir <path>]\n"
+    );
+    return 2;
+  }
+
+  // Parse --dir
+  const dirIdx = args.indexOf("--dir");
+  const designDir = dirIdx >= 0 ? (args[dirIdx + 1] ?? "./design") : "./design";
+
+  // Design directory must exist
+  if (!(await dirExists(designDir))) {
+    process.stderr.write(`ERROR INPUT - design directory not found: ${designDir}\n`);
+    return 2;
+  }
+
+  // Build pipeline (no loop gate — ADR is always-layer)
+  const files = await readMarkdownFiles(designDir);
+  const parsed = parseFiles(files);
+  const manifestPath = join(designDir, "manifest.md");
+  const manifest = parseManifest(parsed.frontmatters, manifestPath);
+  const graph = buildGraph(parsed, manifestPath);
+
+  // Find and validate the ADR element
+  const adrEl = graph.elements.get(adrId);
+  if (!adrEl || adrEl.prefix !== "adr") {
+    process.stderr.write(
+      `ERROR INPUT - ADR not found or not an adr-prefix element: "${adrId}"\n` +
+        `Check that an ADR with this ID exists in ${join(designDir, "adr")}\n`
+    );
+    return 2;
+  }
+
+  // Extract ADR body (content after frontmatter)
+  const adrBody = extractElementBody(adrId, graph, files) ?? "";
+
+  // Extract seed IDs from [[id]] citations in the ADR body
+  const adrFile = adrEl.file;
+  const rawRefs = extractReferences(adrBody, adrFile);
+  const seedIdSet = new Set<string>();
+  for (const ref of rawRefs) {
+    if (graph.elements.has(ref.targetId)) {
+      seedIdSet.add(ref.targetId);
+    }
+  }
+  const seedIds = [...seedIdSet].sort();
+
+  // Extract seed bodies
+  const seedBodies = extractAllBodies(seedIds, graph, files);
+
+  // Compute 2-hop neighborhood (excludes seeds themselves)
+  const neighborIdSet = computeNeighborhood(seedIds, graph, SCOPE_MAX_HOPS);
+  const sortedNeighborIds = [...neighborIdSet].sort();
+
+  // Extract neighbor bodies
+  const neighborBodies = extractAllBodies(sortedNeighborIds, graph, files);
+
+  // Collect term/inv full content and static mod condensed summary (shared helpers)
+  const termsAndInvariants = collectTermsAndInvariants(graph, files);
+  const staticModulesSummary = collectStaticModulesSummary(graph, files);
+
+  // Build the propagate instruction
+  const instruction = buildPropagateInstruction({
+    adrId,
+    adrBody,
+    seedBodies,
+    neighborBodies,
+    termsAndInvariants,
+    staticModulesSummary,
+    enabledLayers: manifest.enabled,
+    formatRulesSummary: FORMAT_RULES_SUMMARY,
+    propagateGuidance: PROPAGATE_GUIDANCE,
+  });
+
+  // Write to stdout (no file I/O)
+  process.stdout.write(instruction);
+  return 0;
+}
+
+// ---------------------------------------------------------------------------
+// `prompt review` handler
+// ---------------------------------------------------------------------------
+
+/**
+ * Handle `prompt review [--dir <path>]`.
+ *
+ * Reads the design directory, extracts all element bodies in ID lexicographic
+ * order, and outputs a review instruction to stdout. Never writes to the
+ * filesystem.
+ *
+ * No loop gate: review targets the whole corpus, not a loop-layer element.
+ *
+ * Exit codes: 0 = success / 2 = input error
+ */
+export async function handleReview(args: string[]): Promise<number> {
+  if (args.includes("--help") || args.includes("-h")) {
+    process.stderr.write(
+      [
+        "Usage: aozu prompt review [--dir <path>]",
+        "",
+        "Output a review instruction for the full design corpus.",
+        "",
+        "Outputs instruction text to stdout (no files are written).",
+        "Injection scope (full corpus, ID lexicographic order):",
+        "  - All element bodies",
+        "  - Format rules summary",
+        "  - Findings format guidance (1 line per finding; check's C1-C11 excluded)",
+        "",
+        "No loop gate: review targets the whole corpus.",
+        "No files are written. No design dir mutations.",
+        "",
+        "Options:",
+        "  --dir <path>  Design directory (default: ./design)",
+        "  -h, --help    Show this help",
+        "",
+        "Exit codes: 0 = success / 2 = input error",
+      ].join("\n") + "\n"
+    );
+    return 0;
+  }
+
+  // Parse --dir
+  const dirIdx = args.indexOf("--dir");
+  const designDir = dirIdx >= 0 ? (args[dirIdx + 1] ?? "./design") : "./design";
+
+  // Design directory must exist
+  if (!(await dirExists(designDir))) {
+    process.stderr.write(`ERROR INPUT - design directory not found: ${designDir}\n`);
+    return 2;
+  }
+
+  // Build pipeline (no loop gate, no manifest check needed for layer enablement)
+  const files = await readMarkdownFiles(designDir);
+  const parsed = parseFiles(files);
+  const manifestPath = join(designDir, "manifest.md");
+  const graph = buildGraph(parsed, manifestPath);
+
+  // Collect all element bodies in ID lexicographic order
+  const allIds = [...graph.elements.keys()].sort();
+  const allBodies = extractAllBodies(allIds, graph, files);
+
+  // Build the review instruction
+  const instruction = buildReviewInstruction({
+    allBodies,
+    formatRulesSummary: FORMAT_RULES_SUMMARY,
+    reviewGuidance: REVIEW_GUIDANCE,
   });
 
   // Write to stdout (no file I/O)
