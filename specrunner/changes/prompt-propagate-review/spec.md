@@ -26,7 +26,13 @@ The CLI SHALL read the design directory, locate the specified ADR element, extra
 
 ### Requirement: The system SHALL reject invalid propagate inputs with exit code 2
 
-The CLI SHALL exit with code 2 and write a diagnostic to stderr when the design directory does not exist, the specified ADR ID does not exist in the graph, or the specified ID has a prefix other than `adr`.
+The CLI SHALL exit with code 2 and write a diagnostic to stderr when the `--adr` argument is missing, the design directory does not exist, the specified ADR ID does not exist in the graph, or the specified ID has a prefix other than `adr`.
+
+#### Scenario: Missing --adr argument exits with code 2
+
+**Given** a valid design directory
+**When** `aozu prompt propagate --dir <design-dir>` is invoked without `--adr`
+**Then** exit code is 2, stderr contains a diagnostic, stdout is empty
 
 #### Scenario: Non-existent ADR ID exits with code 2
 

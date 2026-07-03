@@ -151,10 +151,10 @@ session / derive の型定義パターンを踏襲する。Map のイテレー�
 
 | ファイル | 内容 |
 |---|---|
-| `src/prompt/shared.ts` | 共有定数（SCOPE_MAX_HOPS）、共有ヘルパー（collectTermsAndInvariants, collectStaticModulesSummary） |
+| `src/prompt/shared.ts` | 共有定数（SCOPE_MAX_HOPS, FORMAT_RULES_SUMMARY — propagate / review で共有）、共有ヘルパー（collectTermsAndInvariants, collectStaticModulesSummary） |
 | `src/prompt/propagate.ts` | PropagateInput 型、PROPAGATE_GUIDANCE 定数、buildPropagateInstruction 純関数 |
 | `src/prompt/review.ts` | ReviewInput 型、REVIEW_GUIDANCE 定数、buildReviewInstruction 純関数 |
-| `src/prompt/session.ts` | 既存。SESSION_MAX_HOPS を re-export に変更。FORMAT_RULES_SUMMARY / SESSION_GUIDANCE は移動しない（session 固有） |
+| `src/prompt/session.ts` | 既存。SESSION_MAX_HOPS と FORMAT_RULES_SUMMARY を shared.ts からの re-export に変更（後方互換維持）。SESSION_GUIDANCE は移動しない（session 固有） |
 | `src/cli/commands/prompt.ts` | handlePropagate / handleReview ハンドラ追加、handlePrompt dispatch 拡張 |
 
 テストファイル:
@@ -171,7 +171,7 @@ session / derive の型定義パターンを踏襲する。Map のイテレー�
 - **[Risk] 共有ヘルパー抽出で session の出力が変わる** → Mitigation: 抽出後に session の既存テスト（バイト同一の決定性テスト含む）が無変更で green であることを確認する。session/derive のテストを 1 件も変更しないことをタスクの受け入れ基準に含める
 - **[Risk] review の全量注入がコンテキスト窓を超える** → Mitigation: 初版は ADR-0004 の「正本を小さく保つ」原理を前提とする。窓を超える実例が出たら論点 8 戦略 3（シャーディング）を検討する。本変更のスコープ外
 - **[Risk] SCOPE_MAX_HOPS リネームが既存 import を壊す** → Mitigation: session.ts からの re-export で後方互換を維持する。既存テストが無変更で通ることを確認する
-- **[Trade-off] FORMAT_RULES_SUMMARY を shared.ts に移動しない** → propagate と review で FORMAT_RULES_SUMMARY を使うが、session.ts からの import を維持する。移動すると session.ts からの re-export が増え、変更量が利益に見合わない
+- **[Trade-off] FORMAT_RULES_SUMMARY を shared.ts に移動する**（tasks.md T-01 の方針）→ propagate / review が session.ts という session 専用ファイルの定数に意味的依存するより、共有定数として shared.ts に集約する方が構成として自明。session.ts からは re-export して既存 import（session.test.ts 含む）の後方互換を維持する。re-export 1 行の増加は SCOPE_MAX_HOPS（D6）で確立済みのパターンでありリスクは低い
 
 ## Open Questions
 
