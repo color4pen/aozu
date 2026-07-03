@@ -414,6 +414,38 @@ describe("handleDerive — template dual-mode", () => {
       await rm(baseDir, { recursive: true });
     }
   });
+
+  // TC-044: request-template command exits non-zero → exit 2 + stderr diagnostic
+  it("request-template command exits non-zero → exit 2 + stderr diagnostic (TC-044)", async () => {
+    const { designDir, baseDir } = await createDeriveFixture();
+    try {
+      // Set request-template to a command that always fails
+      await writeFile(
+        join(designDir, "manifest.md"),
+        [
+          "---",
+          "format-version: 0",
+          "enabled: static, domain, dynamic, loop",
+          "request-template: exit 1",
+          "request-output-dir: requests/",
+          "---",
+          "",
+          "# manifest",
+        ].join("\n")
+      );
+
+      const proc = Bun.spawn(
+        ["bun", MAIN_TS, "prompt", "derive", "--group", "grp-my-plan", "--dir", designDir],
+        { stdout: "pipe", stderr: "pipe" }
+      );
+      const exitCode = await proc.exited;
+      const stderr = await new Response(proc.stderr).text();
+      expect(exitCode).toBe(2);
+      expect(stderr).toContain("request-template");
+    } finally {
+      await rm(baseDir, { recursive: true });
+    }
+  });
 });
 
 // ---------------------------------------------------------------------------
