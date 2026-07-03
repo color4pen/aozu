@@ -32,11 +32,15 @@ export interface Frontier {
 
 /**
  * Set of element prefixes that represent implementation units.
+ * Covers all core-layer element types (static / domain / dynamic), including
+ * `act` — actors are first-class domain elements (ADR-0015) and participate in
+ * the designed → requested → implemented state machine like any other element
+ * (ADR-0005 "全設計要素").
  * Loop meta-elements (top, plan, grp) and ADRs are excluded from the
  * "designed" frontier since they are planning/decision artifacts, not
  * implementation targets.
  */
-export const IMPLEMENTATION_PREFIXES = new Set(["mod", "term", "ent", "inv", "seq"]);
+export const IMPLEMENTATION_PREFIXES = new Set(["mod", "term", "ent", "inv", "act", "seq"]);
 
 // ---------------------------------------------------------------------------
 // Frontier computation (pure function)
@@ -57,6 +61,14 @@ export function computeFrontier(
   frontmatters: ParseResult["frontmatters"]
 ): Frontier {
   // (a) Open topics: top elements whose frontmatter status === "open"
+  //
+  // NOTE (pre-ADR-0018 semantics, intentionally retained in this change):
+  // ADR-0018-3 replaces the frontmatter `status` field with a computed rule —
+  // "a top cited by any ADR's `topics:` frontmatter is addressed". Migrating
+  // this computation (and the scaffold topic template) is scoped to the
+  // coverage/mark request (adr/0018 Consequences, docs/open-questions.md 論点 12).
+  // plan/derive only consume `frontier.designed`, so this branch does not
+  // affect them.
   const openTopics: Frontier["openTopics"] = [];
   for (const [id, el] of graph.elements) {
     if (el.prefix !== "top") continue;

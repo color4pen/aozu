@@ -20,3 +20,14 @@ export async function readState(path: string): Promise<StateMap> {
   }
   return (await f.json()) as StateMap;
 }
+
+/**
+ * Read the state map for a design directory.
+ *
+ * Encapsulates the state file name so callers outside mod-state never spell
+ * out the file location (inv-tool-writes-state: the state file is mod-state's
+ * exclusive knowledge).
+ */
+export async function readDesignState(designDir: string): Promise<StateMap> {
+  return readState(`${designDir}/state.json`);
+}

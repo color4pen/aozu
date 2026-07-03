@@ -2,7 +2,7 @@
   "version": 2,
   "jobId": "89603d5d-0d9c-4dce-8fa1-7efabd67a7f5",
   "createdAt": "2026-07-02T23:55:23.481Z",
-  "updatedAt": "2026-07-03T01:16:47.713Z",
+  "updatedAt": "2026-07-03T01:27:32.936Z",
   "request": {
     "title": "plan / prompt derive を実装し、designed 要素から request 草稿までの導出経路を立てる",
     "type": "new-feature",
@@ -12,8 +12,8 @@
     "owner": "color4pen",
     "name": "aozu"
   },
-  "step": "adversarial-consistency",
-  "status": "running",
+  "step": "code-fixer",
+  "status": "awaiting-resume",
   "branch": "feat/plan-and-derive-89603d5d",
   "error": null,
   "pipelineId": "standard",
@@ -33,8 +33,27 @@
       ]
     }
   ],
+  "reviewerStatuses": [
+    {
+      "name": "adversarial-consistency",
+      "status": "pending",
+      "approvedAtCommit": null,
+      "activationPaths": [
+        "adr/**",
+        "spec/**",
+        "design/**",
+        "docs/open-questions.md"
+      ],
+      "invalidatedByCommit": null
+    }
+  ],
+  "resumePoint": {
+    "step": "custom-reviewers",
+    "reason": "custom-reviewers escalated",
+    "iterationsExhausted": 1
+  },
   "_journal": {
-    "historyCount": 57,
+    "historyCount": 60,
     "stepCounts": {
       "request-review": 1,
       "design": 1,
@@ -45,7 +64,9 @@
       "verification": 2,
       "build-fixer": 1,
       "code-review": 2,
-      "code-fixer": 2
+      "code-fixer": 2,
+      "adversarial-consistency": 1,
+      "custom-reviewers": 1
     }
   }
 }

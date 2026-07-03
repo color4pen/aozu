@@ -20,7 +20,7 @@ import { readMarkdownFiles } from "../../fs/reader.ts";
 import { parseFiles } from "../../parse/parser.ts";
 import { parseManifest, isLayerEnabled, getEnabledPrefixes } from "../../check/manifest.ts";
 import { buildGraph } from "../../graph/builder.ts";
-import { readState } from "../../state/reader.ts";
+import { readDesignState } from "../../state/reader.ts";
 import { computeFrontier } from "../../plan/frontier.ts";
 import { findOwningElement } from "../../graph/attribution.ts";
 import { generatePlan, type PlanAnnotations } from "../../plan/generator.ts";
@@ -140,7 +140,7 @@ export async function handlePlan(args: string[]): Promise<number> {
   }
 
   // Compute designed frontier
-  const stateMap = await readState(join(designDir, "state.json"));
+  const stateMap = await readDesignState(designDir);
   const enabledPrefixes = getEnabledPrefixes(manifest);
   const frontier = computeFrontier(graph, stateMap, enabledPrefixes, parsed.frontmatters);
 

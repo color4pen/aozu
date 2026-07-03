@@ -50,6 +50,11 @@ aozu の loop 動詞（plan / coverage / derive / mark）のうち、state.json 
 
 **Alternatives considered**: mod-state に移設 → mod-state -> mod-graph の依存が許可されておらず、Graph 型を直接利用できない。引数を全て展開して Graph 依存を避ける手もあるが、シグネチャが肥大する。mod-graph に移設 → mod-graph -> mod-state は不許可であり StateMap を使えない。
 
+**移設時の整合裁定（adversarial-consistency findings への対応）**:
+
+1. `IMPLEMENTATION_PREFIXES` に **act を追加**する（finding 1、high）。移設元 status.ts の集合は ADR-0015（act の一級化）以前の形のまま act を欠いており、「そのまま移設」では ADR-0005「全設計要素は 3 状態を持つ」との齟齬を正規モジュールに定着させる。act はアクターとして実装対象（権限定義・ロール等）を持つ設計要素であり、designed フロンティア・plan・derive の対象に含める。回帰テストを status.test.ts に追加
+2. openTopics の frontmatter `status` 依存は **本変更では移設のまま保持**する（finding 2、medium）。ADR-0018-3 の計算導出（ADR の topics: 引用 = addressed）への移行は adr/0018 Consequences が定めるとおり coverage / mark の request のスコープであり、本 request のスコープ外（request.md スコープ外「status 追随」）。plan / derive は frontier.designed のみを消費するため動作影響はない。frontier.ts の該当箇所にこの経緯を NOTE コメントとして残し、暗黙の定着を防ぐ
+
 ### D2: findOwningElement の移設先 — mod-graph
 
 mod 接地の注釈（要件 2b: 各要素が参照する / 各要素を参照する mod の一覧）には、参照の要素帰属が必要になる。`findOwningElement` は現在 src/check/attribution.ts にあるが、mod-plan から mod-check への依存は不許可。
@@ -129,7 +134,7 @@ manifest の `request-template` の値をデュアルモードで解釈する:
 
 plan の追加ゲート: 既存 `plans/<slug>.md` が存在する場合は exit 1、designed 要素が 0 件の場合は exit 1。
 
-**derive コマンド**: handler 冒頭で `isLayerEnabled("loop", manifest)` を検査し、false なら stderr に案内メッセージを出力して **exit 2** を返す。loop 無効は derive にとって「設定不備」（manifest の設定が不足している状態）であり、他の設定欠落ゲートと同じく入力不正 = exit 2 の規約に従う。
+**derive コマンド**: handler 冒頭で `isLayerEnabled("loop", manifest)` を検査し、false なら stderr に案内メッセージを出力して **exit 1** を返す（request.md 要件 5「plan / derive とも loop が無効なら明示エラーで案内し exit 1」に従う。当初案は「設定不備 = exit 2」だったが、段階ゲート（ADR-0010 の明示エラー）は設定欠落とはクラスが異なり、plan と同じ検証不合格 = exit 1 に揃える）。
 
 derive の追加ゲート: plan ファイル不在・グループ不在・グループの elements に未解決要素がある場合は exit 2。`request-template` / `request-output-dir` が manifest に欠けている場合は exit 2。
 

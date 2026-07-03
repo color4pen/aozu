@@ -14,8 +14,9 @@
  *
  * Exit codes:
  *   0 = instruction text written to stdout
+ *   1 = stage-gate failure (loop disabled — ADR-0010 explicit error, same class as `plan`)
  *   2 = input error or configuration error (missing config / plan not found /
- *       group not found / unresolved elements / loop disabled)
+ *       group not found / unresolved elements)
  */
 
 import { join, resolve } from "path";
@@ -65,7 +66,7 @@ export async function handlePrompt(args: string[]): Promise<number> {
         "",
         "Run 'aozu prompt derive --help' for details.",
         "",
-        "Exit codes: 0 = success / 2 = input or configuration error",
+        "Exit codes: 0 = success / 1 = loop disabled / 2 = input or configuration error",
       ].join("\n") + "\n"
     );
     return 0;
@@ -118,7 +119,7 @@ export async function handleDerive(args: string[]): Promise<number> {
         "  --dir <path>      Design directory (default: ./design)",
         "  -h, --help        Show this help",
         "",
-        "Exit codes: 0 = success / 2 = input or configuration error",
+        "Exit codes: 0 = success / 1 = loop disabled / 2 = input or configuration error",
       ].join("\n") + "\n"
     );
     return 0;
@@ -154,17 +155,17 @@ export async function handleDerive(args: string[]): Promise<number> {
   // --- Manifest frontmatter for config keys ---
   const manifestFm = parsed.frontmatters.get(manifestPath) ?? {};
 
-  // Stage gate: loop must be enabled (derive without loop = configuration error = exit 2)
+  // Stage gate: loop must be enabled (ADR-0010 — explicit error, exit 1 like `plan`)
   if (!isLayerEnabled("loop", manifest)) {
     process.stderr.write(
       [
-        "ERROR CONFIG - loop layer is not enabled in manifest.",
+        "ERROR - loop layer is not enabled in manifest.",
         "Add 'loop' to the enabled list in design/manifest.md:",
         "  enabled: static, domain, dynamic, loop",
         "prompt derive requires loop to be enabled.",
       ].join("\n") + "\n"
     );
-    return 2;
+    return 1;
   }
 
   // Stage gate: request-template must be present

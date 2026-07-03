@@ -453,7 +453,7 @@ describe("handleDerive — template dual-mode", () => {
 // ---------------------------------------------------------------------------
 
 describe("handleDerive — stage gates", () => {
-  it("loop disabled → exit 2 + stderr diagnostic", async () => {
+  it("loop disabled → exit 1 + stderr diagnostic (ADR-0010 stage gate, same class as plan)", async () => {
     const { designDir, baseDir } = await createLoopDisabledFixture();
     try {
       const proc = Bun.spawn(
@@ -462,7 +462,7 @@ describe("handleDerive — stage gates", () => {
       );
       const exitCode = await proc.exited;
       const stderr = await new Response(proc.stderr).text();
-      expect(exitCode).toBe(2);
+      expect(exitCode).toBe(1);
       expect(stderr).toContain("loop");
     } finally {
       await rm(baseDir, { recursive: true });
