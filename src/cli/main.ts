@@ -9,8 +9,10 @@
 
 import { createRegistry, register, dispatch, helpText } from "./registry.ts";
 import { handleCheck } from "./commands/check.ts";
+import { handleCoverage } from "./commands/coverage.ts";
 import { handleExport } from "./commands/export.ts";
 import { handleInit } from "./commands/init.ts";
+import { handleMark } from "./commands/mark.ts";
 import { handlePlan } from "./commands/plan.ts";
 import { handlePrompt } from "./commands/prompt.ts";
 import { handleScaffold } from "./commands/scaffold.ts";
@@ -18,8 +20,10 @@ import { handleStatus } from "./commands/status.ts";
 
 const registry = createRegistry();
 register(registry, "check", handleCheck, "run closure checks on design directory");
+register(registry, "coverage", handleCoverage, "verify draft coverage and transition to requested");
 register(registry, "export", handleExport, "export design artifacts");
 register(registry, "init", handleInit, "initialize a design directory");
+register(registry, "mark", handleMark, "transition element states");
 register(registry, "plan", handlePlan, "generate a plan from designed elements");
 register(registry, "prompt", handlePrompt, "generate prompts for design workflows");
 register(registry, "scaffold", handleScaffold, "create a new design document from template");

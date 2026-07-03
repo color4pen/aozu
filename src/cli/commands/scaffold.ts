@@ -59,13 +59,14 @@ export const HEADING_ELEMENT_TARGET: Record<string, string> = {
 /**
  * Template for a topic document (spec/format.md §8 topics/<slug>.md — top).
  *
- * status: open | addressed
- * source: optional external reference
+ * `source` is optional external reference.
+ * `addressed` status is NOT stored in frontmatter — it is computed from ADR
+ * `topics:` citations (ADR-0018-3). The template therefore contains no
+ * `status:` field.
  */
 export function topicTemplate(id: string): string {
   return `---
 id: ${id}
-status: open
 ---
 （症状・動機を記述する。意図を書いてよいが提案であって決定ではない）
 `;
