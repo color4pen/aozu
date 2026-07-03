@@ -2,7 +2,7 @@
   "version": 2,
   "jobId": "0d8b8cc0-e0fe-4568-b218-e6ca8155a3d8",
   "createdAt": "2026-07-03T11:54:34.925Z",
-  "updatedAt": "2026-07-03T12:39:58.174Z",
+  "updatedAt": "2026-07-03T12:40:22.263Z",
   "request": {
     "title": "prompt propagate / prompt review を実装し、prompt 動詞群を完成させる",
     "type": "new-feature",
@@ -12,7 +12,7 @@
     "owner": "color4pen",
     "name": "aozu"
   },
-  "step": "regression-gate",
+  "step": "conformance",
   "status": "running",
   "branch": "feat/prompt-propagate-review-0d8b8cc0",
   "error": null,
@@ -49,7 +49,7 @@
     }
   ],
   "_journal": {
-    "historyCount": 41,
+    "historyCount": 46,
     "stepCounts": {
       "request-review": 1,
       "design": 1,
@@ -59,7 +59,8 @@
       "verification": 1,
       "code-review": 1,
       "adversarial-consistency": 1,
-      "custom-reviewers": 1
+      "custom-reviewers": 1,
+      "regression-gate": 1
     }
   }
 }
