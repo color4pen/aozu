@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.2](https://github.com/color4pen/aozu/compare/v0.1.1...v0.1.2) (2026-07-04)
+
+
+### Features
+
+* 単一バイナリ配布を立てる（GitHub Releases + install.sh — ADR-0021 の実施） ([#17](https://github.com/color4pen/aozu/issues/17)) ([c1d372f](https://github.com/color4pen/aozu/commit/c1d372f24c40e3a0f699d0295d5d04b677445817))
+
+
+### Bug Fixes
+
+* --version / -v フラグを実装する（spec-runner doctor の presence 検証と配布インストーラの前提） ([e80372b](https://github.com/color4pen/aozu/commit/e80372b7a638e83f5e0e65bd29080c2c7b872fae))
+
 ## [0.1.1](https://github.com/color4pen/aozu/compare/v0.1.0...v0.1.1) (2026-07-04)
 
 
