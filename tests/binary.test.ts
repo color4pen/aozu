@@ -66,13 +66,25 @@ describe("compiled binary", () => {
         ["codesign", "--remove-signature", binaryPath],
         { stdout: "pipe", stderr: "pipe" }
       );
-      await strip.exited;
+      const stripCode = await strip.exited;
+      if (stripCode !== 0) {
+        const stderr = await new Response(strip.stderr).text();
+        throw new Error(
+          `codesign --remove-signature failed (exit ${stripCode}): ${stderr}`
+        );
+      }
 
       const sign = Bun.spawn(
         ["codesign", "-s", "-", binaryPath],
         { stdout: "pipe", stderr: "pipe" }
       );
-      await sign.exited;
+      const signCode = await sign.exited;
+      if (signCode !== 0) {
+        const stderr = await new Response(sign.stderr).text();
+        throw new Error(
+          `codesign -s - failed (exit ${signCode}): ${stderr}`
+        );
+      }
     }
   }, 120_000); // compilation can take up to 2 minutes on first run
 
