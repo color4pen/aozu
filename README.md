@@ -119,4 +119,4 @@ curl -fsSL https://raw.githubusercontent.com/color4pen/aozu/main/install.sh | ba
 - **実装済み**: `init` / `scaffold` / `check`（`--request` 含む）/ `status` / `export rules`（`--verify` 含む）/ `plan` / `prompt derive` / `coverage` / `mark implemented` / `prompt session` / `prompt propagate` / `prompt review`（prompt 群完成）
 - **未実装**: `diff` / `trace`
 
-検証状況: 自己記述ドッグフード（design/ 26 要素）と業務 SaaS の書き起こし（74 要素）で check exit 0。状態機械の一周（plan → derive → coverage → mark → フロンティア空）は合成 fixture で検証済み。不変条件の歯は tests/invariants.test.ts（PR #8）。CI（4 ゲート）と release 基盤（release-please + npm publish）は整備済み（PR #12）で、初回 publish は secrets 登録と release PR の merge 待ち。実地のフルループ検証が残り。
+検証状況: 自己記述ドッグフード（design/ 26 要素）と業務 SaaS の書き起こし（74 要素）で check exit 0。**実地フルループは greenfield SNS（aosora）で検証済み**（2026-07-05: topic → 設計 → plan → derive → coverage → 実装パイプライン → mark implemented の一周 ×2、設計 11 要素すべて implemented。入口ゲート・出口 hook が実地稼働、設計〜merge まで自律運用で完走）。不変条件の歯は tests/invariants.test.ts（PR #8）。CI（4 ゲート + binary-smoke）と release 基盤（release-please → npm + 単一バイナリ）は稼働中（npm: `@color4pen/aozu`）。残りは brownfield 導入経路の実地検証（docs/adoption.md）。
