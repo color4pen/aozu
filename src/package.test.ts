@@ -23,7 +23,7 @@ describe("package.json", () => {
     const pkgPath = join(import.meta.dir, "../package.json");
     const pkg = await Bun.file(pkgPath).json();
 
-    expect(pkg.name).toBe("aozu");
+    expect(pkg.name).toBe("@color4pen/aozu");
     expect(pkg.bin).toBeDefined();
     expect(pkg.bin["aozu"]).toBeDefined();
   });

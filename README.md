@@ -47,10 +47,11 @@ topic 起票
 
 ```sh
 # インストール不要で実行（npx 相当）
-bunx aozu --help
+bunx @color4pen/aozu --help
 
-# グローバルインストール
-bun add -g aozu
+# グローバルインストール（コマンド名は aozu になる）
+bun add -g @color4pen/aozu
+aozu --help
 ```
 
 ## 使い方
