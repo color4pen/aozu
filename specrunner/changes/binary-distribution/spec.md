@@ -26,7 +26,7 @@ The CLI SHALL return the same version string (matching `package.json` version) w
 
 ### Requirement: Publish workflow SHALL compile 5 target binaries and attach to GitHub Release
 
-The publish workflow SHALL contain a job that builds standalone executables for all 5 supported targets (`bun-darwin-arm64`, `bun-darwin-x64`, `bun-linux-x64`, `bun-linux-arm64`, `bun-windows-x64`) and uploads them to the corresponding GitHub Release. This job SHALL have `contents: write` permission and SHALL be separate from the npm publish job.
+The publish workflow SHALL contain a job that builds standalone executables for all 5 supported targets (`bun-darwin-arm64`, `bun-darwin-x64`, `bun-linux-x64`, `bun-linux-arm64`, `bun-windows-x64`) and uploads them to the corresponding GitHub Release. Attached asset names SHALL strip the `bun-` prefix (`aozu-darwin-arm64` etc.). The upload job SHALL also generate a `SHA256SUMS` file covering all binaries and attach it to the same release. This job SHALL have `contents: write` permission and SHALL be separate from the npm publish job.
 
 #### Scenario: Workflow YAML contains compile matrix for all 5 targets
 
@@ -54,7 +54,7 @@ The publish workflow SHALL contain a job that builds standalone executables for 
 
 ### Requirement: install.sh SHALL detect OS/arch and download the correct binary
 
-The installer script SHALL detect the operating system and CPU architecture, download the matching binary from the latest GitHub Release, and place it in `~/.local/bin/aozu`. The script SHALL handle `darwin`/`linux` OS and `arm64`/`x64` architectures.
+The installer script SHALL detect the operating system and CPU architecture, download the matching binary from the latest GitHub Release, and place it in `~/.local/bin/aozu`. The script SHALL handle `darwin`/`linux` OS and `arm64`/`x64` architectures. The script SHALL download the release's `SHA256SUMS` file and verify the downloaded binary's checksum before installation, aborting on mismatch. The `curl | bash` execution model is an accepted risk per the distribution ADR (HTTPS delivery from this repository); binary integrity is protected by the checksum verification.
 
 #### Scenario: install.sh contains OS detection
 
@@ -67,6 +67,12 @@ The installer script SHALL detect the operating system and CPU architecture, dow
 **Given** the file `install.sh` exists at the repository root
 **When** its content is inspected
 **Then** it contains `uname -m` (or equivalent) and branches for `arm64`/`aarch64` and `x86_64`/`x64`
+
+#### Scenario: install.sh verifies binary checksum
+
+**Given** the file `install.sh` exists at the repository root
+**When** its content is inspected
+**Then** it contains a `SHA256SUMS` download and a checksum verification step (`sha256sum -c` or `shasum -a 256 -c`) that aborts on mismatch
 
 #### Scenario: install.sh performs version verification
 

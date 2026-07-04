@@ -41,13 +41,14 @@
   2. `oven-sh/setup-bun@v2`
   3. Read version from `package.json` (e.g., `jq -r .version package.json`) and set as an env var
   4. Use a matrix strategy with the 5 targets: `bun-darwin-arm64`, `bun-darwin-x64`, `bun-linux-x64`, `bun-linux-arm64`, `bun-windows-x64`
-  5. Run `bun build --compile --target=${{ matrix.target }} --define "globalThis.__AOZU_VERSION='\"$VERSION\"'" src/cli/main.ts --outfile aozu-<target>` (append `.exe` for windows target)
+  5. Derive the asset name by stripping the `bun-` prefix from the matrix target: `ASSET="aozu-${TARGET#bun-}"` where `TARGET=${{ matrix.target }}` (e.g. `bun-darwin-arm64` → `aozu-darwin-arm64`; append `.exe` for the windows target). Then run `bun build --compile --target=${{ matrix.target }} --define "globalThis.__AOZU_VERSION='\"$VERSION\"'" src/cli/main.ts --outfile "$ASSET"`. The asset name MUST NOT contain the `bun-` prefix (install.sh constructs URLs as `aozu-${os}-${arch}`)
   6. Upload the binary as a GitHub Actions artifact (for the upload step)
 - [ ] Add a final `upload-binaries` job that:
   1. Uses `needs: build-binaries`
   2. Downloads all artifacts
-  3. Runs `gh release upload <tag> <all binaries> --clobber` to attach to the GitHub Release
-  4. Uses `permissions: { contents: write }`
+  3. Generates a `SHA256SUMS` file covering all 5 binaries (`sha256sum aozu-* > SHA256SUMS`)
+  4. Runs `gh release upload <tag> <all binaries> SHA256SUMS --clobber` to attach to the GitHub Release
+  5. Uses `permissions: { contents: write }`
 
 **Acceptance Criteria**:
 - `.github/workflows/publish.yml` contains `bun build --compile` and all 5 target triples
@@ -77,6 +78,7 @@
 - [ ] Construct the binary name: `aozu-${os}-${arch}`
 - [ ] Fetch the latest release tag from GitHub API: `https://api.github.com/repos/color4pen/aozu/releases/latest`
 - [ ] Download the binary: `https://github.com/color4pen/aozu/releases/download/${tag}/${binary_name}`
+- [ ] Download `SHA256SUMS` from the same release and verify the downloaded binary's SHA-256 hash (`sha256sum -c` on linux / `shasum -a 256 -c` on darwin, filtered to the target binary); abort with an error message on mismatch
 - [ ] Create `~/.local/bin` if it does not exist
 - [ ] Place the binary at `~/.local/bin/aozu` and `chmod +x` it
 - [ ] Run `~/.local/bin/aozu --version` and print the output as a connectivity check
@@ -105,7 +107,7 @@
 
 ## T-07: Add binary smoke step to CI workflow
 
-- [ ] Edit `.github/workflows/ci.yml`: add a `binary-smoke` job (or steps in the existing `ci` job) that:
+- [ ] Edit `.github/workflows/ci.yml`: add a `binary-smoke` job that:
   1. Reads version from `package.json`
   2. Compiles the native binary: `bun build --compile --define "globalThis.__AOZU_VERSION='\"$VERSION\"'" src/cli/main.ts --outfile aozu`
   3. Runs `./aozu --help` and asserts exit 0
