@@ -36,10 +36,13 @@ describe("package.json — publish readiness (ci-and-publish)", () => {
     expect(pkg.private).toBeUndefined();
   });
 
-  it("version is 0.0.0 (release-please manages bumps)", async () => {
+  it("version matches release-please manifest (bumps are release-please's job)", async () => {
     const pkgPath = join(import.meta.dir, "../package.json");
     const pkg = await Bun.file(pkgPath).json();
-    expect(pkg.version).toBe("0.0.0");
+    const manifestPath = join(import.meta.dir, "../.release-please-manifest.json");
+    const manifest = await Bun.file(manifestPath).json();
+    expect(pkg.version).toBe(manifest["."]);
+    expect(pkg.version).toMatch(/^\d+\.\d+\.\d+$/);
   });
 
   it("engines.bun is defined", async () => {
