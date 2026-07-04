@@ -7,6 +7,8 @@ import {
   VIEW_TYPE_NAMES,
   LAYER_ENABLED_NAMES,
   LAYER_MAP,
+  validateFormatVersion,
+  SUPPORTED_FORMAT_VERSIONS,
 } from "./manifest.ts";
 import type { ParseResult } from "../parse/types.ts";
 import type { Manifest } from "../graph/types.ts";
@@ -16,6 +18,85 @@ function makeFrontmatters(path: string, record: Record<string, string | string[]
   m.set(path, record);
   return m;
 }
+
+// ---------------------------------------------------------------------------
+// validateFormatVersion tests (T-01)
+// ---------------------------------------------------------------------------
+
+describe("validateFormatVersion", () => {
+  it("returns null for formatVersion '0' (supported)", () => {
+    const manifest = { formatVersion: "0", enabled: [] };
+    expect(validateFormatVersion(manifest, "design/manifest.md")).toBeNull();
+  });
+
+  it("returns C12 diagnostic for unknown formatVersion '99'", () => {
+    const manifest = { formatVersion: "99", enabled: [] };
+    const diag = validateFormatVersion(manifest, "design/manifest.md");
+    expect(diag).not.toBeNull();
+    expect(diag?.code).toBe("C12");
+    expect(diag?.level).toBe("error");
+  });
+
+  it("returns C12 diagnostic for empty sentinel formatVersion ''", () => {
+    const manifest = { formatVersion: "", enabled: [] };
+    const diag = validateFormatVersion(manifest, "design/manifest.md");
+    expect(diag).not.toBeNull();
+    expect(diag?.code).toBe("C12");
+  });
+
+  it("C12 diagnostic message includes supported version '0' and 'update' guidance", () => {
+    const manifest = { formatVersion: "99", enabled: [] };
+    const diag = validateFormatVersion(manifest, "design/manifest.md");
+    expect(diag?.message).toContain("0");
+    expect(diag?.message.toLowerCase()).toMatch(/update|更新/);
+  });
+
+  it("C12 diagnostic file matches manifestPath", () => {
+    const manifest = { formatVersion: "99", enabled: [] };
+    const diag = validateFormatVersion(manifest, "some/path/manifest.md");
+    expect(diag?.file).toBe("some/path/manifest.md");
+  });
+});
+
+describe("SUPPORTED_FORMAT_VERSIONS", () => {
+  it("contains '0'", () => {
+    expect(SUPPORTED_FORMAT_VERSIONS.has("0")).toBe(true);
+  });
+
+  it("does not contain '1' or empty string", () => {
+    expect(SUPPORTED_FORMAT_VERSIONS.has("1")).toBe(false);
+    expect(SUPPORTED_FORMAT_VERSIONS.has("")).toBe(false);
+  });
+});
+
+describe("parseManifest — format-version key handling", () => {
+  it("returns formatVersion '0' when manifest file is absent (no-file default)", () => {
+    const manifest = parseManifest(new Map(), "design/manifest.md");
+    expect(manifest.formatVersion).toBe("0");
+  });
+
+  it("returns formatVersion '' (sentinel) when manifest file exists but format-version key is missing", () => {
+    const frontmatters = makeFrontmatters("design/manifest.md", {
+      enabled: ["static"],
+      // note: no "format-version" key
+    });
+    const manifest = parseManifest(frontmatters, "design/manifest.md");
+    expect(manifest.formatVersion).toBe("");
+  });
+
+  it("returns formatVersion '0' when format-version is explicitly '0'", () => {
+    const frontmatters = makeFrontmatters("design/manifest.md", {
+      "format-version": "0",
+      enabled: ["static"],
+    });
+    const manifest = parseManifest(frontmatters, "design/manifest.md");
+    expect(manifest.formatVersion).toBe("0");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Original parseManifest tests
+// ---------------------------------------------------------------------------
 
 describe("parseManifest", () => {
   it("parses enabled: static, domain, dynamic", () => {

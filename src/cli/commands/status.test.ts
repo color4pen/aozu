@@ -815,3 +815,33 @@ describe("extractAddressedTopics — ADR-0018-3 addressed topic computation", ()
     }
   });
 });
+
+// ---------------------------------------------------------------------------
+// T-01: format-version fence — status command
+// ---------------------------------------------------------------------------
+
+describe("handleStatus — format-version fence (C12)", () => {
+  it("returns non-0 for unknown format-version in manifest", async () => {
+    const baseDir = await mkdtemp(join(tmpdir(), "aozu-status-fv-test-"));
+    const designDir = join(baseDir, "design");
+
+    await mkdir(join(designDir, "static"), { recursive: true });
+
+    await writeFile(
+      join(designDir, "manifest.md"),
+      ["---", "format-version: 99", "enabled: static", "---", "", "# manifest"].join("\n")
+    );
+    await writeFile(
+      join(designDir, "static", "modules.md"),
+      ["# Modules", "", "## App {#mod-app}", "責務: app.", "実装: src/"].join("\n")
+    );
+    await writeFile(join(designDir, "static", "dependencies.md"), "# 許可依存\n");
+
+    try {
+      const exitCode = await handleStatus(["--dir", designDir]);
+      expect(exitCode).not.toBe(0);
+    } finally {
+      await rm(baseDir, { recursive: true });
+    }
+  });
+});

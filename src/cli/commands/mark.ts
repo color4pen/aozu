@@ -17,7 +17,7 @@ import { join } from "path";
 import { stat } from "fs/promises";
 import { readMarkdownFiles } from "../../fs/reader.ts";
 import { parseFiles } from "../../parse/parser.ts";
-import { parseManifest, isLayerEnabled } from "../../check/manifest.ts";
+import { parseManifest, isLayerEnabled, validateFormatVersion } from "../../check/manifest.ts";
 import { readDesignState } from "../../state/reader.ts";
 import { writeDesignState } from "../../state/writer.ts";
 import type { StateMap } from "../../state/types.ts";
@@ -54,6 +54,8 @@ export async function handleMark(args: string[]): Promise<number> {
         "",
         "Sub-commands:",
         "  implemented  Transition requested elements to implemented state",
+        "               Usage: aozu mark implemented <slug> [--pr <number>] [--dir <path>]",
+        "                       aozu mark implemented --request <slug> [--pr <number>] [--dir <path>]",
         "",
         "Run 'aozu mark implemented --help' for details.",
         "",
@@ -100,12 +102,16 @@ export async function handleMarkImplemented(args: string[]): Promise<number> {
   if (args.includes("--help") || args.includes("-h")) {
     process.stderr.write(
       [
-        "Usage: aozu mark implemented --request <slug> [--pr <number>] [--dir <path>]",
+        "Usage: aozu mark implemented <slug> [--pr <number>] [--dir <path>]",
+        "       aozu mark implemented --request <slug> [--pr <number>] [--dir <path>]",
         "",
         "Transition all requested elements with the given request slug to implemented.",
         "",
+        "Arguments:",
+        "  <slug>             Request slug to match (positional, alternative to --request)",
+        "",
         "Options:",
-        "  --request <slug>   Request slug to match (required)",
+        "  --request <slug>   Request slug to match (alternative to positional <slug>)",
         "  --pr <number>      PR number to record in state.json (optional)",
         "  --dir <path>       Design directory (default: ./design)",
         "  -h, --help         Show this help",
@@ -113,18 +119,45 @@ export async function handleMarkImplemented(args: string[]): Promise<number> {
         "Exit codes:",
         "  0 = transition complete (or no-op if all already implemented)",
         "  1 = unknown slug (no matching request found) or loop disabled",
-        "  2 = input error (missing slug, design dir not found)",
+        "  2 = input error (missing slug, design dir not found, conflicting slug arguments)",
       ].join("\n") + "\n"
     );
     return 0;
   }
 
+  // Collect flag-value pair indices to distinguish flag values from positional args
+  const flagValueIndices = new Set<number>();
+  const knownFlags = ["--request", "--pr", "--dir"];
+  for (const flag of knownFlags) {
+    const idx = args.indexOf(flag);
+    if (idx >= 0 && idx + 1 < args.length) {
+      flagValueIndices.add(idx + 1);
+    }
+  }
+
+  // Extract positional slug (first arg that is not a flag and not a flag value)
+  const positionalSlug = args.find(
+    (a, i) => !a.startsWith("-") && !flagValueIndices.has(i)
+  );
+
   // Parse --request
   const requestIdx = args.indexOf("--request");
-  const slug = requestIdx >= 0 ? args[requestIdx + 1] : undefined;
+  const requestSlug = requestIdx >= 0 ? args[requestIdx + 1] : undefined;
+
+  // Resolve slug: positional and --request must not conflict
+  let slug: string | undefined;
+  if (positionalSlug && requestSlug && positionalSlug !== requestSlug) {
+    process.stderr.write(
+      `ERROR INPUT - conflicting slug: positional '${positionalSlug}' and --request '${requestSlug}' must match\n` +
+      `Usage: aozu mark implemented <slug> [options]\n`
+    );
+    return 2;
+  }
+  slug = requestSlug ?? positionalSlug;
+
   if (!slug) {
     process.stderr.write(
-      "ERROR INPUT - missing --request argument\nUsage: aozu mark implemented --request <slug>\n"
+      "ERROR INPUT - missing slug\nUsage: aozu mark implemented <slug> [--pr <number>] [--dir <path>]\n"
     );
     return 2;
   }
@@ -157,6 +190,16 @@ export async function handleMarkImplemented(args: string[]): Promise<number> {
   const parsed = parseFiles(files);
   const manifestPath = join(designDir, "manifest.md");
   const manifest = parseManifest(parsed.frontmatters, manifestPath);
+
+  // Stage gate: format-version must be supported (C12)
+  const fvDiag = validateFormatVersion(manifest, manifestPath);
+  if (fvDiag) {
+    process.stderr.write(
+      `ERROR CONFIG - unsupported format-version in ${manifestPath}.\n` +
+      `${fvDiag.message}\n`
+    );
+    return 2;
+  }
 
   // Stage gate: loop must be enabled
   if (!isLayerEnabled("loop", manifest)) {

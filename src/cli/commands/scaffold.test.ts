@@ -262,6 +262,7 @@ describe("handleScaffold — ID grammar violation", () => {
     const designDir = await createLoopEnabledFixture();
     const baseDir = join(designDir, "..");
     try {
+      // INVALID has no dash, auto-completes to top-INVALID, grammar fails (uppercase) → exit 1
       const exitCode = await handleScaffold(["topic", "INVALID", "--dir", designDir]);
       expect(exitCode).toBe(1);
     } finally {
@@ -269,12 +270,16 @@ describe("handleScaffold — ID grammar violation", () => {
     }
   });
 
-  it("returns 1 for an ID with no prefix separator", async () => {
+  it("bare slug without prefix separator auto-completes to type prefix (no error)", async () => {
     const designDir = await createLoopEnabledFixture();
     const baseDir = join(designDir, "..");
     try {
+      // 'nohyphen' is a bare slug (unknown leading segment) → auto-completed to top-nohyphen
       const exitCode = await handleScaffold(["topic", "nohyphen", "--dir", designDir]);
-      expect(exitCode).toBe(1);
+      expect(exitCode).toBe(0);
+      // Verify the file was created with the auto-completed id
+      const content = await Bun.file(join(designDir, "topics", "nohyphen.md")).text();
+      expect(content).toContain("id: top-nohyphen");
     } finally {
       await rm(baseDir, { recursive: true });
     }
@@ -282,13 +287,13 @@ describe("handleScaffold — ID grammar violation", () => {
 });
 
 describe("handleScaffold — prefix mismatch", () => {
-  it("returns 1 when ID prefix does not match the specified type", async () => {
+  it("returns 2 when ID has a known prefix that conflicts with the specified type", async () => {
     const designDir = await createLoopEnabledFixture();
     const baseDir = join(designDir, "..");
     try {
-      // prefix 'seq' does not match type 'topic' (expects 'top')
+      // prefix 'seq' is a known prefix but conflicts with type 'topic' (expects 'top') → exit 2
       const exitCode = await handleScaffold(["topic", "seq-something", "--dir", designDir]);
-      expect(exitCode).toBe(1);
+      expect(exitCode).toBe(2);
     } finally {
       await rm(baseDir, { recursive: true });
     }
@@ -505,6 +510,74 @@ describe("handleScaffold — stdout / stderr separation", () => {
       expect(exitCode).toBe(1);
       expect(stdout).toBe(""); // nothing on stdout
       expect(stderr.length).toBeGreaterThan(0); // error message on stderr
+    } finally {
+      await rm(baseDir, { recursive: true });
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// T-03: scaffold prefix auto-completion
+// ---------------------------------------------------------------------------
+
+describe("handleScaffold — prefix auto-completion", () => {
+  it("'scaffold topic concept' auto-completes to 'top-concept' and creates topics/concept.md", async () => {
+    const designDir = await createLoopEnabledFixture();
+    const baseDir = join(designDir, "..");
+    try {
+      const exitCode = await handleScaffold(["topic", "concept", "--dir", designDir]);
+      expect(exitCode).toBe(0);
+
+      const file = Bun.file(join(designDir, "topics", "concept.md"));
+      expect(await file.exists()).toBe(true);
+
+      const content = await file.text();
+      expect(content).toContain("id: top-concept");
+    } finally {
+      await rm(baseDir, { recursive: true });
+    }
+  });
+
+  it("'scaffold topic top-concept' (full id) creates topics/concept.md with id: top-concept", async () => {
+    const designDir = await createLoopEnabledFixture();
+    const baseDir = join(designDir, "..");
+    try {
+      const exitCode = await handleScaffold(["topic", "top-concept", "--dir", designDir]);
+      expect(exitCode).toBe(0);
+
+      const file = Bun.file(join(designDir, "topics", "concept.md"));
+      expect(await file.exists()).toBe(true);
+
+      const content = await file.text();
+      expect(content).toContain("id: top-concept");
+    } finally {
+      await rm(baseDir, { recursive: true });
+    }
+  });
+
+  it("'scaffold topic ent-foo' exits 2 (known prefix conflicts with type)", async () => {
+    const designDir = await createLoopEnabledFixture();
+    const baseDir = join(designDir, "..");
+    try {
+      const exitCode = await handleScaffold(["topic", "ent-foo", "--dir", designDir]);
+      expect(exitCode).toBe(2);
+    } finally {
+      await rm(baseDir, { recursive: true });
+    }
+  });
+
+  it("'scaffold adr 0001-my-decision' (bare slug with hyphens) auto-completes to 'adr-0001-my-decision'", async () => {
+    const designDir = await createLoopEnabledFixture();
+    const baseDir = join(designDir, "..");
+    try {
+      const exitCode = await handleScaffold(["adr", "0001-my-decision", "--dir", designDir]);
+      expect(exitCode).toBe(0);
+
+      const file = Bun.file(join(designDir, "adr", "0001-my-decision.md"));
+      expect(await file.exists()).toBe(true);
+
+      const content = await file.text();
+      expect(content).toContain("id: adr-0001-my-decision");
     } finally {
       await rm(baseDir, { recursive: true });
     }

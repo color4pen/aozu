@@ -31,6 +31,14 @@ enabled: static
 
 <!-- enabled: 利用する層を有効化する。段階①では static のみ。
      追加可能な層: domain, dynamic, loop
+     詳細: spec/format.md §3
+
+     loop 有効化後、prompt derive を使う場合は以下のキーも追加する:
+       request-template: <ファイルパスまたはシェルコマンド>
+         - ファイルパスの場合: design dir からの相対パスで内容を読む
+         - コマンドの場合: stdout をテンプレートとして使用する
+       request-output-dir: <出力先ディレクトリパス>
+         - prompt derive が草稿を出力するディレクトリ
      詳細: spec/format.md §3 -->
 `;
 

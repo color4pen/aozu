@@ -28,7 +28,7 @@ export function checkC9(graph: Graph): CheckDiagnostic[] {
         level: "error",
         code: "C9",
         elementId: adrEl.id,
-        message: `adr element "${adrEl.id}" does not reference any topic (top-*)`,
+        message: `adr element "${adrEl.id}" does not reference any topic (top-*). Add "topics: [[top-xxx]]" to the ADR frontmatter.`,
         file: adrEl.file,
         line: adrEl.line,
       });

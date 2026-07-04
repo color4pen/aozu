@@ -14,10 +14,10 @@
 import { mkdir } from "fs/promises";
 import { join } from "path";
 import { stat } from "fs/promises";
-import { validateId, extractPrefix } from "../../parse/id.ts";
+import { validateId, extractPrefix, KNOWN_PREFIXES } from "../../parse/id.ts";
 import { readMarkdownFiles } from "../../fs/reader.ts";
 import { parseFiles } from "../../parse/parser.ts";
-import { parseManifest, isLayerEnabled, getEnabledLayers } from "../../check/manifest.ts";
+import { parseManifest, isLayerEnabled, getEnabledLayers, validateFormatVersion } from "../../check/manifest.ts";
 import { buildGraph } from "../../graph/builder.ts";
 import type { Manifest } from "../../graph/types.ts";
 
@@ -231,7 +231,7 @@ export async function handleScaffold(args: string[]): Promise<number> {
     }
   }
   const typeName = positionals[0];
-  const id = positionals[1];
+  let id = positionals[1];
   if (!typeName) {
     process.stderr.write("ERROR INPUT - usage: aozu scaffold <type> <id> [--dir <path>]\n");
     return 2;
@@ -271,6 +271,20 @@ export async function handleScaffold(args: string[]): Promise<number> {
     return 2;
   }
 
+  // 2b. Prefix auto-completion (D3): for document types, auto-complete bare slugs
+  if (!id.startsWith(typePrefix + "-")) {
+    const extractedPrefixRaw = extractPrefix(id);
+    if (KNOWN_PREFIXES.has(extractedPrefixRaw) && extractedPrefixRaw !== typePrefix) {
+      // Known prefix that conflicts with the type → error (fail-closed, not silent typo correction)
+      process.stderr.write(
+        `ERROR INPUT - ID '${id}' has prefix '${extractedPrefixRaw}', which conflicts with type '${typeName}' (expected prefix: '${typePrefix}')\n`
+      );
+      return 2;
+    }
+    // Bare slug or unknown leading segment → auto-complete with type prefix
+    id = typePrefix + "-" + id;
+  }
+
   // 3. ID grammar validation
   const validation = validateId(id);
   if (!validation.valid) {
@@ -278,7 +292,7 @@ export async function handleScaffold(args: string[]): Promise<number> {
     return 1;
   }
 
-  // 4. ID prefix must match type prefix
+  // 4. ID prefix must match type prefix (always true after auto-completion, kept for safety)
   const extractedPrefix = extractPrefix(id);
   if (extractedPrefix !== typePrefix) {
     process.stderr.write(
@@ -292,6 +306,16 @@ export async function handleScaffold(args: string[]): Promise<number> {
   const parsed = parseFiles(files);
   const manifestPath = join(designDir, "manifest.md");
   const manifest = parseManifest(parsed.frontmatters, manifestPath);
+
+  // Stage gate: format-version must be supported (C12)
+  const fvDiag = validateFormatVersion(manifest, manifestPath);
+  if (fvDiag) {
+    process.stderr.write(
+      `ERROR CONFIG - unsupported format-version in ${manifestPath}.\n` +
+      `${fvDiag.message}\n`
+    );
+    return 2;
+  }
 
   if (!isTypeEnabled(typeName, manifest)) {
     const requiredLayer = typeName === "seq" ? "dynamic" : "loop";
