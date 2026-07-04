@@ -2,7 +2,7 @@
   "version": 2,
   "jobId": "ab3bd92f-a2a1-487f-ac9e-b7e8ceac6831",
   "createdAt": "2026-07-04T12:41:27.088Z",
-  "updatedAt": "2026-07-04T13:38:19.658Z",
+  "updatedAt": "2026-07-04T13:38:46.073Z",
   "request": {
     "title": "単一バイナリ配布を立てる（GitHub Releases + install.sh — ADR-0021 の実施）",
     "type": "new-feature",
@@ -12,8 +12,8 @@
     "owner": "color4pen",
     "name": "aozu"
   },
-  "step": "adr-gen",
-  "status": "running",
+  "step": "pr-create",
+  "status": "awaiting-archive",
   "branch": "feat/binary-distribution-ab3bd92f",
   "error": null,
   "pipelineId": "standard",
@@ -48,8 +48,13 @@
       "invalidatedByCommit": null
     }
   ],
+  "pullRequest": {
+    "url": "https://github.com/color4pen/aozu/pull/17",
+    "number": 17,
+    "createdAt": "2026-07-04T13:38:46.062Z"
+  },
   "_journal": {
-    "historyCount": 66,
+    "historyCount": 71,
     "stepCounts": {
       "request-review": 1,
       "design": 1,
@@ -62,7 +67,9 @@
       "adversarial-consistency": 1,
       "custom-reviewers": 1,
       "regression-gate": 2,
-      "conformance": 1
+      "conformance": 1,
+      "adr-gen": 1,
+      "pr-create": 1
     }
   }
 }
