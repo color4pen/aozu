@@ -38,5 +38,13 @@ if (!commandName || commandName === "--help" || commandName === "-h") {
   process.exit(0);
 }
 
+if (commandName === "--version" || commandName === "-v") {
+  const { fileURLToPath } = await import("url");
+  const pkgPath = fileURLToPath(new URL("../../package.json", import.meta.url));
+  const pkg = (await Bun.file(pkgPath).json()) as { version: string };
+  process.stdout.write(`${pkg.version}\n`);
+  process.exit(0);
+}
+
 const exitCode = await dispatch(registry, commandName, commandArgs);
 process.exit(exitCode);

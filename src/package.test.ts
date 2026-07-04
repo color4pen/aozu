@@ -7,6 +7,23 @@ import { describe, expect, it } from "bun:test";
 import { join } from "path";
 import { readdir } from "fs/promises";
 
+describe("aozu --version", () => {
+  it("prints the package.json version and exits 0", async () => {
+    const pkgPath = join(import.meta.dir, "../package.json");
+    const pkg = await Bun.file(pkgPath).json();
+
+    const proc = Bun.spawn(["bun", join(import.meta.dir, "cli/main.ts"), "--version"], {
+      stdout: "pipe",
+      stderr: "pipe",
+    });
+    const exitCode = await proc.exited;
+    const stdout = await new Response(proc.stdout).text();
+
+    expect(exitCode).toBe(0);
+    expect(stdout.trim()).toBe(pkg.version);
+  });
+});
+
 describe("package.json", () => {
   it("TC-013 TC-028 TC-039 TC-053: package.json dependencies field is empty or absent", async () => {
     const pkgPath = join(import.meta.dir, "../package.json");
