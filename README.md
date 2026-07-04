@@ -88,6 +88,7 @@ aozu --help
 | [0018](adr/0018-loop-write-semantics.md) | loop の書き込み意味論 — 書き手の最小化と計算される遷移（0006 を修正） |
 | [0019](adr/0019-prompt-session-injection-scope.md) | prompt session の注入スコープ — 2 hop 近傍 + inv/term 全量 + static 縮約 |
 | [0020](adr/0020-prompt-propagate-review-scope-and-loop-gate.md) | propagate / review — 0019 規則の ADR 起点適用・review 全量注入・loop gate 非課 |
+| [0021](adr/0021-distribution-channels.md) | 配布チャネル — npm + 単一バイナリの二正面、bun-native 維持（Node API 移行は保留） |
 
 未確定の論点は [docs/open-questions.md](docs/open-questions.md)。
 

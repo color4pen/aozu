@@ -32,6 +32,9 @@ docs/open-questions.md 論点 8 の戦略 2 の運用実体。**網羅の主張�
 | adr/0016-versioning-and-release.md | — | — | 未走査（分流で新設） |
 | adr/0017-granularity-by-citation-context.md | — | — | 未走査（新設） |
 | adr/0018-loop-write-semantics.md | — | — | 未走査（新設） |
+| adr/0019-prompt-session-injection-scope.md | — | — | 未走査（新設） |
+| adr/0020-prompt-propagate-review-scope-and-loop-gate.md | — | — | 未走査（新設） |
+| adr/0021-distribution-channels.md | — | — | 未走査（新設） |
 | spec/format.md | takt 2026-07-02 | ece0028a83c2 | 要再検証（C3 訂正・分流修正で変更） |
 | spec/integration.md | takt 2026-07-02 | 14581b39d1eb | 要再検証（分流修正で変更） |
 | docs/open-questions.md | takt 2026-07-02 | 18d1b2c5cf65 | 要再検証（分流修正で変更） |
