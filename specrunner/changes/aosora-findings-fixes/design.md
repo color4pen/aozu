@@ -119,6 +119,9 @@ aosora（design/ フルループ + designLayer 結線を day 0 から有効化�
 
 ## Risks / Trade-offs
 
+- [Risk] **manifest ファイル不在は C12 フェンスのバイパス経路になる**（D2 の「不在は `formatVersion: "0"` として扱う」フォールバックの帰結）。manifest.md を削除した design/ は format-version 判定を素通りする。  
+  許容根拠: manifest 不在は format-version の問題ではなく設計ディレクトリ自体の不備であり、その状態では `enabled: []` に縮退して全層が無効になるため、生成される成果物・遷移する状態が実質存在しない（フェンスが守るべき「未知形式の解釈」が発生しない）。manifest の存在自体を必須化する検証（spec §2 の「必須」の機械化）は独立した規則追加であり、本変更のスコープ外として意図的に分離した。「fail-closed は読む場所全部で効かせる」の適用対象は「manifest が存在して読まれる場所」である。
+
 - [Risk] `parseManifest` のセンチネル変更（D2）が既存テストに影響する可能性: `manifest.formatVersion` を直接アサートする既存テストがあれば変更が必要になる。  
   Mitigation: 実装前に `manifest.test.ts` を確認し、`formatVersion` 値のアサーションが存在しないことを確認する。本設計時点では確認済み（既存テストは `manifest.enabled` のみを検証している）。
 

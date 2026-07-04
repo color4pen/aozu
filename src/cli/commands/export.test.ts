@@ -126,6 +126,27 @@ describe("handleExport rules — normal mode", () => {
     expect(exitCode).toBe(0);
   });
 
+  it("returns 1 with C12 diagnostic for unknown format-version (exit-gate baseline must be fenced)", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "aozu-export-fv-test-"));
+    try {
+      await mkdir(join(dir, "static"), { recursive: true });
+      await writeFile(
+        join(dir, "manifest.md"),
+        ["---", "format-version: 99", "enabled: static", "---", "", "# manifest"].join("\n")
+      );
+      await writeFile(
+        join(dir, "static", "modules.md"),
+        ["# Modules", "", "## CLI {#mod-cli}", "責務: CLI.", "実装: src/cli/"].join("\n")
+      );
+      await writeFile(join(dir, "static", "dependencies.md"), "# Dependencies\n");
+
+      const exitCode = await handleExport(["rules", "--dir", dir]);
+      expect(exitCode).toBe(1);
+    } finally {
+      await rm(dir, { recursive: true });
+    }
+  });
+
   it("returns 1 when a mod is missing 実装: line", async () => {
     const dir = await createMissingImplFixture();
     try {

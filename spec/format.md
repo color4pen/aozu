@@ -254,7 +254,7 @@ topics: [[top-duplicate-slug]]
 | C9 | adr が top を引用している（loop 有効時） |
 | C10 | plan の elements がすべて実在し、after の grp が実在する |
 | C11 | 層間参照方向: domain の要素は domain（term / ent / inv / act）のみを参照できる。static は static と domain、dynamic は dynamic・static・domain を参照できる。loop と adr は制限なし |
-| C12 | manifest の `format-version` が対応集合に属する（現在 `{"0"}`）。実装は全動詞共通の入口ゲート（check コマンドでは C12 規則として診断されるが、他の動詞でも manifest 読み取りの直後に同じ判定が適用される） |
+| C12 | manifest の `format-version` が対応集合に属する（現在 `{"0"}`）。欠落も違反 |
 
 ## 11. rules export
 
