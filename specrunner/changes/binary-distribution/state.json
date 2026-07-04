@@ -2,7 +2,7 @@
   "version": 2,
   "jobId": "ab3bd92f-a2a1-487f-ac9e-b7e8ceac6831",
   "createdAt": "2026-07-04T12:41:27.088Z",
-  "updatedAt": "2026-07-04T12:44:12.319Z",
+  "updatedAt": "2026-07-04T12:48:39.359Z",
   "request": {
     "title": "単一バイナリ配布を立てる（GitHub Releases + install.sh — ADR-0021 の実施）",
     "type": "new-feature",
@@ -12,7 +12,7 @@
     "owner": "color4pen",
     "name": "aozu"
   },
-  "step": "design",
+  "step": "spec-review",
   "status": "running",
   "branch": "feat/binary-distribution-ab3bd92f",
   "error": null,
@@ -34,9 +34,10 @@
     }
   ],
   "_journal": {
-    "historyCount": 5,
+    "historyCount": 9,
     "stepCounts": {
-      "request-review": 1
+      "request-review": 1,
+      "design": 1
     }
   }
 }
