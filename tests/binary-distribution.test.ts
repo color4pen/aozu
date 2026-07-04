@@ -64,6 +64,85 @@ describe("publish.yml — binary distribution configuration", () => {
 });
 
 // ---------------------------------------------------------------------------
+// T-03: publish.yml job dependency and asset naming tests (TC-019, TC-020, TC-028, TC-029)
+// ---------------------------------------------------------------------------
+
+describe("publish.yml — job dependencies and asset naming", () => {
+  const publishYmlPath = join(REPO_ROOT, ".github/workflows/publish.yml");
+
+  it("build-binaries job declares needs: publish (TC-019)", async () => {
+    const content = await readFile(publishYmlPath, "utf-8");
+    expect(content).toContain("needs: publish");
+  });
+
+  it("upload-binaries job generates SHA256SUMS file (TC-020)", async () => {
+    const content = await readFile(publishYmlPath, "utf-8");
+    expect(content).toContain("SHA256SUMS");
+    expect(content).toContain("sha256sum");
+  });
+
+  it("asset naming strips bun- prefix from target name (TC-028)", async () => {
+    const content = await readFile(publishYmlPath, "utf-8");
+    // The workflow strips the "bun-" prefix: ASSET="aozu-${TARGET#bun-}"
+    expect(content).toContain("${TARGET#bun-}");
+  });
+
+  it("Windows asset appends .exe extension (TC-029)", async () => {
+    const content = await readFile(publishYmlPath, "utf-8");
+    expect(content).toContain("windows");
+    expect(content).toContain(".exe");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// T-07: ci.yml binary-smoke job and quality gates (TC-024, TC-025)
+// ---------------------------------------------------------------------------
+
+describe("ci.yml — binary-smoke job and existing quality gates", () => {
+  const ciYmlPath = join(REPO_ROOT, ".github/workflows/ci.yml");
+
+  it("ci.yml contains bun build --compile (TC-024)", async () => {
+    const content = await readFile(ciYmlPath, "utf-8");
+    expect(content).toContain("bun build --compile");
+  });
+
+  it("ci.yml retains tsc --noEmit quality gate (TC-025)", async () => {
+    const content = await readFile(ciYmlPath, "utf-8");
+    expect(content).toContain("tsc --noEmit");
+  });
+
+  it("ci.yml retains bun test quality gate (TC-025)", async () => {
+    const content = await readFile(ciYmlPath, "utf-8");
+    expect(content).toContain("bun test");
+  });
+
+  it("ci.yml retains check --dir design quality gate (TC-025)", async () => {
+    const content = await readFile(ciYmlPath, "utf-8");
+    expect(content).toContain("check --dir design");
+  });
+
+  it("ci.yml retains export rules --dir design --verify quality gate (TC-025)", async () => {
+    const content = await readFile(ciYmlPath, "utf-8");
+    expect(content).toContain("export rules --dir design --verify");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// T-08: README installation section (TC-026)
+// ---------------------------------------------------------------------------
+
+describe("README — binary installation section", () => {
+  const readmePath = join(REPO_ROOT, "README.md");
+
+  it("README contains curl | bash install one-liner (TC-026)", async () => {
+    const content = await readFile(readmePath, "utf-8");
+    expect(content).toContain(
+      "curl -fsSL https://raw.githubusercontent.com/color4pen/aozu/main/install.sh | bash"
+    );
+  });
+});
+
+// ---------------------------------------------------------------------------
 // T-06: install.sh validation tests
 // ---------------------------------------------------------------------------
 
