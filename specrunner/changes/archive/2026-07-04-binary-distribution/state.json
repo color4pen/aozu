@@ -2,7 +2,7 @@
   "version": 2,
   "jobId": "ab3bd92f-a2a1-487f-ac9e-b7e8ceac6831",
   "createdAt": "2026-07-04T12:41:27.088Z",
-  "updatedAt": "2026-07-04T13:38:46.073Z",
+  "updatedAt": "2026-07-04T13:42:35.336Z",
   "request": {
     "title": "単一バイナリ配布を立てる（GitHub Releases + install.sh — ADR-0021 の実施）",
     "type": "new-feature",
@@ -13,7 +13,7 @@
     "name": "aozu"
   },
   "step": "pr-create",
-  "status": "awaiting-archive",
+  "status": "archived",
   "branch": "feat/binary-distribution-ab3bd92f",
   "error": null,
   "pipelineId": "standard",
@@ -54,7 +54,7 @@
     "createdAt": "2026-07-04T13:38:46.062Z"
   },
   "_journal": {
-    "historyCount": 71,
+    "historyCount": 72,
     "stepCounts": {
       "request-review": 1,
       "design": 1,
