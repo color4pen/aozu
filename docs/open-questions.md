@@ -79,7 +79,7 @@ v0 draft を起草済み（`spec/format.md`）。ID 文法・宣言/参照構文
 
 1. ~~**アクターの表現**~~ — **解決済み**（ADR-0015 / PR #6）。act 型を domain 層に追加し C5 を mod|act に改訂。clearflow で実地検収済み: actors.md（5 アクター）+ seq 4 本に主語を追記し、check exit 0・74 要素に到達
 2. **業務系ビュー 4 種の需要**（findings 2・3・11）: permission（権限マトリクス、最強の需要）、use-case / screen（既存設計資産の取り込み先）、data（非正規化・DB 制約の置き場）
-3. **read-model の語彙**（findings 4）: 属性を持たず計算で構成される読み取り専用ドメインが ent に馴染まない
+3. **read-model の語彙**（findings 4）: 属性を持たず計算で構成される読み取り専用ドメインが ent に馴染まない。**実地の解決例あり**（aosora の timeline）: term のみ宣言（ent を持たない）+ 導出規則を inv で等式として固定する（`inv-timeline-chronological` = 「フォロイーの投稿集合の createdAt 降順に一致」）。このパターンで足りるなら型追加は不要——次の read-model 実例で再検証する
 4. **横断メカニズムの表現**（findings 5）: ドメインイベント・監査・認可が層をまたぎ、mod 分割で歪む
 5. ~~**mod の粒度指針**~~（findings 6） — **解決済み**（ADR-0017: 粒度は型ごとの主たる引用文脈で決める。mod は seam 粒度で固定）
 6. **brownfield の既存設計資産との二重管理**（findings 8、論点 6 と関連）: 方向は docs/adoption.md 原則 3 で示した（正本は型ごとに移管、既存文書の該当箇所はポインタ化、移行は需要駆動）。実地検証待ち
