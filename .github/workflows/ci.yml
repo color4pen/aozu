@@ -29,3 +29,33 @@ jobs:
 
       - name: Self-check (rules sync verification)
         run: bun src/cli/main.ts export rules --dir design --verify
+
+  binary-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Compile native binary
+        run: |
+          VERSION=$(jq -r .version package.json)
+          bun build --compile \
+            --define "globalThis.__AOZU_VERSION=\"$VERSION\"" \
+            src/cli/main.ts --outfile aozu
+
+      - name: Smoke test --help
+        run: ./aozu --help
+
+      - name: Smoke test --version
+        run: |
+          VERSION=$(jq -r .version package.json)
+          ACTUAL=$(./aozu --version)
+          if [ "$ACTUAL" != "$VERSION" ]; then
+            echo "Version mismatch: expected '$VERSION' but got '$ACTUAL'" >&2
+            exit 1
+          fi
+          echo "Version OK: $ACTUAL"

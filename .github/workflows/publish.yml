@@ -10,13 +10,12 @@ on:
         description: "Tag to publish (e.g. v0.1.0)"
         required: true
 
-permissions:
-  contents: read
-  id-token: write
-
 jobs:
   publish:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -47,3 +46,69 @@ jobs:
             echo "### ❌ Publish failed" >> $GITHUB_STEP_SUMMARY
             echo "Check the logs above for details." >> $GITHUB_STEP_SUMMARY
           fi
+
+  build-binaries:
+    runs-on: ubuntu-latest
+    needs: publish
+    permissions:
+      contents: read
+    strategy:
+      matrix:
+        target:
+          - bun-darwin-arm64
+          - bun-darwin-x64
+          - bun-linux-x64
+          - bun-linux-arm64
+          - bun-windows-x64
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
+
+      - uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build binary
+        run: |
+          VERSION=$(jq -r .version package.json)
+          TARGET=${{ matrix.target }}
+          # Strip the "bun-" prefix to get the asset name (e.g. bun-darwin-arm64 → aozu-darwin-arm64)
+          ASSET="aozu-${TARGET#bun-}"
+          if [[ "$TARGET" == *"windows"* ]]; then
+            ASSET="${ASSET}.exe"
+          fi
+          bun build --compile --target="$TARGET" \
+            --define "globalThis.__AOZU_VERSION=\"$VERSION\"" \
+            src/cli/main.ts --outfile "$ASSET"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: binary-${{ matrix.target }}
+          path: aozu-*
+          retention-days: 1
+
+  upload-binaries:
+    runs-on: ubuntu-latest
+    needs: build-binaries
+    permissions:
+      contents: write
+    steps:
+      - name: Download all binary artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: binary-*
+          merge-multiple: true
+
+      - name: Generate SHA256SUMS
+        run: sha256sum aozu-* > SHA256SUMS
+
+      - name: Upload binaries and SHA256SUMS to GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG=${{ github.event.inputs.tag || github.ref_name }}
+          gh release upload "$TAG" aozu-* SHA256SUMS --clobber \
+            --repo ${{ github.repository }}

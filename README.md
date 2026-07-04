@@ -43,6 +43,10 @@ topic 起票
 
 ## 導入
 
+aozu は **npm（JS エコシステム向け）** と **単一バイナリ（言語非依存向け）** の二通りで配布しています（ADR-0021）。
+
+### npm 経由（bun ランタイムが必要）
+
 **bun ランタイムが必要です**（Node.js では動作しません）。[bun のインストール](https://bun.sh)を先に行ってください。
 
 ```sh
@@ -53,6 +57,16 @@ bunx @color4pen/aozu --help
 bun add -g @color4pen/aozu
 aozu --help
 ```
+
+### 単一バイナリ経由（bun 不要 — macOS / Linux）
+
+bun を持たない環境や CI でも、ワンライナーでインストールできます。
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/color4pen/aozu/main/install.sh | bash
+```
+
+インストール先は `~/.local/bin/aozu`（`~/.local/bin` を `$PATH` に追加してください）。macOS と Linux の arm64 / x86\_64 に対応しています。Windows は [GitHub Releases](https://github.com/color4pen/aozu/releases) から手動でダウンロードしてください。
 
 ## 使い方
 

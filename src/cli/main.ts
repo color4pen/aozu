@@ -17,6 +17,7 @@ import { handlePlan } from "./commands/plan.ts";
 import { handlePrompt } from "./commands/prompt.ts";
 import { handleScaffold } from "./commands/scaffold.ts";
 import { handleStatus } from "./commands/status.ts";
+import { getVersion } from "./version.ts";
 
 const registry = createRegistry();
 register(registry, "check", handleCheck, "run closure checks on design directory");
@@ -39,10 +40,8 @@ if (!commandName || commandName === "--help" || commandName === "-h") {
 }
 
 if (commandName === "--version" || commandName === "-v") {
-  const { fileURLToPath } = await import("url");
-  const pkgPath = fileURLToPath(new URL("../../package.json", import.meta.url));
-  const pkg = (await Bun.file(pkgPath).json()) as { version: string };
-  process.stdout.write(`${pkg.version}\n`);
+  const version = await getVersion();
+  process.stdout.write(`${version}\n`);
   process.exit(0);
 }
 
