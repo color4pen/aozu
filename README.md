@@ -108,7 +108,7 @@ curl -fsSL https://raw.githubusercontent.com/color4pen/aozu/main/install.sh | ba
 
 ## 仕様
 
-- [形式仕様 v0](spec/format.md) — ID 文法・宣言/参照構文・型スキーマ・閉包規則 C1〜C11・state.json・rules export
+- [形式仕様 v0](spec/format.md) — ID 文法・宣言/参照構文・型スキーマ・閉包規則 C1〜C12・state.json・rules export
 - [交換面契約 v0](spec/integration.md) — `check --request` / `mark implemented` / `export rules` の CLI 契約
 - [design/](design/) — aozu 自身の設計（本形式による自己記述）
 

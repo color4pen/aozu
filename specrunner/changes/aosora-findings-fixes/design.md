@@ -39,9 +39,10 @@ aosora（design/ フルループ + designLayer 結線を day 0 から有効化�
 | `src/cli/commands/status.ts` | 240 | status |
 | `src/cli/commands/plan.ts` | 117 | plan |
 | `src/cli/commands/coverage.ts` | 151 | coverage |
-| `src/cli/commands/prompt.ts` | 185, 390, 535 | derive, session, propagate |
+| `src/cli/commands/prompt.ts` | 185, 390, 535, 685 | derive, session, propagate, review |
 | `src/cli/commands/mark.ts` | 159 | mark implemented |
 | `src/cli/commands/scaffold.ts` | 294 | scaffold |
+| `src/cli/commands/export.ts` | 22, 98-99 | export（export rules） |
 
 ---
 
