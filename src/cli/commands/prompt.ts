@@ -676,10 +676,22 @@ export async function handleReview(args: string[]): Promise<number> {
     return 2;
   }
 
-  // Build pipeline (no loop gate, no manifest check needed for layer enablement)
+  // Build pipeline (no loop gate — review targets the whole corpus)
   const files = await readMarkdownFiles(designDir);
   const parsed = parseFiles(files);
   const manifestPath = join(designDir, "manifest.md");
+
+  // Stage gate: format-version must be supported (C12)
+  const manifestReview = parseManifest(parsed.frontmatters, manifestPath);
+  const fvDiagReview = validateFormatVersion(manifestReview, manifestPath);
+  if (fvDiagReview) {
+    process.stderr.write(
+      `ERROR CONFIG - unsupported format-version in ${manifestPath}.\n` +
+      `${fvDiagReview.message}\n`
+    );
+    return 2;
+  }
+
   const graph = buildGraph(parsed, manifestPath);
 
   // Collect all element bodies in ID lexicographic order

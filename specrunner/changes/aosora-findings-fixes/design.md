@@ -61,8 +61,9 @@ aosora（design/ フルループ + designLayer 結線を day 0 から有効化�
 - findings #1（依存引用と被覆引用の区別）— 論点 13 で扱う
 - format-version の移行手段・複数バージョン読みの窓（論点 7）
 - C9 の判定ロジック変更
-- `export.ts`（`parseManifest` を呼ばないため対象外）
 - spec-runner 側の変更
+
+（注: 当初 `export.ts` と `prompt review` を「parseManifest を呼ばないため対象外」としていたが、敵対的整合レビューの反証——export は出口ゲートの基準物 rules.json を生成し、review は request 要件 1 の全動詞列挙に含まれる——により両方とも C12 ゲートの対象に含めた）
 
 ---
 
@@ -113,7 +114,7 @@ aosora（design/ フルループ + designLayer 結線を day 0 から有効化�
 
 ### D5: spec/format.md の C12 採番
 
-**決定**: `spec/format.md §10` の閉包検証規則表に C12 を追加する。本文には「manifest の `format-version` が対応集合（現在 `{"0"}`）に属する」と記述し、規則の目的と対応バージョンを明示する。実装は全動詞共通の入口ゲート（D1）であることを注記する。
+**決定**: `spec/format.md §10` の閉包検証規則表に C12 を追加する。本文には「manifest の `format-version` が対応集合（現在 `{"0"}`）に属する。欠落も違反」と what のみを記述する（C1〜C11 と同じ書式に揃え、実装方式——全動詞共通の入口ゲート——は本設計文書 D1 の責務とする）。
 
 ---
 

@@ -2582,6 +2582,33 @@ describe("handleSession — format-version fence (C12)", () => {
   });
 });
 
+describe("handleReview — format-version fence (C12)", () => {
+  it("returns non-0 for unknown format-version in manifest", async () => {
+    const { handleReview } = await import("./prompt.ts");
+    const baseDir = await mkdtemp(join(tmpdir(), "aozu-review-fv-test-"));
+    const designDir = join(baseDir, "design");
+
+    await mkdir(join(designDir, "static"), { recursive: true });
+
+    await writeFile(
+      join(designDir, "manifest.md"),
+      ["---", "format-version: 99", "enabled: static", "---", "", "# manifest"].join("\n")
+    );
+    await writeFile(
+      join(designDir, "static", "modules.md"),
+      ["# Modules", "", "## App {#mod-app}", "責務: app.", "実装: src/"].join("\n")
+    );
+    await writeFile(join(designDir, "static", "dependencies.md"), "# 許可依存\n");
+
+    try {
+      const exitCode = await handleReview(["--dir", designDir]);
+      expect(exitCode).not.toBe(0);
+    } finally {
+      await rm(baseDir, { recursive: true });
+    }
+  });
+});
+
 // ---------------------------------------------------------------------------
 // T-02: SESSION_GUIDANCE topics 書式確認
 // ---------------------------------------------------------------------------
