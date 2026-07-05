@@ -100,3 +100,11 @@
 {"type":"transition","ts":"2026-07-05T00:24:27.775Z","step":"verification","status":"ok","message":"verification iteration 1 completed with verdict: passed"}
 {"type":"transition","ts":"2026-07-05T00:24:27.775Z","step":"step-transition","status":"ok","message":"verification → adr-gen"}
 {"type":"transition","ts":"2026-07-05T00:24:27.776Z","step":"adr-gen-started","status":"started","message":"Starting adr-gen step"}
+{"type":"transition","ts":"2026-07-05T00:24:46.635Z","step":"adr-gen-verdict","status":"ok","message":"adr-gen verdict: success"}
+{"type":"step-attempt","step":"adr-gen","sessionId":"01d2d5f6-4ccd-4159-b9ec-81f7a43b9a0d","outcome":{"verdict":"success","findingsPath":null,"error":null,"toolResult":{"ok":true,"status":"success"},"followUpAttempts":1,"transientRetryAttempts":0},"startedAt":"2026-07-05T00:24:27.783Z","endedAt":"2026-07-05T00:24:45.438Z"}
+{"type":"transition","ts":"2026-07-05T00:24:46.643Z","step":"step-transition","status":"ok","message":"adr-gen → pr-create"}
+{"type":"transition","ts":"2026-07-05T00:24:46.647Z","step":"step-transition","status":"ok","message":"Transitioning to pr-create step"}
+{"type":"transition","ts":"2026-07-05T00:24:48.551Z","step":"pr-create-verdict","status":"ok","message":"pr-create verdict: success"}
+{"type":"step-attempt","step":"pr-create","sessionId":null,"outcome":{"verdict":"success","findingsPath":"specrunner/changes/aosora-findings-fixes/pr-create-result.md","error":null,"toolResult":null,"followUpAttempts":0},"startedAt":"2026-07-05T00:24:46.649Z","endedAt":"2026-07-05T00:24:48.549Z"}
+{"type":"lineage","step":"pr-create","ts":"2026-07-05T00:24:48.549Z","outputs":[{"path":"specrunner/changes/aosora-findings-fixes/pr-create-result.md","hash":"sha256:3c0e92bd64b18abc237da9c466e63e6afcda4b82a1db8ec7cc3cf1313d363bfe"}],"inputs":[{"path":"fix/aosora-findings-fixes-a72dd781","hash":null}]}
+{"type":"transition","ts":"2026-07-05T00:24:48.562Z","step":"pipeline","status":"ok","message":"running → awaiting-archive: pipeline complete"}
