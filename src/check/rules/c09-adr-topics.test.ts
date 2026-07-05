@@ -72,4 +72,15 @@ describe("checkC9: ADR topic references", () => {
     expect(diags).toHaveLength(1);
     expect(diags[0]!.elementId).toBe("adr-0002-bad");
   });
+
+  // T-02: C9 diagnostic message improvement
+  it("C9 diagnostic message includes 'topics: [[' (correct frontmatter format guidance)", () => {
+    const graph = makeGraph(
+      [{ id: "adr-0001-decision", prefix: "adr", displayName: "ADR 0001", file: "adr/0001.md", line: 1 }],
+      []
+    );
+    const diags = checkC9(graph);
+    expect(diags).toHaveLength(1);
+    expect(diags[0]!.message).toContain("topics: [[");
+  });
 });

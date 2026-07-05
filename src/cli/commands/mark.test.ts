@@ -386,3 +386,127 @@ describe("mark implemented — stdout is empty", () => {
     }
   });
 });
+
+// ---------------------------------------------------------------------------
+// T-01: format-version fence — mark implemented command
+// ---------------------------------------------------------------------------
+
+describe("mark implemented — format-version fence (C12)", () => {
+  it("returns non-0 for unknown format-version in manifest", async () => {
+    const baseDir = await mkdtemp(join(tmpdir(), "aozu-mark-fv-test-"));
+    const designDir = join(baseDir, "design");
+
+    await mkdir(join(designDir, "static"), { recursive: true });
+
+    await writeFile(
+      join(designDir, "manifest.md"),
+      ["---", "format-version: 99", "enabled: static, loop", "---", "", "# manifest"].join("\n")
+    );
+    await writeFile(
+      join(designDir, "static", "modules.md"),
+      ["# Modules", "", "## App {#mod-app}", "責務: app.", "実装: src/"].join("\n")
+    );
+    await writeFile(join(designDir, "static", "dependencies.md"), "# 許可依存\n");
+    await writeFile(
+      join(designDir, "state.json"),
+      JSON.stringify({ "mod-app": { state: "requested", request: "some-req" } }, null, 2)
+    );
+
+    try {
+      const exitCode = await handleMarkImplemented(["--request", "some-req", "--dir", designDir]);
+      expect(exitCode).not.toBe(0);
+    } finally {
+      await rm(baseDir, { recursive: true });
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// T-05: mark implemented — positional slug
+// ---------------------------------------------------------------------------
+
+describe("mark implemented — positional slug", () => {
+  it("positional slug works as an alternative to --request", async () => {
+    const designDir = await createFixture({
+      stateJson: {
+        "mod-alpha": { state: "requested", request: "positional-req" },
+      },
+    });
+    const baseDir = join(designDir, "..");
+    try {
+      const exitCode = await handleMarkImplemented([
+        "positional-req",
+        "--dir", designDir,
+      ]);
+
+      expect(exitCode).toBe(0);
+
+      const state = JSON.parse(await readFile(join(designDir, "state.json"), "utf-8"));
+      expect(state["mod-alpha"].state).toBe("implemented");
+    } finally {
+      await rm(baseDir, { recursive: true });
+    }
+  });
+
+  it("positional slug and --request same value: works normally", async () => {
+    const designDir = await createFixture({
+      stateJson: {
+        "mod-alpha": { state: "requested", request: "same-slug" },
+      },
+    });
+    const baseDir = join(designDir, "..");
+    try {
+      const exitCode = await handleMarkImplemented([
+        "same-slug",
+        "--request", "same-slug",
+        "--dir", designDir,
+      ]);
+
+      expect(exitCode).toBe(0);
+    } finally {
+      await rm(baseDir, { recursive: true });
+    }
+  });
+
+  it("positional slug and --request conflicting values: exit 2", async () => {
+    const designDir = await createFixture({
+      stateJson: {
+        "mod-alpha": { state: "requested", request: "req-a" },
+      },
+    });
+    const baseDir = join(designDir, "..");
+    try {
+      const exitCode = await handleMarkImplemented([
+        "req-a",
+        "--request", "req-b",
+        "--dir", designDir,
+      ]);
+
+      expect(exitCode).toBe(2);
+    } finally {
+      await rm(baseDir, { recursive: true });
+    }
+  });
+
+  it("--request form still works (unchanged from before)", async () => {
+    const designDir = await createFixture({
+      stateJson: {
+        "mod-alpha": { state: "requested", request: "request-form-test" },
+      },
+    });
+    const baseDir = join(designDir, "..");
+    try {
+      const exitCode = await handleMarkImplemented([
+        "--request", "request-form-test",
+        "--dir", designDir,
+      ]);
+
+      expect(exitCode).toBe(0);
+
+      const state = JSON.parse(await readFile(join(designDir, "state.json"), "utf-8"));
+      expect(state["mod-alpha"].state).toBe("implemented");
+    } finally {
+      await rm(baseDir, { recursive: true });
+    }
+  });
+});

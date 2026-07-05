@@ -17,7 +17,7 @@ import { join } from "path";
 import { stat } from "fs/promises";
 import { readMarkdownFiles } from "../../fs/reader.ts";
 import { parseFiles } from "../../parse/parser.ts";
-import { parseManifest } from "../../check/manifest.ts";
+import { parseManifest, validateFormatVersion } from "../../check/manifest.ts";
 import { buildGraph } from "../../graph/builder.ts";
 import { runCheck } from "../../check/checker.ts";
 import { readState } from "../../state/reader.ts";
@@ -94,6 +94,14 @@ export async function handleCheckRequest(
   const pipeline = await buildPipeline(designDir);
   if (pipeline === null) return 2;
   const { graph, manifest } = pipeline;
+
+  // Stage gate: format-version must be supported (C12)
+  const manifestPath = join(designDir, "manifest.md");
+  const fvDiag = validateFormatVersion(manifest, manifestPath);
+  if (fvDiag) {
+    writeDiagnostics([fvDiag]);
+    return 1;
+  }
 
   // Read state.json
   const stateMap = await readState(join(designDir, "state.json"));
@@ -203,6 +211,14 @@ export async function handleCheck(args: string[]): Promise<number> {
   const parsed = parseFiles(files);
   const manifestPath = join(designDir, "manifest.md");
   const manifest = parseManifest(parsed.frontmatters, manifestPath);
+
+  // Stage gate: format-version must be supported (C12)
+  const fvDiag = validateFormatVersion(manifest, manifestPath);
+  if (fvDiag) {
+    writeDiagnostics([fvDiag]);
+    return 1;
+  }
+
   const graph = buildGraph(parsed, manifestPath);
 
   // Read state.json (may not exist — defaults to empty → all designed)

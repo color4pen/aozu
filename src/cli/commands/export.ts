@@ -19,6 +19,8 @@ import { stat } from "fs/promises";
 import { readMarkdownFiles } from "../../fs/reader.ts";
 import { parseFiles } from "../../parse/parser.ts";
 import { buildGraph } from "../../graph/builder.ts";
+import { parseManifest, validateFormatVersion } from "../../check/manifest.ts";
+import { writeDiagnostics } from "../format.ts";
 import { generateRuleset } from "../../export/generator.ts";
 
 /** Determine whether a path is an existing directory. */
@@ -89,6 +91,17 @@ export async function handleExport(args: string[]): Promise<number> {
   const files = await readMarkdownFiles(designDir);
   const parsed = parseFiles(files);
   const manifestPath = join(designDir, "manifest.md");
+
+  // Stage gate: format-version must be supported (C12). The exported ruleset is
+  // the exit-gate baseline (ADR-0007), so it must never be generated from an
+  // unknown-format corpus.
+  const manifest = parseManifest(parsed.frontmatters, manifestPath);
+  const fvDiag = validateFormatVersion(manifest, manifestPath);
+  if (fvDiag) {
+    writeDiagnostics([fvDiag]);
+    return 1;
+  }
+
   const graph = buildGraph(parsed, manifestPath);
 
   // Generate ruleset

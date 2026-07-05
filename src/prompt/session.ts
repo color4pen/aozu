@@ -42,7 +42,7 @@ Follow these conventions for the design session:
    \`\`\`
    ---
    id: adr-0042
-   topics: top-my-topic
+   topics: [[top-my-topic]]
    ---
    \`\`\`\
 `;

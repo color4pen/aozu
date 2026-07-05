@@ -26,7 +26,7 @@ import { join, resolve } from "path";
 import { stat } from "fs/promises";
 import { readMarkdownFiles } from "../../fs/reader.ts";
 import { parseFiles } from "../../parse/parser.ts";
-import { parseManifest, isLayerEnabled } from "../../check/manifest.ts";
+import { parseManifest, isLayerEnabled, validateFormatVersion } from "../../check/manifest.ts";
 import { buildGraph } from "../../graph/builder.ts";
 import { findOwningElement } from "../../graph/attribution.ts";
 import { extractAllBodies, extractElementBody } from "../../graph/body.ts";
@@ -183,6 +183,17 @@ export async function handleDerive(args: string[]): Promise<number> {
   const parsed = parseFiles(files);
   const manifestPath = join(designDir, "manifest.md");
   const manifest = parseManifest(parsed.frontmatters, manifestPath);
+
+  // Stage gate: format-version must be supported (C12)
+  const fvDiagDerive = validateFormatVersion(manifest, manifestPath);
+  if (fvDiagDerive) {
+    process.stderr.write(
+      `ERROR CONFIG - unsupported format-version in ${manifestPath}.\n` +
+      `${fvDiagDerive.message}\n`
+    );
+    return 2;
+  }
+
   const graph = buildGraph(parsed, manifestPath);
 
   // --- Manifest frontmatter for config keys ---
@@ -208,7 +219,7 @@ export async function handleDerive(args: string[]): Promise<number> {
       [
         "ERROR CONFIG - missing 'request-template' in manifest frontmatter.",
         "Add to design/manifest.md frontmatter:",
-        "  request-template: <file-path-or-command>",
+        "  request-template: path/to/request-template.md",
         "Value can be a file path (relative to design dir) or a shell command whose stdout is used.",
       ].join("\n") + "\n"
     );
@@ -222,7 +233,7 @@ export async function handleDerive(args: string[]): Promise<number> {
       [
         "ERROR CONFIG - missing 'request-output-dir' in manifest frontmatter.",
         "Add to design/manifest.md frontmatter:",
-        "  request-output-dir: <output-directory>",
+        "  request-output-dir: path/to/output/",
       ].join("\n") + "\n"
     );
     return 2;
@@ -388,6 +399,17 @@ export async function handleSession(args: string[]): Promise<number> {
   const parsed = parseFiles(files);
   const manifestPath = join(designDir, "manifest.md");
   const manifest = parseManifest(parsed.frontmatters, manifestPath);
+
+  // Stage gate: format-version must be supported (C12)
+  const fvDiagSession = validateFormatVersion(manifest, manifestPath);
+  if (fvDiagSession) {
+    process.stderr.write(
+      `ERROR CONFIG - unsupported format-version in ${manifestPath}.\n` +
+      `${fvDiagSession.message}\n`
+    );
+    return 2;
+  }
+
   const graph = buildGraph(parsed, manifestPath);
 
   // Stage gate: loop must be enabled
@@ -533,6 +555,17 @@ export async function handlePropagate(args: string[]): Promise<number> {
   const parsed = parseFiles(files);
   const manifestPath = join(designDir, "manifest.md");
   const manifest = parseManifest(parsed.frontmatters, manifestPath);
+
+  // Stage gate: format-version must be supported (C12)
+  const fvDiagPropagate = validateFormatVersion(manifest, manifestPath);
+  if (fvDiagPropagate) {
+    process.stderr.write(
+      `ERROR CONFIG - unsupported format-version in ${manifestPath}.\n` +
+      `${fvDiagPropagate.message}\n`
+    );
+    return 2;
+  }
+
   const graph = buildGraph(parsed, manifestPath);
 
   // Find and validate the ADR element
@@ -643,10 +676,22 @@ export async function handleReview(args: string[]): Promise<number> {
     return 2;
   }
 
-  // Build pipeline (no loop gate, no manifest check needed for layer enablement)
+  // Build pipeline (no loop gate — review targets the whole corpus)
   const files = await readMarkdownFiles(designDir);
   const parsed = parseFiles(files);
   const manifestPath = join(designDir, "manifest.md");
+
+  // Stage gate: format-version must be supported (C12)
+  const manifestReview = parseManifest(parsed.frontmatters, manifestPath);
+  const fvDiagReview = validateFormatVersion(manifestReview, manifestPath);
+  if (fvDiagReview) {
+    process.stderr.write(
+      `ERROR CONFIG - unsupported format-version in ${manifestPath}.\n` +
+      `${fvDiagReview.message}\n`
+    );
+    return 2;
+  }
+
   const graph = buildGraph(parsed, manifestPath);
 
   // Collect all element bodies in ID lexicographic order

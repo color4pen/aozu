@@ -17,7 +17,7 @@ import { join } from "path";
 import { stat } from "fs/promises";
 import { readMarkdownFiles } from "../../fs/reader.ts";
 import { parseFiles } from "../../parse/parser.ts";
-import { parseManifest, isLayerEnabled } from "../../check/manifest.ts";
+import { parseManifest, isLayerEnabled, validateFormatVersion } from "../../check/manifest.ts";
 import { buildGraph } from "../../graph/builder.ts";
 import { extractReferences } from "../../parse/references.ts";
 import { readDesignState } from "../../state/reader.ts";
@@ -149,6 +149,17 @@ export async function handleCoverage(args: string[]): Promise<number> {
   const parsed = parseFiles(files);
   const manifestPath = join(designDir, "manifest.md");
   const manifest = parseManifest(parsed.frontmatters, manifestPath);
+
+  // Stage gate: format-version must be supported (C12)
+  const fvDiag = validateFormatVersion(manifest, manifestPath);
+  if (fvDiag) {
+    process.stderr.write(
+      `ERROR CONFIG - unsupported format-version in ${manifestPath}.\n` +
+      `${fvDiag.message}\n`
+    );
+    return 2;
+  }
+
   const graph = buildGraph(parsed, manifestPath);
 
   // Stage gate: loop must be enabled

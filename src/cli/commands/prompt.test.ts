@@ -2545,3 +2545,200 @@ describe("handlePrompt dispatch — propagate and review", () => {
     expect(stderrOutput).toContain("review");
   });
 });
+
+// ---------------------------------------------------------------------------
+// T-01: format-version fence — prompt session command
+// ---------------------------------------------------------------------------
+
+describe("handleSession — format-version fence (C12)", () => {
+  it("returns non-0 for unknown format-version in manifest", async () => {
+    const { handleSession } = await import("./prompt.ts");
+    const baseDir = await mkdtemp(join(tmpdir(), "aozu-session-fv-test-"));
+    const designDir = join(baseDir, "design");
+
+    await mkdir(join(designDir, "static"), { recursive: true });
+    await mkdir(join(designDir, "topics"), { recursive: true });
+
+    await writeFile(
+      join(designDir, "manifest.md"),
+      ["---", "format-version: 99", "enabled: static, loop", "---", "", "# manifest"].join("\n")
+    );
+    await writeFile(
+      join(designDir, "static", "modules.md"),
+      ["# Modules", "", "## App {#mod-app}", "責務: app.", "実装: src/"].join("\n")
+    );
+    await writeFile(join(designDir, "static", "dependencies.md"), "# 許可依存\n");
+    await writeFile(
+      join(designDir, "topics", "my-topic.md"),
+      ["---", "id: top-my-topic", "---", "", "topic body"].join("\n")
+    );
+
+    try {
+      const exitCode = await handleSession(["--topic", "top-my-topic", "--dir", designDir]);
+      expect(exitCode).not.toBe(0);
+    } finally {
+      await rm(baseDir, { recursive: true });
+    }
+  });
+});
+
+describe("handleReview — format-version fence (C12)", () => {
+  it("returns non-0 for unknown format-version in manifest", async () => {
+    const { handleReview } = await import("./prompt.ts");
+    const baseDir = await mkdtemp(join(tmpdir(), "aozu-review-fv-test-"));
+    const designDir = join(baseDir, "design");
+
+    await mkdir(join(designDir, "static"), { recursive: true });
+
+    await writeFile(
+      join(designDir, "manifest.md"),
+      ["---", "format-version: 99", "enabled: static", "---", "", "# manifest"].join("\n")
+    );
+    await writeFile(
+      join(designDir, "static", "modules.md"),
+      ["# Modules", "", "## App {#mod-app}", "責務: app.", "実装: src/"].join("\n")
+    );
+    await writeFile(join(designDir, "static", "dependencies.md"), "# 許可依存\n");
+
+    try {
+      const exitCode = await handleReview(["--dir", designDir]);
+      expect(exitCode).not.toBe(0);
+    } finally {
+      await rm(baseDir, { recursive: true });
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// T-02: SESSION_GUIDANCE topics 書式確認
+// ---------------------------------------------------------------------------
+
+describe("SESSION_GUIDANCE — topics 書式", () => {
+  it("contains bracket form 'topics: [[top-'", async () => {
+    const { SESSION_GUIDANCE } = await import("../../prompt/session.ts");
+    expect(SESSION_GUIDANCE).toContain("topics: [[top-");
+  });
+
+  it("does not contain plain form 'topics: top-' (without [[)]", async () => {
+    const { SESSION_GUIDANCE } = await import("../../prompt/session.ts");
+    // Should not contain 'topics: top-' without the [[ brackets
+    const hasPlain = SESSION_GUIDANCE.includes("topics: top-");
+    expect(hasPlain).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// T-04: derive エラーメッセージ確認 — request-template / request-output-dir
+// ---------------------------------------------------------------------------
+
+describe("handleDerive — error messages contain config key names", () => {
+  it("missing request-template: stderr contains 'request-template:'", async () => {
+    const { handleDerive } = await import("./prompt.ts");
+    const baseDir = await mkdtemp(join(tmpdir(), "aozu-derive-tpl-test-"));
+    const designDir = join(baseDir, "design");
+
+    await mkdir(join(designDir, "static"), { recursive: true });
+    await mkdir(join(designDir, "plans"), { recursive: true });
+
+    // manifest with loop enabled but no request-template
+    await writeFile(
+      join(designDir, "manifest.md"),
+      [
+        "---",
+        "format-version: 0",
+        "enabled: static, domain, dynamic, loop",
+        // no request-template
+        "---",
+        "",
+        "# manifest",
+      ].join("\n")
+    );
+    await writeFile(
+      join(designDir, "static", "modules.md"),
+      ["# Modules", "", "## App {#mod-app}", "責務: app.", "実装: src/"].join("\n")
+    );
+    await writeFile(join(designDir, "static", "dependencies.md"), "# 許可依存\n");
+    await writeFile(
+      join(designDir, "plans", "my-plan.md"),
+      [
+        "---", "id: plan-my-plan", "status: open", "---",
+        "## グループ {#grp-my-plan}",
+        "- elements: [[mod-app]]",
+        "- parallel: no",
+      ].join("\n")
+    );
+
+    let stderrOutput = "";
+    const origWrite = process.stderr.write.bind(process.stderr);
+    (process.stderr as NodeJS.WriteStream).write = (chunk: string | Uint8Array): boolean => {
+      if (typeof chunk === "string") stderrOutput += chunk;
+      return true;
+    };
+
+    try {
+      const exitCode = await handleDerive(["--group", "grp-my-plan", "--dir", designDir]);
+      process.stderr.write = origWrite;
+      expect(exitCode).toBe(2);
+      expect(stderrOutput).toContain("request-template:");
+    } finally {
+      process.stderr.write = origWrite;
+      await rm(baseDir, { recursive: true });
+    }
+  });
+
+  it("missing request-output-dir: stderr contains 'request-output-dir:'", async () => {
+    const { handleDerive } = await import("./prompt.ts");
+    const baseDir = await mkdtemp(join(tmpdir(), "aozu-derive-dir-test-"));
+    const designDir = join(baseDir, "design");
+
+    await mkdir(join(designDir, "static"), { recursive: true });
+    await mkdir(join(designDir, "plans"), { recursive: true });
+
+    // manifest with loop + template but no output-dir
+    await writeFile(
+      join(designDir, "manifest.md"),
+      [
+        "---",
+        "format-version: 0",
+        "enabled: static, domain, dynamic, loop",
+        "request-template: template.md",
+        // no request-output-dir
+        "---",
+        "",
+        "# manifest",
+      ].join("\n")
+    );
+    await writeFile(join(designDir, "template.md"), "# Template\n");
+    await writeFile(
+      join(designDir, "static", "modules.md"),
+      ["# Modules", "", "## App {#mod-app}", "責務: app.", "実装: src/"].join("\n")
+    );
+    await writeFile(join(designDir, "static", "dependencies.md"), "# 許可依存\n");
+    await writeFile(
+      join(designDir, "plans", "my-plan.md"),
+      [
+        "---", "id: plan-my-plan", "status: open", "---",
+        "## グループ {#grp-my-plan}",
+        "- elements: [[mod-app]]",
+        "- parallel: no",
+      ].join("\n")
+    );
+
+    let stderrOutput = "";
+    const origWrite = process.stderr.write.bind(process.stderr);
+    (process.stderr as NodeJS.WriteStream).write = (chunk: string | Uint8Array): boolean => {
+      if (typeof chunk === "string") stderrOutput += chunk;
+      return true;
+    };
+
+    try {
+      const exitCode = await handleDerive(["--group", "grp-my-plan", "--dir", designDir]);
+      process.stderr.write = origWrite;
+      expect(exitCode).toBe(2);
+      expect(stderrOutput).toContain("request-output-dir:");
+    } finally {
+      process.stderr.write = origWrite;
+      await rm(baseDir, { recursive: true });
+    }
+  });
+});

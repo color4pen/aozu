@@ -7,6 +7,47 @@
 
 import type { ParseResult } from "../graph/index.ts";
 import type { Manifest } from "../graph/types.ts";
+import type { CheckDiagnostic } from "./types.ts";
+
+// ---------------------------------------------------------------------------
+// Format version support
+// ---------------------------------------------------------------------------
+
+/**
+ * The set of format-version values that this tool supports.
+ * If a manifest declares a version outside this set, the tool rejects it.
+ */
+export const SUPPORTED_FORMAT_VERSIONS: Set<string> = new Set(["0"]);
+
+/**
+ * Validate the format-version in a manifest.
+ *
+ * Returns a C12 error diagnostic if the format-version is unsupported (unknown
+ * value or missing key). Returns null if the version is supported.
+ *
+ * @param manifest     Parsed manifest (formatVersion may be "" sentinel for missing key).
+ * @param manifestPath Path to the manifest file (used in diagnostic).
+ */
+export function validateFormatVersion(
+  manifest: Manifest,
+  manifestPath: string
+): CheckDiagnostic | null {
+  if (SUPPORTED_FORMAT_VERSIONS.has(manifest.formatVersion)) {
+    return null;
+  }
+  const displayVersion = manifest.formatVersion === "" ? "(missing)" : `"${manifest.formatVersion}"`;
+  return {
+    level: "error",
+    code: "C12",
+    elementId: null,
+    message:
+      `unsupported format-version ${displayVersion} in ${manifestPath}. ` +
+      `Supported versions: ${[...SUPPORTED_FORMAT_VERSIONS].join(", ")}. ` +
+      `Update your tooling if you are using a newer format.`,
+    file: manifestPath,
+    line: 1,
+  };
+}
 
 // ---------------------------------------------------------------------------
 // Type tables (declarative constants — ADR-0002: types are tool knowledge)
@@ -127,9 +168,11 @@ export function parseManifest(
     return { formatVersion: "0", enabled: [] };
   }
 
+  // If the key is missing or not a string, use "" as a sentinel (C12 will reject it).
+  // Only when the manifest file itself is absent do we fall back to "0" (see above).
   const formatVersion = typeof fm["format-version"] === "string"
     ? fm["format-version"]
-    : "0";
+    : "";
 
   const enabledRaw = fm["enabled"];
   let enabled: string[] = [];
