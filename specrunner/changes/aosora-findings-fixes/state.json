@@ -2,7 +2,7 @@
   "version": 2,
   "jobId": "a72dd781-080b-48f7-8826-05a582a01362",
   "createdAt": "2026-07-04T14:48:32.652Z",
-  "updatedAt": "2026-07-05T00:19:54.494Z",
+  "updatedAt": "2026-07-05T00:24:27.776Z",
   "request": {
     "title": "aosora findings の即修正群 — format-version フェンス・topics 書式の統一・CLI ergonomics",
     "type": "bug-fix",
@@ -12,7 +12,7 @@
     "owner": "color4pen",
     "name": "aozu"
   },
-  "step": "conformance",
+  "step": "adr-gen",
   "status": "running",
   "branch": "fix/aosora-findings-fixes-a72dd781",
   "error": null,
@@ -49,19 +49,20 @@
   ],
   "resumePoint": null,
   "_journal": {
-    "historyCount": 60,
+    "historyCount": 69,
     "stepCounts": {
       "request-review": 1,
       "design": 1,
       "spec-review": 1,
       "test-case-gen": 1,
       "implementer": 1,
-      "verification": 1,
+      "verification": 2,
       "code-review": 1,
       "adversarial-consistency": 3,
       "custom-reviewers": 3,
       "regression-gate": 2,
-      "code-fixer": 1
+      "code-fixer": 1,
+      "conformance": 1
     }
   }
 }
