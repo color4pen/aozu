@@ -108,3 +108,4 @@
 {"type":"step-attempt","step":"pr-create","sessionId":null,"outcome":{"verdict":"success","findingsPath":"specrunner/changes/aosora-findings-fixes/pr-create-result.md","error":null,"toolResult":null,"followUpAttempts":0},"startedAt":"2026-07-05T00:24:46.649Z","endedAt":"2026-07-05T00:24:48.549Z"}
 {"type":"lineage","step":"pr-create","ts":"2026-07-05T00:24:48.549Z","outputs":[{"path":"specrunner/changes/aosora-findings-fixes/pr-create-result.md","hash":"sha256:3c0e92bd64b18abc237da9c466e63e6afcda4b82a1db8ec7cc3cf1313d363bfe"}],"inputs":[{"path":"fix/aosora-findings-fixes-a72dd781","hash":null}]}
 {"type":"transition","ts":"2026-07-05T00:24:48.562Z","step":"pipeline","status":"ok","message":"running → awaiting-archive: pipeline complete"}
+{"type":"transition","ts":"2026-07-05T00:26:11.082Z","step":"archive","status":"ok","message":"awaiting-archive → archived: change archived"}
