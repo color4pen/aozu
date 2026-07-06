@@ -21,7 +21,7 @@ v0 draft を起草済み（`spec/format.md`）。ID 文法・宣言/参照構文
 
 入口は ADR-0010 で決定済み。手順の具体は `docs/adoption.md` に起草した（三原則: 消費者と同時結線・一括書き起こしは static のみ・正本は型ごとに移管）。残る問い:
 
-- adoption.md の実地検証（spec-runner 段階①が最初の適用先候補。論点 9）
+- ~~adoption.md の実地検証~~ — **完了**（2026-07-06 clearflow、Step 0〜3。findings 8 件は docs/findings/clearflow-adoption-2026-07-06.md）。段階①（最小プロファイル）の検証は spec-runner 自身で別途（論点 9）
 - 偵察・書き起こし指示の製品同梱（`prompt` 動詞への取り込み。ADR-0001 の instruction 出力モデル）
 - 既存文書への ID 付与を支援するコマンドの要否
 
@@ -60,10 +60,10 @@ v0 draft を起草済み（`spec/format.md`）。ID 文法・宣言/参照構文
 |---|---|---|
 | 本ツール自身 | 文法が回るか（ID・参照・check・self-hosting の閉包） | **完了**: `design/` に static + domain + dynamic を自己記述（初版 25 要素、mod-fsread 追加で現在 26）。閉包検証の成立を確認。発見（コード内参照の除外・term/ent 重複・層間参照方向 C11・アクター問題）は仕様 v0 に還流済み |
 | greenfield（aosora — SNS。design/ フルループ + designLayer 結線を day 0 から有効化） | **フルループ（topic → 設計 → plan → derive → coverage → run → merge → mark implemented）の実地一周** | **完了**（2026-07-05）: 一周 ×2（foundation / social、設計 11 要素すべて implemented・フロンティア空）。入口ゲートと mark implemented hook が実地稼働。しかも設計セッション〜merge まで人間ゲートを挟まない自律運用で完走（halt 6 件はすべてパイプライン側 findings として起票済み）。摩擦は docs/findings/aosora-2026-07-04.md に記録・分流済み |
-| 業務 SaaS（clearflow。ドメイン・画面・ユースケース・権限を持つ Web アプリ） | 粒度（ADR-0017 で決着）と brownfield の書き起こし | **書き起こしは完了**（2026-07-02、経緯ゼロの別 agent が実施）: 69 要素・check exit 0。findings 11 件は docs/findings/clearflow-2026-07-02.md。フルループ仮説は aosora で検証済みのため、clearflow の残る固有価値は **brownfield 導入経路（docs/adoption.md）の実地検証**（論点 6 と同一） |
+| 業務 SaaS（clearflow。ドメイン・画面・ユースケース・権限を持つ Web アプリ） | 粒度（ADR-0017 で決着）と brownfield の書き起こし・導入 | **書き起こしは完了**（2026-07-02、経緯ゼロの別 agent が実施）: 69 要素・check exit 0。findings 11 件は docs/findings/clearflow-2026-07-02.md。**brownfield 導入（adoption.md Step 0〜3）も完了**（2026-07-06）: Step ごとに 1 PR、歯が転写の実在漏れ（未マップ 6 ファイル・依存 3 本）を検出、入口ゲート E2E 確認。Step 4 はビュー型機構未実装のため対象外。findings 8 件は docs/findings/clearflow-adoption-2026-07-06.md |
 | 実装パイプラインプロジェクト自身 | 段階①の in-place 形式化（ADR-0010）。architecture フォルダへの ID 付与と rules export への差し替え | 最小プロファイルの検証。範囲が小さいので時期は柔軟 |
 
-残: 実装パイプラインプロジェクトでの段階①検証と、brownfield 導入経路の実地検証（clearflow、論点 6）。中心仮説（フルループが実地で回る）は検証済み。
+残: 実装パイプラインプロジェクトでの段階①検証。中心仮説（フルループが実地で回る）と brownfield 導入経路（clearflow、論点 6）は検証済み。
 
 ## 11. 実装への敵対的検証（アプリの穴）
 
@@ -82,7 +82,7 @@ v0 draft を起草済み（`spec/format.md`）。ID 文法・宣言/参照構文
 3. **read-model の語彙**（findings 4）: 属性を持たず計算で構成される読み取り専用ドメインが ent に馴染まない。**実地の解決例あり**（aosora の timeline）: term のみ宣言（ent を持たない）+ 導出規則を inv で等式として固定する（`inv-timeline-chronological` = 「フォロイーの投稿集合の createdAt 降順に一致」）。このパターンで足りるなら型追加は不要——次の read-model 実例で再検証する
 4. **横断メカニズムの表現**（findings 5）: ドメインイベント・監査・認可が層をまたぎ、mod 分割で歪む
 5. ~~**mod の粒度指針**~~（findings 6） — **解決済み**（ADR-0017: 粒度は型ごとの主たる引用文脈で決める。mod は seam 粒度で固定）
-6. **brownfield の既存設計資産との二重管理**（findings 8、論点 6 と関連）: 方向は docs/adoption.md 原則 3 で示した（正本は型ごとに移管、既存文書の該当箇所はポインタ化、移行は需要駆動）。実地検証待ち
+6. ~~**brownfield の既存設計資産との二重管理**~~（findings 8、論点 6 と関連） — **実地検証済み**（2026-07-06 clearflow）: 原則 3 の型ごと移管 + ポインタ化で二重正本なく移行できた。補足 2 件 — 「該当箇所」が節より細かい場面（同一表内の事実単位の分解。findings-adoption #4）と、転写物が既にある brownfield の経路（enabled を絞って素材化 → 型ごと解禁。findings-adoption #2）は adoption.md への反映候補
 
 ## 12. designed への戻り遷移の機構
 
