@@ -41,4 +41,15 @@ request テンプレートと草稿出力先は設定で注入され、aozu は�
 
 - 診断はすべて stderr、成果物（ruleset 等）は stdout
 - 破壊的変更は `format-version` の増分と同時にのみ行う
-- 呼び出し側の推奨結線（非規範）: request 検証 step で §1、取り込み完了 hook で §2、CI で `check` + §3 `--verify`
+- 呼び出し側の推奨結線（非規範）: request 検証 step で §1、取り込み完了 hook で §2、CI で `check` + §3 `--verify`、設計に返る finding の排出は §6
+
+## 6. topic 排出 — パイプライン起点の設計入力
+
+実装工程で出た設計レベルの摩擦（レビューの構造指摘・スコープ外 finding 等）を、パイプラインが topic として設計正本に機械排出する（ADR-0006 の「パイプライン起点」系統・ADR-0013 の正本テストの機械化）。
+
+- **対象**: 解決が change folder の外——設計正本（design/）——への変更を要する finding（ADR-0013 の正本テスト）。判定は呼び出し側の責務であり、機械分類でも escalation 時の人の裁定でもよい。**過剰排出は許容される**: topic の下流は attended であり、不要な topic は人が閉じられる（ADR-0006）。逆の取りこぼしは設計債務を不可視にするため、迷ったら排出に倒す。パイプラインツール自身の改善 finding は対象外（当該ツールのバックログへ）
+- **書式**: 形式仕様 §8 の top スキーマに準拠する。`design/topics/<slug>.md`、frontmatter は `id: top-<slug>` と `source:`（job・step・PR 等への逆リンク）。本文は症状・動機で、finding の内容と暫定裁定を書いてよい——ただし**提案であって決定ではない**（決定の正本は ADR。topic は ADR の `topics:` 引用によって addressed になる）
+- **冪等**: slug は finding の同一性（job・step・finding 識別子）から決定的に導出し、既存ファイルは上書きしない。ID の一意性は次回 check の C1 が fail-closed で検証する
+- **タイミング**: 遅くとも取り込み（archive / merge）まで。正本の更新自体が併走で着地した場合（ADR-0013 の暫定裁定 + 正本更新の併走）もトレースのため排出してよい
+- **縮退**: designLayer 無効または `design/topics/` 不在の環境では排出しない（no-op）
+- **aozu の関与**: なし。本節はファイル契約のみで、aozu CLI の呼び出しを要さない（ADR-0001 — 結合はリポジトリ内ファイルと本契約のみ）
