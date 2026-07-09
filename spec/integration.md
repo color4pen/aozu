@@ -51,5 +51,5 @@ request テンプレートと草稿出力先は設定で注入され、aozu は�
 - **書式**: 形式仕様 §8 の top スキーマに準拠する。`design/topics/<slug>.md`、frontmatter は `id: top-<slug>` と `source:`（job・step・PR 等への逆リンク）。本文は症状・動機で、finding の内容と暫定裁定を書いてよい——ただし**提案であって決定ではない**（決定の正本は ADR。topic は ADR の `topics:` 引用によって addressed になる）
 - **冪等**: slug は finding の同一性（job・step・finding 識別子）から決定的に導出し、既存ファイルは上書きしない。ID の一意性は次回 check の C1 が fail-closed で検証する
 - **タイミング**: 遅くとも取り込み（archive / merge）まで。正本の更新自体が併走で着地した場合（ADR-0013 の暫定裁定 + 正本更新の併走）もトレースのため排出してよい
-- **縮退**: designLayer 無効または `design/topics/` 不在の環境では排出しない（no-op）
+- **縮退**: designLayer 無効または `design/` 不在の環境では排出しない（no-op）。`design/topics/` が無ければ作成してよい（git は空ディレクトリを追跡しないため、topics/ の不在は設計層の不在を意味しない）
 - **aozu の関与**: なし。本節はファイル契約のみで、aozu CLI の呼び出しを要さない（ADR-0001 — 結合はリポジトリ内ファイルと本契約のみ）
