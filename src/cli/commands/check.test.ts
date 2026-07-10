@@ -197,3 +197,213 @@ describe("handleCheck — stdout / stderr separation", () => {
     }
   });
 });
+
+// ---------------------------------------------------------------------------
+// T-05: S1 warning diagnostics (hash drift)
+// ---------------------------------------------------------------------------
+
+/**
+ * Create a loop-enabled fixture with one implemented element whose body hash is
+ * recorded.  Returns the designDir path and baseDir for cleanup.
+ */
+async function createDriftFixture(options: {
+  modifyBody?: boolean;    // whether to modify the body after recording hash
+  addWhitespace?: boolean; // trailing space (whitespace-only change)
+  loopEnabled?: boolean;   // default true
+  ghostEntry?: boolean;    // add an implemented+hash entry for a non-existent element
+} = {}): Promise<{ designDir: string; baseDir: string }> {
+  const baseDir = await mkdtemp(join(tmpdir(), "aozu-check-s1-"));
+  const designDir = join(baseDir, "design");
+
+  const loopEnabled = options.loopEnabled ?? true;
+  const enabledLayers = loopEnabled ? "static, loop" : "static";
+
+  await mkdir(join(designDir, "static"), { recursive: true });
+
+  await writeFile(
+    join(designDir, "manifest.md"),
+    ["---", "format-version: 0", `enabled: ${enabledLayers}`, "---", "", "# manifest"].join("\n")
+  );
+
+  // modules.md with mod-alpha element
+  const bodyOriginal = [
+    "# モジュール",
+    "",
+    "## Alpha {#mod-alpha}",
+    "責務: alpha の処理",
+    "実装: src/alpha/",
+  ].join("\n");
+
+  await writeFile(join(designDir, "static", "modules.md"), bodyOriginal);
+  await writeFile(join(designDir, "static", "dependencies.md"), "# 許可依存\n");
+
+  // Compute hash of mod-alpha's range from the original content
+  const { buildGraph } = await import("../../graph/builder.ts");
+  const { parseFiles } = await import("../../parse/parser.ts");
+  const { computeElementHash } = await import("../../graph/body.ts");
+  const { readMarkdownFiles } = await import("../../fs/reader.ts");
+
+  const files = await readMarkdownFiles(designDir);
+  const parsed = parseFiles(files);
+  const graph = buildGraph(parsed, join(designDir, "manifest.md"));
+  const recordedHash = computeElementHash("mod-alpha", graph, files)!;
+
+  // state.json with recorded hash (and optionally a ghost entry)
+  const stateJson: Record<string, unknown> = {
+    "mod-alpha": { state: "implemented", request: "prev-req", hash: recordedHash },
+  };
+  if (options.ghostEntry) {
+    // Create a "ghost" entry: implemented+hash but no corresponding element in design
+    stateJson["ent-ghost"] = { state: "implemented", request: "ghost-req", hash: "a".repeat(64) };
+  }
+  await writeFile(join(designDir, "state.json"), JSON.stringify(stateJson));
+
+  // Optionally modify the body to trigger drift
+  if (options.modifyBody) {
+    const modified = bodyOriginal + "\n追加の説明文。";
+    await writeFile(join(designDir, "static", "modules.md"), modified);
+  } else if (options.addWhitespace) {
+    // Add a trailing space to trigger drift without content change
+    const modified = bodyOriginal.replace("実装: src/alpha/", "実装: src/alpha/ ");
+    await writeFile(join(designDir, "static", "modules.md"), modified);
+  }
+
+  return { designDir, baseDir };
+}
+
+describe("handleCheck — S1 drift warnings (T-05)", () => {
+  it("emits WARN S1 <id> when body changes, exit 0 (no errors)", async () => {
+    const { designDir, baseDir } = await createDriftFixture({ modifyBody: true });
+    const stderrLines: string[] = [];
+    const spy = spyOn(process.stderr, "write").mockImplementation((s: string | Uint8Array) => {
+      stderrLines.push(typeof s === "string" ? s : new TextDecoder().decode(s));
+      return true;
+    });
+    try {
+      const exitCode = await handleCheck(["--dir", designDir]);
+      spy.mockRestore();
+
+      expect(exitCode).toBe(0); // S1 only → exit 0
+      const output = stderrLines.join("");
+      expect(output).toContain("WARNING S1 mod-alpha");
+    } finally {
+      spy.mockRestore();
+      await rm(baseDir, { recursive: true });
+    }
+  });
+
+  it("whitespace-only change also triggers S1 (no normalization)", async () => {
+    const { designDir, baseDir } = await createDriftFixture({ addWhitespace: true });
+    const stderrLines: string[] = [];
+    const spy = spyOn(process.stderr, "write").mockImplementation((s: string | Uint8Array) => {
+      stderrLines.push(typeof s === "string" ? s : new TextDecoder().decode(s));
+      return true;
+    });
+    try {
+      const exitCode = await handleCheck(["--dir", designDir]);
+      spy.mockRestore();
+
+      expect(exitCode).toBe(0);
+      expect(stderrLines.join("")).toContain("WARNING S1 mod-alpha");
+    } finally {
+      spy.mockRestore();
+      await rm(baseDir, { recursive: true });
+    }
+  });
+
+  it("no S1 when hash matches (body unchanged)", async () => {
+    const { designDir, baseDir } = await createDriftFixture({ modifyBody: false });
+    const stderrLines: string[] = [];
+    const spy = spyOn(process.stderr, "write").mockImplementation((s: string | Uint8Array) => {
+      stderrLines.push(typeof s === "string" ? s : new TextDecoder().decode(s));
+      return true;
+    });
+    try {
+      const exitCode = await handleCheck(["--dir", designDir]);
+      spy.mockRestore();
+
+      expect(exitCode).toBe(0);
+      expect(stderrLines.join("")).not.toContain("S1");
+    } finally {
+      spy.mockRestore();
+      await rm(baseDir, { recursive: true });
+    }
+  });
+
+  it("S1 is not emitted when loop is disabled", async () => {
+    const { designDir, baseDir } = await createDriftFixture({ modifyBody: true, loopEnabled: false });
+    const stderrLines: string[] = [];
+    const spy = spyOn(process.stderr, "write").mockImplementation((s: string | Uint8Array) => {
+      stderrLines.push(typeof s === "string" ? s : new TextDecoder().decode(s));
+      return true;
+    });
+    try {
+      const exitCode = await handleCheck(["--dir", designDir]);
+      spy.mockRestore();
+
+      expect(exitCode).toBe(0);
+      expect(stderrLines.join("")).not.toContain("S1");
+    } finally {
+      spy.mockRestore();
+      await rm(baseDir, { recursive: true });
+    }
+  });
+
+  it("implemented entry without hash does not trigger S1", async () => {
+    const baseDir = await mkdtemp(join(tmpdir(), "aozu-check-s1-nohash-"));
+    const designDir = join(baseDir, "design");
+    await mkdir(join(designDir, "static"), { recursive: true });
+
+    await writeFile(
+      join(designDir, "manifest.md"),
+      ["---", "format-version: 0", "enabled: static, loop", "---"].join("\n")
+    );
+    await writeFile(
+      join(designDir, "static", "modules.md"),
+      ["# モジュール", "", "## CLI {#mod-cli}", "責務: CLI"].join("\n")
+    );
+    await writeFile(join(designDir, "static", "dependencies.md"), "# 許可依存\n");
+    // Entry without hash
+    await writeFile(
+      join(designDir, "state.json"),
+      JSON.stringify({ "mod-cli": { state: "implemented", request: "r1" } })
+    );
+
+    const stderrLines: string[] = [];
+    const spy = spyOn(process.stderr, "write").mockImplementation((s: string | Uint8Array) => {
+      stderrLines.push(typeof s === "string" ? s : new TextDecoder().decode(s));
+      return true;
+    });
+    try {
+      const exitCode = await handleCheck(["--dir", designDir]);
+      spy.mockRestore();
+
+      expect(exitCode).toBe(0);
+      expect(stderrLines.join("")).not.toContain("S1");
+    } finally {
+      spy.mockRestore();
+      await rm(baseDir, { recursive: true });
+    }
+  });
+
+  it("graph-unresolvable entry with hash is skipped (no S1, no crash)", async () => {
+    const { designDir, baseDir } = await createDriftFixture({ modifyBody: true, ghostEntry: true });
+    const stderrLines: string[] = [];
+    const spy = spyOn(process.stderr, "write").mockImplementation((s: string | Uint8Array) => {
+      stderrLines.push(typeof s === "string" ? s : new TextDecoder().decode(s));
+      return true;
+    });
+    try {
+      // Should not crash even though ent-ghost has no corresponding element in the graph
+      const exitCode = await handleCheck(["--dir", designDir]);
+      spy.mockRestore();
+
+      // C8 may report ent-ghost as an error (stale state key) but S1 must not fire for it
+      const output = stderrLines.join("");
+      expect(output).not.toContain("S1 ent-ghost");
+    } finally {
+      spy.mockRestore();
+      await rm(baseDir, { recursive: true });
+    }
+  });
+});

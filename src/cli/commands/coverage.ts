@@ -19,9 +19,11 @@ import { readMarkdownFiles } from "../../fs/reader.ts";
 import { parseFiles } from "../../parse/parser.ts";
 import { parseManifest, isLayerEnabled, validateFormatVersion } from "../../check/manifest.ts";
 import { buildGraph } from "../../graph/builder.ts";
+import { computeAllHashes } from "../../graph/body.ts";
 import { extractReferences } from "../../parse/references.ts";
 import { readDesignState } from "../../state/reader.ts";
 import { writeDesignState } from "../../state/writer.ts";
+import { computeEffectiveStates } from "../../state/effective.ts";
 import { verifyCoverage } from "../../plan/coverage.ts";
 import type { GroupGraph } from "../../plan/coverage.ts";
 import type { StateMap } from "../../state/types.ts";
@@ -217,11 +219,21 @@ export async function handleCoverage(args: string[]): Promise<number> {
   // Read current state
   const stateMap = await readDesignState(designDir);
 
+  // Compute effective states: drifted implemented elements are treated as designed
+  // so they can be re-entered into a request via coverage.
+  const hashIds = Object.keys(stateMap).filter(
+    (id) => stateMap[id]!.state === "implemented" && stateMap[id]!.hash !== undefined
+  );
+  const currentHashes = hashIds.length > 0
+    ? computeAllHashes(hashIds, graph, files)
+    : new Map<string, string>();
+  const { effectiveMap } = computeEffectiveStates(stateMap, currentHashes);
+
   // Build GroupGraph: all groups and their elements, plus after: edges
   const groupGraph = buildGroupGraph(graph, allElements);
 
-  // Run coverage verification
-  const result = verifyCoverage(groupElementIds, draftRefs, graph, stateMap, groupGraph);
+  // Run coverage verification using effective state (drifted elements appear as designed)
+  const result = verifyCoverage(groupElementIds, draftRefs, graph, effectiveMap, groupGraph);
 
   // Emit warnings (always, regardless of pass/fail)
   for (const w of result.warnings) {

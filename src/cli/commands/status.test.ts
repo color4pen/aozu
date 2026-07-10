@@ -845,3 +845,171 @@ describe("handleStatus — format-version fence (C12)", () => {
     }
   });
 });
+
+// ---------------------------------------------------------------------------
+// T-07: status drift annotation tests
+// ---------------------------------------------------------------------------
+
+/**
+ * Create a fixture with a drifted element for status tests.
+ * Returns designDir and the baseDir for cleanup.
+ */
+async function createStatusDriftFixture(): Promise<{ designDir: string; baseDir: string }> {
+  const baseDir = await mkdtemp(join(tmpdir(), "aozu-status-drift-"));
+  const designDir = join(baseDir, "design");
+
+  await mkdir(join(designDir, "static"), { recursive: true });
+  await mkdir(join(designDir, "domain"), { recursive: true });
+
+  await writeFile(
+    join(designDir, "manifest.md"),
+    ["---", "format-version: 0", "enabled: static, domain, loop", "---", "", "# manifest"].join("\n")
+  );
+
+  // Two elements: mod-alpha (will drift) and ent-billing (regular designed)
+  await writeFile(
+    join(designDir, "static", "modules.md"),
+    ["# モジュール", "", "## Alpha {#mod-alpha}", "責務: alpha (original)", "実装: src/alpha/"].join("\n")
+  );
+  await writeFile(join(designDir, "static", "dependencies.md"), "# 許可依存\n");
+  await writeFile(
+    join(designDir, "domain", "model.md"),
+    ["# モデル", "", "## 請求 {#ent-billing}", "請求の説明。"].join("\n")
+  );
+
+  // Compute hash of mod-alpha original range
+  const { buildGraph } = await import("../../graph/builder.ts");
+  const { parseFiles: pf } = await import("../../parse/parser.ts");
+  const { computeElementHash } = await import("../../graph/body.ts");
+  const { readMarkdownFiles: rmf } = await import("../../fs/reader.ts");
+
+  const files = await rmf(designDir);
+  const parsed = pf(files);
+  const graph = buildGraph(parsed, join(designDir, "manifest.md"));
+  const recordedHash = computeElementHash("mod-alpha", graph, files)!;
+
+  // state.json: mod-alpha implemented with recorded hash; ent-billing designed (no entry)
+  await writeFile(
+    join(designDir, "state.json"),
+    JSON.stringify({ "mod-alpha": { state: "implemented", request: "prev", hash: recordedHash } })
+  );
+
+  // Modify mod-alpha body to create drift
+  await writeFile(
+    join(designDir, "static", "modules.md"),
+    ["# モジュール", "", "## Alpha {#mod-alpha}", "責務: alpha (modified — drift)", "実装: src/alpha/"].join("\n")
+  );
+
+  return { designDir, baseDir };
+}
+
+describe("handleStatus — drift annotation in Designed frontier (T-07)", () => {
+  it("drifted element appears in Designed with drift annotation", async () => {
+    const { designDir, baseDir } = await createStatusDriftFixture();
+    try {
+      const proc = Bun.spawn(
+        ["bun", MAIN_TS, "status", "--dir", designDir],
+        { stdout: "pipe", stderr: "pipe" }
+      );
+      const [stdout, , exitCode] = await Promise.all([
+        new Response(proc.stdout).text(),
+        new Response(proc.stderr).text(),
+        proc.exited,
+      ]);
+
+      expect(exitCode).toBe(0);
+      expect(stdout).toContain("mod-alpha");
+      expect(stdout).toContain("drift: 実装時記録から本文が乖離");
+    } finally {
+      await rm(baseDir, { recursive: true });
+    }
+  });
+
+  it("non-drifted designed element has no drift annotation", async () => {
+    const { designDir, baseDir } = await createStatusDriftFixture();
+    try {
+      const proc = Bun.spawn(
+        ["bun", MAIN_TS, "status", "--dir", designDir],
+        { stdout: "pipe", stderr: "pipe" }
+      );
+      const [stdout, , exitCode] = await Promise.all([
+        new Response(proc.stdout).text(),
+        new Response(proc.stderr).text(),
+        proc.exited,
+      ]);
+
+      expect(exitCode).toBe(0);
+      // ent-billing should appear without annotation
+      expect(stdout).toContain("ent-billing");
+      // ent-billing line should not have the drift note
+      const lines = stdout.split("\n");
+      const billingLine = lines.find(l => l.includes("ent-billing"));
+      expect(billingLine).toBeDefined();
+      expect(billingLine!).not.toContain("drift:");
+    } finally {
+      await rm(baseDir, { recursive: true });
+    }
+  });
+
+  it("loop disabled: summary output, no drift computation", async () => {
+    const baseDir = await mkdtemp(join(tmpdir(), "aozu-status-nodrift-"));
+    const designDir = join(baseDir, "design");
+    await mkdir(join(designDir, "static"), { recursive: true });
+
+    await writeFile(
+      join(designDir, "manifest.md"),
+      ["---", "format-version: 0", "enabled: static", "---"].join("\n")
+    );
+    await writeFile(
+      join(designDir, "static", "modules.md"),
+      ["## App {#mod-app}", "責務: app", "実装: src/"].join("\n")
+    );
+    await writeFile(join(designDir, "static", "dependencies.md"), "# 許可依存\n");
+
+    try {
+      const proc = Bun.spawn(
+        ["bun", MAIN_TS, "status", "--dir", designDir],
+        { stdout: "pipe", stderr: "pipe" }
+      );
+      const [stdout, , exitCode] = await Promise.all([
+        new Response(proc.stdout).text(),
+        new Response(proc.stderr).text(),
+        proc.exited,
+      ]);
+
+      expect(exitCode).toBe(0);
+      expect(stdout).toContain("loop not enabled");
+      expect(stdout).not.toContain("drift:");
+    } finally {
+      await rm(baseDir, { recursive: true });
+    }
+  });
+});
+
+describe("formatFrontier — drift annotation", () => {
+  it("annotates drifted IDs in Designed section", () => {
+    const frontier = {
+      openTopics: [],
+      designed: ["ent-order", "mod-cli"],
+      requested: [],
+    };
+    const driftedIds = new Set(["ent-order"]);
+    const output = formatFrontier(frontier, driftedIds);
+
+    expect(output).toContain("ent-order (drift: 実装時記録から本文が乖離)");
+    // mod-cli is not drifted — no annotation
+    const lines = output.split("\n");
+    const cliLine = lines.find(l => l.includes("mod-cli"))!;
+    expect(cliLine).not.toContain("drift:");
+  });
+
+  it("no driftedIds argument: no annotations", () => {
+    const frontier = {
+      openTopics: [],
+      designed: ["ent-order"],
+      requested: [],
+    };
+    const output = formatFrontier(frontier);
+    expect(output).not.toContain("drift:");
+  });
+});

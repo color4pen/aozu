@@ -19,8 +19,10 @@ import { readMarkdownFiles } from "../../fs/reader.ts";
 import { parseFiles } from "../../parse/parser.ts";
 import { parseManifest, isLayerEnabled, getEnabledPrefixes, validateFormatVersion } from "../../check/manifest.ts";
 import { buildGraph } from "../../graph/builder.ts";
+import { computeAllHashes } from "../../graph/body.ts";
 import { runCheck } from "../../check/checker.ts";
 import { readState } from "../../state/reader.ts";
+import { computeEffectiveStates } from "../../state/effective.ts";
 import { extractReferences } from "../../parse/references.ts";
 import { writeDiagnostics } from "../format.ts";
 import {
@@ -118,8 +120,13 @@ export function computeFrontier(
 
 /**
  * Format the three frontiers for stdout output.
+ *
+ * @param frontier    Computed frontier data.
+ * @param driftedIds  Optional set of element IDs that are in the Designed frontier
+ *                    due to body drift (hash mismatch).  These are annotated with
+ *                    a drift notice so that the user knows why they re-appear there.
  */
-export function formatFrontier(frontier: Frontier): string {
+export function formatFrontier(frontier: Frontier, driftedIds?: ReadonlySet<string>): string {
   const lines: string[] = [];
 
   lines.push(`## Open Topics (${frontier.openTopics.length})`);
@@ -138,7 +145,11 @@ export function formatFrontier(frontier: Frontier): string {
     lines.push("  (none)");
   } else {
     for (const id of frontier.designed) {
-      lines.push(`  - ${id}`);
+      if (driftedIds?.has(id)) {
+        lines.push(`  - ${id} (drift: 実装時記録から本文が乖離)`);
+      } else {
+        lines.push(`  - ${id}`);
+      }
     }
   }
 
@@ -254,8 +265,19 @@ export async function handleStatus(args: string[]): Promise<number> {
   if (isLayerEnabled("loop", manifest)) {
     // Loop enabled: show 3 frontiers
     const stateMap = await readState(join(designDir, "state.json"));
-    const frontier = computeFrontier(graph, stateMap, manifest, parsed.frontmatters);
-    process.stdout.write(formatFrontier(frontier));
+
+    // Compute effective states: drifted implemented elements are shown as designed
+    // with an annotation.  This is a read-only view; state.json is not modified.
+    const hashIds = Object.keys(stateMap).filter(
+      (id) => stateMap[id]!.state === "implemented" && stateMap[id]!.hash !== undefined
+    );
+    const currentHashes = hashIds.length > 0
+      ? computeAllHashes(hashIds, graph, files)
+      : new Map<string, string>();
+    const { effectiveMap, driftedIds } = computeEffectiveStates(stateMap, currentHashes);
+
+    const frontier = computeFrontier(graph, effectiveMap, manifest, parsed.frontmatters);
+    process.stdout.write(formatFrontier(frontier, driftedIds));
   } else {
     // Loop disabled: show summary
     const enabledPrefixes = getEnabledPrefixes(manifest);

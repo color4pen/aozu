@@ -17,13 +17,16 @@ import { join } from "path";
 import { stat } from "fs/promises";
 import { readMarkdownFiles } from "../../fs/reader.ts";
 import { parseFiles } from "../../parse/parser.ts";
-import { parseManifest, validateFormatVersion } from "../../check/manifest.ts";
+import { parseManifest, isLayerEnabled, validateFormatVersion } from "../../check/manifest.ts";
 import { buildGraph } from "../../graph/builder.ts";
+import { computeAllHashes, computeElementHash } from "../../graph/body.ts";
 import { runCheck } from "../../check/checker.ts";
 import { readState } from "../../state/reader.ts";
+import { getEffectiveState } from "../../state/effective.ts";
 import { extractReferences } from "../../parse/references.ts";
 import { formatDiagnostic, writeDiagnostics } from "../format.ts";
 import type { CheckDiagnostic } from "../../check/types.ts";
+import type { FileInput } from "../../parse/types.ts";
 
 /** Check whether a path exists as a directory. */
 async function dirExists(path: string): Promise<boolean> {
@@ -45,7 +48,11 @@ async function fileExists(path: string): Promise<boolean> {
  * Returns null (and emits a diagnostic to stderr) if the directory does not exist.
  */
 async function buildPipeline(designDir: string): Promise<
-  | { graph: import("../../graph/types.ts").Graph; manifest: import("../../graph/types.ts").Manifest }
+  | {
+      graph: import("../../graph/types.ts").Graph;
+      manifest: import("../../graph/types.ts").Manifest;
+      files: FileInput[];
+    }
   | null
 > {
   if (!(await dirExists(designDir))) {
@@ -58,7 +65,7 @@ async function buildPipeline(designDir: string): Promise<
   const manifestPath = join(designDir, "manifest.md");
   const manifest = parseManifest(parsed.frontmatters, manifestPath);
   const graph = buildGraph(parsed, manifestPath);
-  return { graph, manifest };
+  return { graph, manifest, files };
 }
 
 /**
@@ -93,7 +100,7 @@ export async function handleCheckRequest(
   // Build graph pipeline
   const pipeline = await buildPipeline(designDir);
   if (pipeline === null) return 2;
-  const { graph, manifest } = pipeline;
+  const { graph, manifest, files } = pipeline;
 
   // Stage gate: format-version must be supported (C12)
   const manifestPath = join(designDir, "manifest.md");
@@ -149,23 +156,36 @@ export async function handleCheckRequest(
       continue;
     }
 
-    // (b) element state must be 'designed' or 'requested' (not 'implemented')
+    // (b) element state must be 'designed' or 'requested' (not effectively 'implemented')
+    // Use effective state so that drifted implemented elements (hash mismatch) pass R2.
     const entry = stateMap[id];
-    const state = entry?.state ?? "designed"; // absence = designed
-    if (state === "implemented") {
-      diagnostics.push({
-        level: "error",
-        code: "R2",
-        elementId: id,
-        message: `cited element '${id}' is already implemented; request must introduce design delta`,
-        file: requestPath,
-        line: 1,
-      });
+    if (entry === undefined) {
+      // Absence of entry = designed → pass R2
+    } else {
+      // Compute effective state: for implemented+hash entries, check current body hash
+      let effectiveState: "designed" | "requested" | "implemented";
+      if (entry.state === "implemented" && entry.hash !== undefined) {
+        const currentHash = computeElementHash(id, graph, files);
+        effectiveState = getEffectiveState(entry, currentHash ?? undefined);
+      } else {
+        effectiveState = entry.state;
+      }
+
+      if (effectiveState === "implemented") {
+        diagnostics.push({
+          level: "error",
+          code: "R2",
+          elementId: id,
+          message: `cited element '${id}' is already implemented; request must introduce design delta`,
+          file: requestPath,
+          line: 1,
+        });
+      }
     }
   }
 
   writeDiagnostics(diagnostics);
-  return diagnostics.length === 0 ? 0 : 1;
+  return diagnostics.some((d) => d.level === "error") ? 1 : 0;
 }
 
 /**
@@ -226,6 +246,47 @@ export async function handleCheck(args: string[]): Promise<number> {
   const stateKeys = Object.keys(stateMap);
 
   const diagnostics = runCheck(graph, manifest, stateKeys);
+
+  // S1: hash drift warnings (only when loop is enabled — designed-reversion mechanism)
+  // S1 does not affect exit code; only error-level diagnostics cause exit 1.
+  if (isLayerEnabled("loop", manifest)) {
+    // Collect implemented entries that have a recorded hash
+    const hashIds = stateKeys.filter(
+      (id) => stateMap[id]!.state === "implemented" && stateMap[id]!.hash !== undefined
+    );
+
+    if (hashIds.length > 0) {
+      const currentHashes = computeAllHashes(hashIds, graph, files);
+
+      for (const id of hashIds) {
+        const entry = stateMap[id]!;
+        const currentHash = currentHashes.get(id);
+
+        // If element is not resolvable from the graph (deleted residue), skip S1.
+        // C8 will report the stale entry as an error separately.
+        if (currentHash === undefined) continue;
+
+        if (entry.hash !== currentHash) {
+          const el = graph.elements.get(id);
+          // Element must be in graph for S1 (we already checked currentHash !== undefined above,
+          // which implies the element was found — computeAllHashes only returns entries for
+          // elements found in the graph)
+          if (!el) continue;
+
+          diagnostics.push({
+            level: "warning",
+            code: "S1",
+            elementId: id,
+            message: "element body has drifted from implementation-time record",
+            file: el.file,
+            line: el.line,
+          });
+        }
+      }
+    }
+  }
+
   writeDiagnostics(diagnostics);
-  return diagnostics.length === 0 ? 0 : 1;
+  // Exit 1 only when there are error-level diagnostics (S1 warnings do not cause exit 1)
+  return diagnostics.some((d) => d.level === "error") ? 1 : 0;
 }
