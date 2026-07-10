@@ -6,3 +6,4 @@
 
 export type { Ruleset, ExportDiagnostic, GenerateResult } from "./types.ts";
 export { generateRuleset } from "./generator.ts";
+export { generatePermissions } from "./permissions.ts";

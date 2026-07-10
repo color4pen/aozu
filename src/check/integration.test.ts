@@ -50,6 +50,85 @@ describe("check integration: design/ passes with zero violations (equivalent to 
 });
 
 // ---------------------------------------------------------------------------
+// T-14: conformance fixture — spec §8 example (permission + domain enabled)
+// ---------------------------------------------------------------------------
+
+describe("check integration: spec §8 conformance fixture (T-14)", () => {
+  it("permission + domain enabled fixture → zero diagnostics", () => {
+    // Matches spec §8 example:
+    // - manifest: enabled: static, domain, permission
+    // - mod element (static)
+    // - act elements: act-admin, act-manager, act-member, act-finance (domain)
+    // - ent element: ent-deal (domain)
+    // - perm element: perm-deal with list + create operations, target: ent-deal (views)
+    const parsed: ParseResult = {
+      elements: [
+        // static
+        { id: "mod-workflow", prefix: "mod", displayName: "Workflow", file: "static/modules.md", line: 1 },
+        // domain — actors
+        { id: "act-admin", prefix: "act", displayName: "Admin", file: "domain/actors.md", line: 1 },
+        { id: "act-manager", prefix: "act", displayName: "Manager", file: "domain/actors.md", line: 5 },
+        { id: "act-member", prefix: "act", displayName: "Member", file: "domain/actors.md", line: 9 },
+        { id: "act-finance", prefix: "act", displayName: "Finance", file: "domain/actors.md", line: 13 },
+        // domain — entity
+        { id: "ent-deal", prefix: "ent", displayName: "Deal", file: "domain/model.md", line: 1 },
+        // views — perm
+        { id: "perm-deal", prefix: "perm", displayName: "Deal Permissions", file: "views/permission/deal.md", line: 1 },
+      ],
+      references: [
+        // References from operation lines (- list: [[act-*]]) and target (対象: [[ent-deal]])
+        { targetId: "ent-deal", file: "views/permission/deal.md", line: 2 },
+        { targetId: "act-admin", file: "views/permission/deal.md", line: 4 },
+        { targetId: "act-manager", file: "views/permission/deal.md", line: 4 },
+        { targetId: "act-member", file: "views/permission/deal.md", line: 4 },
+        { targetId: "act-finance", file: "views/permission/deal.md", line: 4 },
+        { targetId: "act-admin", file: "views/permission/deal.md", line: 5 },
+        { targetId: "act-manager", file: "views/permission/deal.md", line: 5 },
+      ],
+      dependencyEdges: [],
+      diagnostics: [],
+      frontmatters: new Map(),
+      actorIds: [],
+      elementItems: [],
+      implementations: [
+        { paths: ["src/workflow/"], file: "static/modules.md", line: 3 },
+      ],
+      permOperations: [
+        {
+          operation: "list",
+          actorIds: ["act-admin", "act-manager", "act-member", "act-finance"],
+          file: "views/permission/deal.md",
+          line: 4,
+        },
+        {
+          operation: "create",
+          actorIds: ["act-admin", "act-manager"],
+          file: "views/permission/deal.md",
+          line: 5,
+        },
+      ],
+      permTargets: [
+        { targetId: "ent-deal", file: "views/permission/deal.md", line: 2 },
+      ],
+    };
+
+    const graph = buildGraph(parsed);
+    const manifest: Manifest = { formatVersion: "0", enabled: ["static", "domain", "permission"] };
+
+    const diagnostics = runCheck(graph, manifest, []);
+
+    if (diagnostics.length > 0) {
+      const report = diagnostics
+        .map((d) => `  ${d.level.toUpperCase()} ${d.code} ${d.elementId ?? "-"}: ${d.message}`)
+        .join("\n");
+      throw new Error(`Conformance fixture has ${diagnostics.length} violation(s):\n${report}`);
+    }
+
+    expect(diagnostics).toHaveLength(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // T-09: act element + seq with act actor → check exit 0
 // ---------------------------------------------------------------------------
 
@@ -76,6 +155,8 @@ describe("check integration: act elements with seq actors", () => {
       ],
       elementItems: [],
       implementations: [],
+      permOperations: [],
+      permTargets: [],
     };
 
     const graph = buildGraph(parsed);

@@ -98,7 +98,7 @@ export const LAYER_PREREQUISITES: Record<string, string[]> = {
   dataflow: ["dynamic"],
   event: ["dynamic"],
   external: ["static"],
-  permission: ["static"],
+  permission: ["domain"],
   deployment: ["static"],
 };
 
@@ -122,6 +122,13 @@ export const VIEW_ENABLED_NAME_TO_PREFIX: Record<string, string> = {
 export const VIEW_TYPE_NAMES: Set<string> = new Set(
   Object.keys(VIEW_ENABLED_NAME_TO_PREFIX)
 );
+
+/**
+ * Supported view types — C6 dispatches to schema-specific validation for these.
+ * Unsupported view types produce a blanket C6 error (fail-closed).
+ * Future view types should be added here when their schema is finalized.
+ */
+export const SUPPORTED_VIEW_TYPES: Set<string> = new Set(["permission"]);
 
 /** Set of layer names (non-view, non-always). */
 export const LAYER_ENABLED_NAMES: Set<string> = new Set([
@@ -206,7 +213,8 @@ export function getEnabledLayers(manifest: Manifest): Set<string> {
 /**
  * Returns the set of element prefixes that are enabled.
  *
- * View type prefixes are NOT included — view types are unsupported (C6 fail-closed).
+ * Supported view type prefixes are included when enabled.
+ * Unsupported view type prefixes are NOT included (C6 fail-closed).
  * `adr` prefix is always included.
  */
 export function getEnabledPrefixes(manifest: Manifest): Set<string> {
@@ -221,6 +229,17 @@ export function getEnabledPrefixes(manifest: Manifest): Set<string> {
       prefixes.add(p);
     }
   }
+
+  // Include supported view type prefixes when enabled
+  for (const name of manifest.enabled) {
+    if (SUPPORTED_VIEW_TYPES.has(name)) {
+      const prefix = VIEW_ENABLED_NAME_TO_PREFIX[name];
+      if (prefix) {
+        prefixes.add(prefix);
+      }
+    }
+  }
+
   return prefixes;
 }
 

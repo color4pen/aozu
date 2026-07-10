@@ -52,6 +52,8 @@ export function buildGraph(parsed: ParseResult, manifestPath: string | null = nu
     actorIds: [...parsed.actorIds],
     elementItems: [...parsed.elementItems],
     implementations: [...(parsed.implementations ?? [])],
+    permOperations: [...(parsed.permOperations ?? [])],
+    permTargets: [...(parsed.permTargets ?? [])],
     manifestPath,
   };
 }

@@ -21,6 +21,8 @@ function makeParseResult(overrides: Partial<ParseResult> = {}): ParseResult {
     actorIds: [],
     elementItems: [],
     implementations: [],
+    permOperations: [],
+    permTargets: [],
     ...overrides,
   };
 }

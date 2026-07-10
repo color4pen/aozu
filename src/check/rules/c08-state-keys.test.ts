@@ -13,6 +13,8 @@ function makeGraph(elements: ParseResult["elements"]) {
     actorIds: [],
     elementItems: [],
     implementations: [],
+    permOperations: [],
+    permTargets: [],
   };
   return buildGraph(parsed);
 }

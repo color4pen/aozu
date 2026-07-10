@@ -21,6 +21,8 @@ function makeGraph(overrides: Partial<ParseResult> = {}) {
     actorIds: [],
     elementItems: [],
     implementations: [],
+    permOperations: [],
+    permTargets: [],
     ...overrides,
   };
   return buildGraph(parsed);
@@ -183,6 +185,51 @@ describe("act degradation — domain disabled", () => {
     });
     const diags = runCheck(graph, manifest(["static"]));
     expect(diags.map((d) => d.code)).not.toContain("C5");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// T-12: perm degeneration — permission not enabled
+// ---------------------------------------------------------------------------
+
+describe("T-12: perm degeneration — permission not enabled", () => {
+  it("perm declaration in design with permission not enabled → no diagnostics (縮退)", () => {
+    // perm-deal is declared but permission is not in enabled list
+    // C3 should skip perm references (known but disabled type)
+    // C6 should not fire for permission (not in enabled)
+    // C11 should skip perm as target (not in enabledPrefixes)
+    const graph = makeGraph({
+      elements: [
+        { id: "mod-workflow", prefix: "mod", displayName: "Workflow", file: "modules.md", line: 1 },
+        { id: "perm-deal", prefix: "perm", displayName: "Deal", file: "views/permission/deal.md", line: 1 },
+      ],
+      references: [
+        // A reference to perm-deal from within the perm file itself — should be skipped
+        { targetId: "perm-deal", file: "views/permission/deal.md", line: 5 },
+      ],
+      permOperations: [
+        { operation: "create", actorIds: ["act-admin"], file: "views/permission/deal.md", line: 3 },
+      ],
+    });
+    // enabled: static, domain — no permission
+    const diags = runCheck(graph, manifest(["static", "domain"]));
+    // No C6, C3, C11 diagnostics about perm
+    const permDiags = diags.filter(
+      (d) => d.elementId?.startsWith("perm") || d.message.includes("perm")
+    );
+    expect(permDiags).toHaveLength(0);
+  });
+
+  it("permission not enabled → C6 does not trigger for permission type", () => {
+    const graph = makeGraph({
+      elements: [
+        { id: "perm-empty", prefix: "perm", displayName: "Empty", file: "views/permission/empty.md", line: 1 },
+      ],
+      // No operation lines — would trigger C6 non-empty if permission were enabled
+    });
+    // permission NOT in enabled → C6 should not fire for permission
+    const diags = runCheck(graph, manifest(["static", "domain"]));
+    expect(diags.filter((d) => d.code === "C6")).toHaveLength(0);
   });
 });
 

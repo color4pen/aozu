@@ -47,6 +47,10 @@ export interface Graph {
   elementItems: ParseResult["elementItems"];
   /** Implementation path entries from `実装:` lines. */
   implementations: ImplementationEntry[];
+  /** Operation lines from perm elements. */
+  permOperations: ParseResult["permOperations"];
+  /** Target lines from perm elements (`対象:` lines). */
+  permTargets: ParseResult["permTargets"];
   /** Path to the manifest file, or null if not found. */
   manifestPath: string | null;
 }

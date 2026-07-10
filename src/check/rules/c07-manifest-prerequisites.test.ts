@@ -46,3 +46,26 @@ describe("checkC7: manifest prerequisites", () => {
     expect(checkC7(manifest(["static", "dynamic", "loop"]))).toHaveLength(0);
   });
 });
+
+// ---------------------------------------------------------------------------
+// T-12: permission prerequisites (T-01 change verification)
+// ---------------------------------------------------------------------------
+
+describe("checkC7: permission prerequisite is domain (T-01)", () => {
+  it("permission enabled with domain → no C7 diagnostic", () => {
+    expect(checkC7(manifest(["static", "domain", "permission"]))).toHaveLength(0);
+  });
+
+  it("permission enabled without domain (static only) → C7 diagnostic", () => {
+    const diags = checkC7(manifest(["static", "permission"]));
+    expect(diags.length).toBeGreaterThan(0);
+    expect(diags.some((d) => d.code === "C7")).toBe(true);
+    expect(diags.some((d) => d.message.includes("domain"))).toBe(true);
+  });
+
+  it("permission enabled without any prerequisite → C7 diagnostic", () => {
+    const diags = checkC7(manifest(["permission"]));
+    expect(diags.length).toBeGreaterThan(0);
+    expect(diags.some((d) => d.code === "C7")).toBe(true);
+  });
+});

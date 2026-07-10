@@ -17,6 +17,8 @@ function makeGraph(
     actorIds: [],
     elementItems,
     implementations: [],
+    permOperations: [],
+    permTargets: [],
   };
   return buildGraph(parsed);
 }

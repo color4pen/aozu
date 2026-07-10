@@ -16,6 +16,8 @@ function makeGraph(
     actorIds: [],
     elementItems: [],
     implementations: [],
+    permOperations: [],
+    permTargets: [],
   };
   return buildGraph(parsed);
 }
@@ -192,6 +194,103 @@ describe("checkC11: cross-layer reference direction", () => {
       ],
       [{ targetId: "act-approver", file: "dynamic/approval.md", line: 5 }]
     );
+    expect(checkC11(graph, ALL_PREFIXES)).toHaveLength(0);
+  });
+
+  it("T-12: perm → act reference → no C11 diagnostic (views can reference domain)", () => {
+    const graph = makeGraph(
+      [
+        { id: "perm-deal", prefix: "perm", displayName: "Deal", file: "views/permission/deal.md", line: 1 },
+        { id: "act-admin", prefix: "act", displayName: "Admin", file: "domain/actors.md", line: 1 },
+      ],
+      [{ targetId: "act-admin", file: "views/permission/deal.md", line: 3 }]
+    );
+    const permEnabled = new Set([...ALL_PREFIXES, "perm"]);
+    expect(checkC11(graph, permEnabled)).toHaveLength(0);
+  });
+
+  it("T-12: perm → ent reference → no C11 diagnostic (views can reference domain)", () => {
+    const graph = makeGraph(
+      [
+        { id: "perm-deal", prefix: "perm", displayName: "Deal", file: "views/permission/deal.md", line: 1 },
+        { id: "ent-order", prefix: "ent", displayName: "Order", file: "domain/model.md", line: 1 },
+      ],
+      [{ targetId: "ent-order", file: "views/permission/deal.md", line: 3 }]
+    );
+    const permEnabled = new Set([...ALL_PREFIXES, "perm"]);
+    expect(checkC11(graph, permEnabled)).toHaveLength(0);
+  });
+
+  it("T-12: ent → perm reference → C11 diagnostic (domain cannot reference views)", () => {
+    const graph = makeGraph(
+      [
+        { id: "ent-order", prefix: "ent", displayName: "Order", file: "domain/model.md", line: 1 },
+        { id: "perm-deal", prefix: "perm", displayName: "Deal", file: "views/permission/deal.md", line: 1 },
+      ],
+      [{ targetId: "perm-deal", file: "domain/model.md", line: 3 }]
+    );
+    const permEnabled = new Set([...ALL_PREFIXES, "perm"]);
+    const diags = checkC11(graph, permEnabled);
+    expect(diags).toHaveLength(1);
+    expect(diags[0]!.code).toBe("C11");
+    expect(diags[0]!.message).toContain("domain");
+    expect(diags[0]!.message).toContain("perm");
+  });
+
+  it("T-12: mod → perm reference → C11 diagnostic (static cannot reference views)", () => {
+    const graph = makeGraph(
+      [
+        { id: "mod-cli", prefix: "mod", displayName: "CLI", file: "static/modules.md", line: 1 },
+        { id: "perm-deal", prefix: "perm", displayName: "Deal", file: "views/permission/deal.md", line: 1 },
+      ],
+      [{ targetId: "perm-deal", file: "static/modules.md", line: 3 }]
+    );
+    const permEnabled = new Set([...ALL_PREFIXES, "perm"]);
+    const diags = checkC11(graph, permEnabled);
+    expect(diags).toHaveLength(1);
+    expect(diags[0]!.code).toBe("C11");
+    expect(diags[0]!.message).toContain("static");
+    expect(diags[0]!.message).toContain("perm");
+  });
+
+  it("T-12: seq → perm reference → C11 diagnostic (dynamic cannot reference views)", () => {
+    const graph = makeGraph(
+      [
+        { id: "seq-approval", prefix: "seq", displayName: "Approval", file: "dynamic/approval.md", line: 1 },
+        { id: "perm-deal", prefix: "perm", displayName: "Deal", file: "views/permission/deal.md", line: 1 },
+      ],
+      [{ targetId: "perm-deal", file: "dynamic/approval.md", line: 3 }]
+    );
+    const permEnabled = new Set([...ALL_PREFIXES, "perm"]);
+    const diags = checkC11(graph, permEnabled);
+    expect(diags).toHaveLength(1);
+    expect(diags[0]!.code).toBe("C11");
+    expect(diags[0]!.message).toContain("dynamic");
+    expect(diags[0]!.message).toContain("perm");
+  });
+
+  it("T-12: perm → mod reference → no C11 diagnostic (views can reference static)", () => {
+    const graph = makeGraph(
+      [
+        { id: "perm-deal", prefix: "perm", displayName: "Deal", file: "views/permission/deal.md", line: 1 },
+        { id: "mod-workflow", prefix: "mod", displayName: "Workflow", file: "static/modules.md", line: 1 },
+      ],
+      [{ targetId: "mod-workflow", file: "views/permission/deal.md", line: 3 }]
+    );
+    const permEnabled = new Set([...ALL_PREFIXES, "perm"]);
+    expect(checkC11(graph, permEnabled)).toHaveLength(0);
+  });
+
+  it("T-12: perm not in enabledPrefixes → perm references not checked (degeneration)", () => {
+    // When permission is not enabled, perm as target is not in enabledPrefixes → C11 skips
+    const graph = makeGraph(
+      [
+        { id: "ent-order", prefix: "ent", displayName: "Order", file: "domain/model.md", line: 1 },
+        { id: "perm-deal", prefix: "perm", displayName: "Deal", file: "views/permission/deal.md", line: 1 },
+      ],
+      [{ targetId: "perm-deal", file: "domain/model.md", line: 3 }]
+    );
+    // perm NOT in enabledPrefixes (permission not enabled)
     expect(checkC11(graph, ALL_PREFIXES)).toHaveLength(0);
   });
 

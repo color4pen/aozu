@@ -60,6 +60,8 @@ function makeGraph(
     actorIds: [],
     elementItems: [],
     implementations: [],
+    permOperations: [],
+    permTargets: [],
     manifestPath: null,
   };
 }

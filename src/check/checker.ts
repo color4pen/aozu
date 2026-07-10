@@ -64,8 +64,8 @@ export function runCheck(
     diagnostics.push(...checkC5(graph));
   }
 
-  // C6: View type fail-closed — always
-  diagnostics.push(...checkC6(manifest));
+  // C6: View type two-phase dispatch — always
+  diagnostics.push(...checkC6(manifest, graph));
 
   // C7: Manifest prerequisites — always
   diagnostics.push(...checkC7(manifest));

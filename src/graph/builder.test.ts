@@ -12,6 +12,8 @@ function makeEmptyParseResult(): ParseResult {
     actorIds: [],
     elementItems: [],
     implementations: [],
+    permOperations: [],
+    permTargets: [],
   };
 }
 

@@ -62,6 +62,21 @@ export interface ImplementationEntry {
   line: number;
 }
 
+/** An operation line in a perm element: `- <operation>: [[act-id]](, [[act-id]])*` */
+export interface PermOperation {
+  operation: string;
+  actorIds: string[];
+  file: string;
+  line: number;
+}
+
+/** A target line in a perm element: `対象: [[<id>]]` */
+export interface PermTarget {
+  targetId: string;
+  file: string;
+  line: number;
+}
+
 /** Aggregated result of parsing one or more files. */
 export interface ParseResult {
   elements: Element[];
@@ -76,4 +91,8 @@ export interface ParseResult {
   elementItems: ElementItem[];
   /** Implementation path entries from `実装:` lines. */
   implementations: ImplementationEntry[];
+  /** Operation lines from perm elements. */
+  permOperations: PermOperation[];
+  /** Target lines from perm elements (`対象:` lines). */
+  permTargets: PermTarget[];
 }
