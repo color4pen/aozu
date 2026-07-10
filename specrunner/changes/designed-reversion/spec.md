@@ -80,6 +80,18 @@ check SHALL emit a `WARN S1` diagnostic for each implemented element whose recor
 **When** `aozu check` is executed
 **Then** no S1 diagnostic is emitted for `ent-order`
 
+#### Scenario: Loop disabled suppresses S1
+
+**Given** loop is not enabled in the manifest AND state.json contains implemented entries with `hash` fields
+**When** `aozu check` is executed
+**Then** no S1 diagnostic is emitted and exit code is 0 (assuming no other error diagnostics)
+
+#### Scenario: Graph-unresolvable entry is skipped by S1
+
+**Given** state.json contains an implemented entry with a `hash` for element `ent-ghost` that no longer exists in the design documents
+**When** `aozu check` is executed
+**Then** no S1 diagnostic is emitted for `ent-ghost` (the stale entry itself is reported by C8), and check completes without crashing
+
 ### Requirement: check --request は有効状態で R2 を判定する
 
 check --request SHALL evaluate the R2 rule (implemented elements cannot be cover-cited) using the effective state. An implemented element with a drifted hash (body modified since mark) SHALL be treated as designed, allowing it to be cited as a cover citation.

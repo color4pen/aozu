@@ -101,7 +101,8 @@
 - [ ] `handleCheck` で runCheck の後、loop が有効な場合に S1 診断を追加するロジックを実装する:
   1. stateMap から `state === "implemented" && hash !== undefined` のエントリを抽出する
   2. 抽出した id リストに対して `computeAllHashes(ids, graph, files)` で現物ハッシュを計算する
-  3. 記録 hash と現物 hash が不一致のエントリに `CheckDiagnostic` を追加する: `{ level: "warning", code: "S1", elementId: id, message: "element body has drifted from implementation-time record", file: el.file, line: el.line }`
+  3. `hashes.get(id)` が undefined（要素がグラフに存在しない — 削除要素の残骸等）の場合は S1 をスキップし、`graph.elements.get(id)` の参照も行わない（`if (!currentHash) continue;`。残骸の検出は C8 の責務。`getEffectiveState` の「currentHash undefined → 縮退しない」と同じ fail-safe）
+  4. 記録 hash と現物 hash が不一致のエントリに `CheckDiagnostic` を追加する: `{ level: "warning", code: "S1", elementId: id, message: "element body has drifted from implementation-time record", file: el.file, line: el.line }`
 - [ ] exit 判定を `diagnostics.length === 0 ? 0 : 1` から `diagnostics.some(d => d.level === "error") ? 1 : 0` に変更する
 - [ ] graph を構築するため、`handleCheck` の inline pipeline で `buildGraph` を呼ぶ（既に呼んでいるか確認）
 - [ ] テスト追加（`src/cli/commands/check.test.ts` に追記）:
@@ -111,6 +112,7 @@
   - hash 無し implemented → S1 対象外
   - 乖離なし（hash 一致）→ S1 なし + exit 0
   - loop 無効時は S1 が発生しないこと
+  - グラフに存在しない要素の implemented+hash エントリ（削除要素の残骸）→ S1 スキップ・クラッシュなし（C8 が別途 error を報告）
 
 **Acceptance Criteria**:
 - 乖離要素で `WARN S1` が出力される

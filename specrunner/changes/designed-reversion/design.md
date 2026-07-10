@@ -64,9 +64,9 @@ SHA-256 は Bun 組み込みの `Bun.CryptoHasher` を使用。
 ### D3: 有効状態の純関数を src/state/effective.ts に新設
 
 - `getEffectiveState(entry: StateEntry, currentHash: string | undefined): "designed" | "requested" | "implemented"` — 判定: implemented かつ hash あり かつ currentHash あり かつ不一致 → "designed"、それ以外は entry.state
-- `computeEffectiveStates(stateMap: StateMap, currentHashes: Map<string, string>): { effectiveMap: StateMap; driftedIds: Set<string> }` — bulk 版
+- `computeEffectiveStates(stateMap: StateMap, currentHashes: Map<string, string>): { effectiveMap: Readonly<StateMap>; driftedIds: Set<string> }` — bulk 版。戻り値の effectiveMap は `Readonly<StateMap>` 型とし、誤用を型レベルで検出しやすくする
 
-mod-state 内部の型のみを使い、新たな依存を追加しない。effectiveMap は読み取り専用の計算結果であり、ディスクに書き出してはならない（state.json は書き換えない）。
+mod-state 内部の型のみを使い、新たな依存を追加しない。effectiveMap は読み取り専用の計算結果であり、ディスクに書き出してはならない（state.json は書き換えない）。`computeEffectiveStates` の JSDoc に `@remarks The returned effectiveMap MUST NOT be passed to writeDesignState — it is a read-only computed view. Writing it to disk would persist semantically invalid entries (designed state with hash field).` を明記する。
 
 CLI 層のオーケストレーション: files → graph → `computeAllHashes` → `computeEffectiveStates` → 消費関数にパラメータとして渡す。
 
