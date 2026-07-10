@@ -7,9 +7,11 @@
  *   - Dependency edges: `- [[a]] -> [[b]]`
  *   - `## 登場要素` section: `- [[id]]` list items
  *   - `elements:` lines (plan group element lists)
+ *   - Perm operation lines: `- <operation>: [[act-id]](, [[act-id]])*`
+ *   - Perm target lines: `対象: [[<id>]]`
  */
 
-import type { DependencyEdge } from "./types.ts";
+import type { DependencyEdge, PermOperation, PermTarget } from "./types.ts";
 
 /** Pattern for dependency edge: `- [[from]] -> [[to]]` */
 const DEP_EDGE_RE = /^- \[\[([a-z0-9-]+)\]\] -> \[\[([a-z0-9-]+)\]\]$/;
@@ -23,6 +25,19 @@ const ELEMENTS_LINE_RE = /^- elements:\s*(.+)$/;
 /** Extract `[[id]]` values from a comma-separated list string. */
 const ELEMENTS_LIST_RE = /\[\[([a-z0-9-]+)\]\]/g;
 
+/**
+ * Pattern for perm operation line: `- <operation>: [[act-id]](, [[act-id]])*`
+ * operation is a token without whitespace or `:`.
+ * The actor list must start with `[[` to distinguish from plain bullet points.
+ */
+const PERM_OPERATION_LINE_RE = /^- ([^\s:]+): (\[\[.+)$/;
+
+/** Extract `[[id]]` actor references from an operation actor list string. */
+const PERM_ACTOR_REF_RE = /\[\[([a-z0-9-]+)\]\]/g;
+
+/** Pattern for perm target line: `対象: [[id]]` */
+const PERM_TARGET_LINE_RE = /^対象: \[\[([a-z0-9-]+)\]\]$/;
+
 export interface StructuredLineResult {
   dependencyEdges: DependencyEdge[];
   /** IDs listed in `## 登場要素` sections (keyed by file path). */
@@ -33,6 +48,10 @@ export interface StructuredLineResult {
   implementations: { paths: string[]; file: string; line: number }[];
   /** IDs from `elements:` lines. */
   elementItems: { id: string; file: string; line: number }[];
+  /** Operation lines from perm elements. */
+  permOperations: PermOperation[];
+  /** Target lines from perm elements (`対象:` lines). */
+  permTargets: PermTarget[];
 }
 
 /**
@@ -51,6 +70,8 @@ export function extractStructuredLines(
   const responsibilities: StructuredLineResult["responsibilities"] = [];
   const implementations: StructuredLineResult["implementations"] = [];
   const elementItems: StructuredLineResult["elementItems"] = [];
+  const permOperations: PermOperation[] = [];
+  const permTargets: PermTarget[] = [];
 
   let inCodeFence = false;
   let inActorsSection = false;
@@ -130,6 +151,28 @@ export function extractStructuredLines(
       }
       continue;
     }
+
+    // Perm operation line: `- <operation>: [[act-id]](, [[act-id]])*`
+    const permOpMatch = PERM_OPERATION_LINE_RE.exec(line);
+    if (permOpMatch) {
+      const operation = permOpMatch[1]!;
+      const actorList = permOpMatch[2]!;
+      const actorIds: string[] = [];
+      let m: RegExpExecArray | null;
+      PERM_ACTOR_REF_RE.lastIndex = 0;
+      while ((m = PERM_ACTOR_REF_RE.exec(actorList)) !== null) {
+        actorIds.push(m[1]!);
+      }
+      permOperations.push({ operation, actorIds, file: filePath, line: lineNumber });
+      continue;
+    }
+
+    // Perm target line: `対象: [[id]]`
+    const permTargetMatch = PERM_TARGET_LINE_RE.exec(line);
+    if (permTargetMatch) {
+      permTargets.push({ targetId: permTargetMatch[1]!, file: filePath, line: lineNumber });
+      continue;
+    }
   }
 
   return {
@@ -138,5 +181,7 @@ export function extractStructuredLines(
     responsibilities,
     implementations,
     elementItems,
+    permOperations,
+    permTargets,
   };
 }

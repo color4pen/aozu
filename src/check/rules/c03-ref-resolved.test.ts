@@ -16,6 +16,8 @@ function makeGraph(
     actorIds: [],
     elementItems: [],
     implementations: [],
+    permOperations: [],
+    permTargets: [],
   };
   return buildGraph(parsed);
 }
@@ -148,5 +150,50 @@ describe("checkC3: reference resolution", () => {
     );
     const enabledStatic = new Set(["mod", "adr"]);
     expect(checkC3(graph, enabledStatic)).toHaveLength(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// T-12: perm / permission C3 tests
+// ---------------------------------------------------------------------------
+
+describe("checkC3: perm references with permission enabled", () => {
+  const PERM_ENABLED = new Set(["mod", "term", "ent", "inv", "act", "adr", "perm"]);
+
+  it("permission enabled + existing act reference → no C3 diagnostic", () => {
+    const graph = makeGraph(
+      [
+        { id: "perm-deal", prefix: "perm", displayName: "Deal", file: "views/permission/deal.md", line: 1 },
+        { id: "act-admin", prefix: "act", displayName: "Admin", file: "domain/actors.md", line: 1 },
+      ],
+      [{ targetId: "act-admin", file: "views/permission/deal.md", line: 3 }]
+    );
+    expect(checkC3(graph, PERM_ENABLED)).toHaveLength(0);
+  });
+
+  it("permission enabled + non-existent act reference → C3 diagnostic", () => {
+    const graph = makeGraph(
+      [
+        { id: "perm-deal", prefix: "perm", displayName: "Deal", file: "views/permission/deal.md", line: 1 },
+        // act-nonexistent is NOT declared
+      ],
+      [{ targetId: "act-nonexistent", file: "views/permission/deal.md", line: 3 }]
+    );
+    const diags = checkC3(graph, PERM_ENABLED);
+    expect(diags).toHaveLength(1);
+    expect(diags[0]!.code).toBe("C3");
+    expect(diags[0]!.elementId).toBe("act-nonexistent");
+  });
+
+  it("permission NOT enabled + perm reference → no C3 diagnostic (縮退)", () => {
+    const graph = makeGraph(
+      [
+        { id: "mod-workflow", prefix: "mod", displayName: "Workflow", file: "modules.md", line: 1 },
+        { id: "perm-deal", prefix: "perm", displayName: "Deal", file: "views/permission/deal.md", line: 1 },
+      ],
+      [{ targetId: "perm-deal", file: "modules.md", line: 3 }]
+    );
+    // perm NOT in enabledPrefixes
+    expect(checkC3(graph, ALL_PREFIXES)).toHaveLength(0);
   });
 });

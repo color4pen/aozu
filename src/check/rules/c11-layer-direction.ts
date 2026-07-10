@@ -5,6 +5,7 @@
  * - domain (term/ent/inv/act): may only reference domain elements
  * - static (mod): may reference static and domain elements
  * - dynamic (seq): may reference dynamic, static, and domain elements
+ * - views (perm/uc/scr/api/dat/flow/evt/ext/dpl): may reference views, static, domain, and dynamic elements
  * - loop (top/plan/grp) and adr: no restriction
  */
 
@@ -16,12 +17,14 @@ import { findOwningElement } from "../attribution.ts";
 
 /**
  * Allowed reference target prefixes per source layer.
- * Unlisted layers (loop, adr, views) have no restriction.
+ * Unlisted layers (loop, adr) have no restriction.
  */
 const LAYER_ALLOWED_TARGET_PREFIXES: Record<string, Set<string>> = {
   domain: new Set(["term", "ent", "inv", "act"]),
   static: new Set(["mod", "term", "ent", "inv", "act"]),
   dynamic: new Set(["seq", "mod", "term", "ent", "inv", "act"]),
+  // views may reference views (self) + static + domain + dynamic (spec §10 C11, ADR-0023 D6)
+  views: new Set(["uc", "scr", "api", "dat", "flow", "evt", "ext", "perm", "dpl", "mod", "term", "ent", "inv", "act", "seq"]),
 };
 
 /**
@@ -52,7 +55,7 @@ export function checkC11(graph: Graph, enabledPrefixes: Set<string>): CheckDiagn
     // Get the allowed target prefixes for this source layer
     const allowedTargets = LAYER_ALLOWED_TARGET_PREFIXES[sourceLayer];
     if (!allowedTargets) {
-      // No restriction for loop, adr, views
+      // No restriction for loop, adr
       continue;
     }
 

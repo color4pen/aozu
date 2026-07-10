@@ -30,6 +30,8 @@ export function parseFiles(files: FileInput[]): ParseResult {
     actorIds: [],
     elementItems: [],
     implementations: [],
+    permOperations: [],
+    permTargets: [],
   };
 
   for (const file of files) {
@@ -63,6 +65,8 @@ export function parseFiles(files: FileInput[]): ParseResult {
     result.actorIds.push(...structured.actorIds);
     result.elementItems.push(...structured.elementItems);
     result.implementations.push(...structured.implementations);
+    result.permOperations.push(...structured.permOperations);
+    result.permTargets.push(...structured.permTargets);
   }
 
   return result;

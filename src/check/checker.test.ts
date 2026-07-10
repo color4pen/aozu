@@ -14,6 +14,8 @@ function makeGraph(overrides: Partial<ParseResult> = {}) {
     actorIds: [],
     elementItems: [],
     implementations: [],
+    permOperations: [],
+    permTargets: [],
     ...overrides,
   };
   return buildGraph(parsed);

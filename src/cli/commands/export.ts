@@ -4,14 +4,21 @@
  * Wires together: fs/reader → parse → graph → export/generator
  *
  * Subcommands:
- *   export rules           Output ruleset JSON to stdout
- *   export rules --out     Write ruleset JSON to file
- *   export rules --verify  Compare regenerated ruleset to committed file
+ *   export rules              Output ruleset JSON to stdout
+ *   export rules --out        Write ruleset JSON to file
+ *   export rules --verify     Compare regenerated ruleset to committed file
+ *   export permissions        Output permissions JSON to stdout
+ *   export permissions --out  Write permissions JSON to file
  *
- * Exit codes:
+ * Exit codes (rules):
  *   0 = success / match
  *   1 = 実装: lines missing (export failure) / ruleset divergence (--verify)
  *   2 = input error (design dir not found, --verify file not found)
+ *
+ * Exit codes (permissions):
+ *   0 = success
+ *   1 = permission not enabled in manifest
+ *   2 = input error (design dir not found)
  */
 
 import { join } from "path";
@@ -22,6 +29,7 @@ import { buildGraph } from "../../graph/builder.ts";
 import { parseManifest, validateFormatVersion } from "../../check/manifest.ts";
 import { writeDiagnostics } from "../format.ts";
 import { generateRuleset } from "../../export/generator.ts";
+import { generatePermissions } from "../../export/permissions.ts";
 
 /** Determine whether a path is an existing directory. */
 async function dirExists(path: string): Promise<boolean> {
@@ -38,6 +46,7 @@ const USAGE = [
   "",
   "Subcommands:",
   "  rules                Output the ruleset JSON (spec/format.md §11)",
+  "  permissions          Output the permissions JSON (spec/format.md §11)",
   "",
   "Options (rules):",
   "  --dir <path>         Design directory (default: ./design)",
@@ -46,7 +55,13 @@ const USAGE = [
   "                       (default path: <designDir>/rules.json)",
   "  -h, --help           Show this help",
   "",
-  "Exit codes: 0 = success / 1 = 実装: missing or divergence / 2 = input error",
+  "Options (permissions):",
+  "  --dir <path>         Design directory (default: ./design)",
+  "  --out <path>         Write output to file instead of stdout",
+  "  -h, --help           Show this help",
+  "",
+  "Exit codes (rules): 0 = success / 1 = 実装: missing or divergence / 2 = input error",
+  "Exit codes (permissions): 0 = success / 1 = permission not enabled / 2 = input error",
 ].join("\n");
 
 /**
@@ -63,13 +78,11 @@ export async function handleExport(args: string[]): Promise<number> {
 
   const subcommand = args[0];
 
-  if (subcommand !== "rules") {
+  if (subcommand !== "rules" && subcommand !== "permissions") {
     process.stderr.write(`aozu export: unknown subcommand '${subcommand}'\n`);
     process.stderr.write(USAGE + "\n");
     return 2;
   }
-
-  // --- export rules ---
 
   // --help within subcommand
   if (args.includes("--help") || args.includes("-h")) {
@@ -77,7 +90,7 @@ export async function handleExport(args: string[]): Promise<number> {
     return 0;
   }
 
-  // Parse --dir
+  // Parse --dir (common to all subcommands)
   const dirIdx = args.indexOf("--dir");
   const designDir = dirIdx >= 0 ? (args[dirIdx + 1] ?? "./design") : "./design";
 
@@ -87,14 +100,12 @@ export async function handleExport(args: string[]): Promise<number> {
     return 2;
   }
 
-  // Build graph pipeline
+  // Build graph pipeline (common to all subcommands)
   const files = await readMarkdownFiles(designDir);
   const parsed = parseFiles(files);
   const manifestPath = join(designDir, "manifest.md");
 
-  // Stage gate: format-version must be supported (C12). The exported ruleset is
-  // the exit-gate baseline (ADR-0007), so it must never be generated from an
-  // unknown-format corpus.
+  // Stage gate: format-version must be supported (C12).
   const manifest = parseManifest(parsed.frontmatters, manifestPath);
   const fvDiag = validateFormatVersion(manifest, manifestPath);
   if (fvDiag) {
@@ -103,6 +114,37 @@ export async function handleExport(args: string[]): Promise<number> {
   }
 
   const graph = buildGraph(parsed, manifestPath);
+
+  // --- export permissions ---
+  if (subcommand === "permissions") {
+    // permission must be enabled
+    if (!manifest.enabled.includes("permission")) {
+      process.stderr.write(
+        "ERROR: permission is not enabled in this design's manifest. " +
+        "Add 'permission' to the 'enabled' list in manifest.md.\n"
+      );
+      return 1;
+    }
+
+    const { json: permJson } = generatePermissions(graph);
+
+    // Write to --out <path> or stdout
+    const outIdx = args.indexOf("--out");
+    if (outIdx >= 0) {
+      const outPath = args[outIdx + 1];
+      if (!outPath) {
+        process.stderr.write("ERROR INPUT - missing argument for --out\n");
+        return 2;
+      }
+      await Bun.write(outPath, permJson);
+      return 0;
+    }
+
+    process.stdout.write(permJson);
+    return 0;
+  }
+
+  // --- export rules ---
 
   // Generate ruleset
   const { json, diagnostics } = generateRuleset(graph);
