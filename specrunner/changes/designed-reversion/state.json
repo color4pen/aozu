@@ -2,7 +2,7 @@
   "version": 2,
   "jobId": "d99c25ac-a79d-4836-b042-96fe9b973855",
   "createdAt": "2026-07-10T03:11:57.237Z",
-  "updatedAt": "2026-07-10T04:19:21.612Z",
+  "updatedAt": "2026-07-10T04:28:05.532Z",
   "request": {
     "title": "designed への戻りの実装 — mark の本文ハッシュ記録と乖離の計算縮退（ADR-0018 補記）",
     "type": "new-feature",
@@ -12,7 +12,7 @@
     "owner": "color4pen",
     "name": "aozu"
   },
-  "step": "code-review",
+  "step": "regression-gate",
   "status": "running",
   "branch": "feat/designed-reversion-d99c25ac",
   "error": null,
@@ -34,15 +34,32 @@
     }
   ],
   "resumePoint": null,
+  "reviewerStatuses": [
+    {
+      "name": "adversarial-consistency",
+      "status": "skipped",
+      "approvedAtCommit": null,
+      "activationPaths": [
+        "adr/**",
+        "spec/**",
+        "design/**",
+        "docs/open-questions.md"
+      ],
+      "invalidatedByCommit": null
+    }
+  ],
   "_journal": {
-    "historyCount": 35,
+    "historyCount": 45,
     "stepCounts": {
       "request-review": 1,
       "design": 1,
       "spec-review": 2,
       "test-case-gen": 1,
       "implementer": 1,
-      "verification": 1
+      "verification": 1,
+      "code-review": 1,
+      "adversarial-consistency": 1,
+      "custom-reviewers": 1
     }
   }
 }
