@@ -60,11 +60,12 @@ enabled: static, domain, dynamic, loop, use-case
 | domain / dynamic / loop | static |
 | use-case | dynamic |
 | screen | use-case |
-| api / external / permission / deployment | static |
+| api / external / deployment | static |
+| permission | domain |
 | data | domain |
 | dataflow / event | dynamic |
 
-ビュー型の行は暫定であり、各ビューのスキーマ追補（§12）時に確定する。
+ビュー型の行は各ビューのスキーマ追補（§12）時に確定する。**permission は確定済み**（操作行が act を参照するため domain を前提とする — ADR-0023）。他は暫定。
 
 ## 4. ID 文法
 
@@ -222,6 +223,23 @@ topics: [[top-duplicate-slug]]
 
 `loop` 有効時、`topics:` に最低 1 つの top 引用を必須とする（ADR-0006）。
 
+### views/permission/<file>.md — perm
+
+```markdown
+## 案件の権限 {#perm-deal}
+対象: [[ent-deal]]
+
+- list: [[act-admin]], [[act-manager]], [[act-member]], [[act-finance]]
+- create: [[act-admin]], [[act-manager]]
+```
+
+- 1 見出し 1 perm 要素 = 1 つの保護対象の操作 × アクター表（粒度は ADR-0017 / ADR-0023 D1）
+- **機械の読む正本は操作行**: `- <operation>: [[act-id]](, [[act-id]])*`。operation は空白と `:` を含まない自由トークンで、同一 perm 内で一意。操作行が 1 本も無い perm は違反（非空義務、C6）
+- 操作行の参照はすべて **act 要素**に解決されること（C6。C5 の主語義務と同型）
+- `対象:` 行は任意。書く場合は実在要素への参照（解決は C3 の一般規則）
+- 操作は**表面非依存**の動詞（画面・API・MCP ツールのどれから呼ばれるかを perm は知らない — ADR-0023 D2）。表面 → 操作の対応はコード側の関心事
+- ファイル配置は `views/permission/` 配下の任意の `.md`
+
 ## 9. 状態マップ — state.json
 
 ```json
@@ -248,12 +266,12 @@ topics: [[top-duplicate-slug]]
 | C3 | すべての `[[id]]` が有効な型の実在要素に解決される。ただし**参照元・参照先のどちらか**の型が無効な参照は評価しない（無効な型の義務は評価しない、の一貫適用）。縮退による評価除外は**既知だが無効な型**に限る——**未知の prefix**（§4 に無い型）を持つ参照は縮退の対象外で、常に違反として診断する（typo の fail-open を許さない） |
 | C4 | dependencies の辺の両端が mod 要素に解決される。この規則は static アーティファクトの構造義務であり **C3 の縮退スキップの対象外**（端点が mod 以外なら、その型の有効・無効によらず常に違反） |
 | C5 | seq の登場要素リストが空でなく（**非空義務は縮退に依らず常に評価する**）、すべてのエントリの prefix が mod または act である（prefix 適格性も常時評価）。エントリの**解決**は C3 に従う — domain 無効時の act 参照は既知だが無効な型として解決検証のみ縮退スキップされる。act のみの登場要素リストも非空義務を満たす |
-| C6 | ビューのリンク義務が充足される（uc→seq、scr→uc、api→mod、…型定義に従う） |
+| C6 | ビューのリンク義務が充足される。サポート済みの型はスキーマのリンク義務を検証する（perm → act・操作行の非空と一意）。**未サポートのビュー型が enabled に現れたら常に違反**（fail-closed。サポート済みは現在 permission のみ） |
 | C7 | manifest の enabled 組み合わせが型の前提関係を満たす |
 | C8 | state.json の全キーが実在要素（削除要素の残骸検出） |
 | C9 | adr が top を引用している（loop 有効時） |
 | C10 | plan の elements がすべて実在し、after の grp が実在する |
-| C11 | 層間参照方向: domain の要素は domain（term / ent / inv / act）のみを参照できる。static は static と domain、dynamic は dynamic・static・domain を参照できる。loop と adr は制限なし |
+| C11 | 層間参照方向: domain の要素は domain（term / ent / inv / act）のみを参照できる。static は static と domain、dynamic は dynamic・static・domain を参照できる。views は views・static・domain・dynamic を参照できる（コア層 → views の参照は禁止 — ADR-0023 D6）。loop と adr は制限なし |
 | C12 | manifest の `format-version` が対応集合に属する（現在 `{"0"}`）。欠落も違反 |
 
 ## 11. rules export
@@ -269,8 +287,33 @@ topics: [[top-duplicate-slug]]
 
 実装リポジトリの architecture test が消費する中立形式。`--verify` はコミット済み出力と設計文書の一致を検査する。
 
+### permissions export（permission ビュー有効時）
+
+```json
+{
+  "format-version": 0,
+  "permissions": [
+    {
+      "id": "perm-deal",
+      "target": "ent-deal",
+      "operations": {
+        "create": ["act-admin", "act-manager"],
+        "list": ["act-admin", "act-finance", "act-manager", "act-member"]
+      }
+    }
+  ]
+}
+```
+
+`export permissions` が排出する。権限突合テスト（設計の表 vs コードの権限定義の等値検査）が消費する中立形式。
+
+- `target` は `対象:` 行が無ければ省略
+- 出力順は決定的: `permissions` は id 昇順、`operations` のキーは辞書順、act 配列は ID 昇順（diff の安定性）
+- コミット済み成果物と `--verify` は持たない。突合の比較対象はコード側の権限定義そのものであり、中間成果物を挟まない（ADR-0023 D4）
+- permission ビューが enabled でない design に対しては exit 1（この design は権限を aozu の管理下に置いていない、の宣言）
+
 ## 12. 本仕様内の未決
 
 - **seq の登場要素に外部システムを含める扱い**（アクターは ADR-0015 で act 型として決着済み。外部系は ext ビューの追補時に扱う）
-- ビュー型それぞれのスキーマ詳細（named consumer を名指しできる実プロジェクトが現れた時点で個別に追補 — ADR-0022）
+- ビュー型それぞれのスキーマ詳細（named consumer を名指しできる実プロジェクトが現れた時点で個別に追補 — ADR-0022。**permission は ADR-0023 で追補済み**、§8）
 - `format-version` の互換性ポリシー（v1 で確定）

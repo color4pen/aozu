@@ -105,6 +105,7 @@ curl -fsSL https://raw.githubusercontent.com/color4pen/aozu/main/install.sh | ba
 | [0020](adr/0020-prompt-propagate-review-scope-and-loop-gate.md) | propagate / review — 0019 規則の ADR 起点適用・review 全量注入・loop gate 非課 |
 | [0021](adr/0021-distribution-channels.md) | 配布チャネル — npm + 単一バイナリの二正面、bun-native 維持（Node API 移行は保留） |
 | [0022](adr/0022-view-types-consumer-driven.md) | ビュー型の追補 — named consumer 駆動。prefix 列挙は名前空間の予約であり約束ではない |
+| [0023](adr/0023-permission-view.md) | permission ビューの追補 — 表面非依存の操作 × アクター表・export permissions 突合契約（0022 の機構を一件目で確定） |
 
 未確定の論点は [docs/open-questions.md](docs/open-questions.md)。
 
