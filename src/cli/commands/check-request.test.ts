@@ -198,3 +198,188 @@ describe("handleCheck --request mode", () => {
     }
   });
 });
+
+// ---------------------------------------------------------------------------
+// T-04: Dependency-citation tests (ADR-0024)
+// ---------------------------------------------------------------------------
+
+describe("handleCheck --request — dependency citations (ADR-0024)", () => {
+  // Acceptance criterion #1: implemented element in dependency line → exit 0
+  it("AC#1: dependency citation of an implemented element → exit 0", async () => {
+    const designDir = await createDesignFixture({
+      "mod-cli": { state: "implemented", request: "prev", pr: 1 },
+    });
+    const tmpDir = await mkdtemp(join(tmpdir(), "aozu-req-tmp-"));
+    try {
+      const reqPath = await writeRequestFile(
+        tmpDir,
+        "依存: [[mod-cli]]\n\nThis request adds new features.\n"
+      );
+      const exitCode = await handleCheck([
+        "--request", reqPath,
+        "--dir", designDir,
+      ]);
+      expect(exitCode).toBe(0);
+    } finally {
+      await rm(tmpDir, { recursive: true });
+      await rm(designDir, { recursive: true });
+    }
+  });
+
+  // Acceptance criterion #2: same ID in body → R2 for the body occurrence
+  it("AC#2: same implemented ID in body (coverage ref) → R2 exit 1", async () => {
+    const designDir = await createDesignFixture({
+      "mod-cli": { state: "implemented", request: "prev", pr: 1 },
+    });
+    const tmpDir = await mkdtemp(join(tmpdir(), "aozu-req-tmp-"));
+    try {
+      const reqPath = await writeRequestFile(
+        tmpDir,
+        [
+          "依存: [[mod-cli]]",
+          "",
+          "This request also modifies [[mod-cli]] in the body.",
+        ].join("\n")
+      );
+      const exitCode = await handleCheck([
+        "--request", reqPath,
+        "--dir", designDir,
+      ]);
+      expect(exitCode).toBe(1);
+    } finally {
+      await rm(tmpDir, { recursive: true });
+      await rm(designDir, { recursive: true });
+    }
+  });
+
+  // Acceptance criterion #3: unknown ID on dependency line → R1 exit 1
+  it("AC#3: unresolved ID on dependency line → R1 exit 1", async () => {
+    const designDir = await createDesignFixture();
+    const tmpDir = await mkdtemp(join(tmpdir(), "aozu-req-tmp-"));
+    try {
+      const reqPath = await writeRequestFile(
+        tmpDir,
+        "依存: [[mod-nonexistent]]\n\nBody text.\n"
+      );
+      const exitCode = await handleCheck([
+        "--request", reqPath,
+        "--dir", designDir,
+      ]);
+      expect(exitCode).toBe(1);
+    } finally {
+      await rm(tmpDir, { recursive: true });
+      await rm(designDir, { recursive: true });
+    }
+  });
+
+  // Acceptance criterion #4: malformed dependency line → R3 exit 1
+  it("AC#4: malformed dependency line → R3 exit 1", async () => {
+    const designDir = await createDesignFixture();
+    const tmpDir = await mkdtemp(join(tmpdir(), "aozu-req-tmp-"));
+    try {
+      const reqPath = await writeRequestFile(
+        tmpDir,
+        "依存: [[mod-cli]] と [[mod-parse]]\n\nBody text.\n"
+      );
+      const exitCode = await handleCheck([
+        "--request", reqPath,
+        "--dir", designDir,
+      ]);
+      expect(exitCode).toBe(1);
+    } finally {
+      await rm(tmpDir, { recursive: true });
+      await rm(designDir, { recursive: true });
+    }
+  });
+
+  // Acceptance criterion #5: --require-citation fails when only dependency refs exist
+  it("AC#5: --require-citation fails when document has only dependency citations", async () => {
+    const designDir = await createDesignFixture();
+    const tmpDir = await mkdtemp(join(tmpdir(), "aozu-req-tmp-"));
+    try {
+      const reqPath = await writeRequestFile(
+        tmpDir,
+        "依存: [[mod-parse]]\n\nNo coverage citations in the body.\n"
+      );
+      const exitCode = await handleCheck([
+        "--request", reqPath,
+        "--require-citation",
+        "--dir", designDir,
+      ]);
+      expect(exitCode).toBe(1);
+    } finally {
+      await rm(tmpDir, { recursive: true });
+      await rm(designDir, { recursive: true });
+    }
+  });
+
+  // Acceptance criterion #5 (positive): --require-citation passes when coverage refs exist
+  it("AC#5-pos: --require-citation passes when coverage refs exist (even with dependency refs)", async () => {
+    const designDir = await createDesignFixture();
+    const tmpDir = await mkdtemp(join(tmpdir(), "aozu-req-tmp-"));
+    try {
+      const reqPath = await writeRequestFile(
+        tmpDir,
+        "依存: [[mod-cli]]\n\nThis covers [[mod-parse]].\n"
+      );
+      const exitCode = await handleCheck([
+        "--request", reqPath,
+        "--require-citation",
+        "--dir", designDir,
+      ]);
+      expect(exitCode).toBe(0);
+    } finally {
+      await rm(tmpDir, { recursive: true });
+      await rm(designDir, { recursive: true });
+    }
+  });
+
+  // Acceptance criterion #6: code fence with 依存: line → ignored
+  it("AC#6: dependency line inside code fence is ignored", async () => {
+    const designDir = await createDesignFixture({
+      "mod-cli": { state: "implemented", request: "prev", pr: 1 },
+    });
+    const tmpDir = await mkdtemp(join(tmpdir(), "aozu-req-tmp-"));
+    try {
+      const content = [
+        "# Request",
+        "",
+        "```",
+        "依存: [[mod-cli]]",
+        "```",
+        "",
+        "No actual dependency declarations here.",
+      ].join("\n");
+      const reqPath = await writeRequestFile(tmpDir, content);
+      // The fenced 依存: should be ignored; no citations → exit 0 (no --require-citation)
+      const exitCode = await handleCheck([
+        "--request", reqPath,
+        "--dir", designDir,
+      ]);
+      expect(exitCode).toBe(0);
+    } finally {
+      await rm(tmpDir, { recursive: true });
+      await rm(designDir, { recursive: true });
+    }
+  });
+
+  // Multiple dependency IDs on one line — all should resolve
+  it("multiple IDs on one dependency line all pass when resolved and not implemented", async () => {
+    const designDir = await createDesignFixture();
+    const tmpDir = await mkdtemp(join(tmpdir(), "aozu-req-tmp-"));
+    try {
+      const reqPath = await writeRequestFile(
+        tmpDir,
+        "依存: [[mod-cli]], [[mod-parse]]\n\nBody covers [[mod-parse]].\n"
+      );
+      const exitCode = await handleCheck([
+        "--request", reqPath,
+        "--dir", designDir,
+      ]);
+      expect(exitCode).toBe(0);
+    } finally {
+      await rm(tmpDir, { recursive: true });
+      await rm(designDir, { recursive: true });
+    }
+  });
+});

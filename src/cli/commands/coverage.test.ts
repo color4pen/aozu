@@ -755,3 +755,150 @@ describe("coverage — --help", () => {
     expect(exitCode).toBe(0);
   });
 });
+
+// ---------------------------------------------------------------------------
+// T-06: Dependency-citation tests for coverage (ADR-0024)
+// ---------------------------------------------------------------------------
+
+describe("coverage — dependency citations (ADR-0024)", () => {
+  // AC#7: element cited only on a dependency line is NOT_COVERED
+  it("AC#7: element cited only in dependency line is NOT_COVERED → exit 1", async () => {
+    const designDir = await createFixture();
+    const baseDir = join(designDir, "..");
+    try {
+      // mod-alpha only in dependency line, mod-beta in body
+      const draftPath = await createDraft(
+        baseDir,
+        [
+          "依存: [[mod-alpha]]",
+          "",
+          "This covers [[mod-beta]].",
+        ].join("\n")
+      );
+
+      const exitCode = await handleCoverage([
+        "--group", "grp-my-group",
+        "--draft", draftPath,
+        "--request", "my-request",
+        "--dir", designDir,
+      ]);
+
+      expect(exitCode).toBe(1);
+    } finally {
+      await rm(baseDir, { recursive: true });
+    }
+  });
+
+  // Malformed dependency line in draft → exit 1
+  it("malformed dependency line in draft → exit 1", async () => {
+    const designDir = await createFixture();
+    const baseDir = join(designDir, "..");
+    try {
+      const draftPath = await createDraft(
+        baseDir,
+        [
+          "依存: [[mod-alpha]] と [[mod-beta]]",
+          "",
+          "[[mod-alpha]] and [[mod-beta]] are also cited.",
+        ].join("\n")
+      );
+
+      const exitCode = await handleCoverage([
+        "--group", "grp-my-group",
+        "--draft", draftPath,
+        "--request", "my-request",
+        "--dir", designDir,
+      ]);
+
+      expect(exitCode).toBe(1);
+    } finally {
+      await rm(baseDir, { recursive: true });
+    }
+  });
+
+  // Element in both body and dependency line → covered (body citation counts)
+  it("element cited in both dependency line and body → covered → exit 0", async () => {
+    const designDir = await createFixture();
+    const baseDir = join(designDir, "..");
+    try {
+      // mod-alpha appears in both dependency line and body; mod-beta in body only
+      const draftPath = await createDraft(
+        baseDir,
+        [
+          "依存: [[mod-alpha]]",
+          "",
+          "This covers [[mod-alpha]] and [[mod-beta]].",
+        ].join("\n")
+      );
+
+      const exitCode = await handleCoverage([
+        "--group", "grp-my-group",
+        "--draft", draftPath,
+        "--request", "my-request",
+        "--dir", designDir,
+      ]);
+
+      expect(exitCode).toBe(0);
+    } finally {
+      await rm(baseDir, { recursive: true });
+    }
+  });
+
+  // Dependency line inside code fence → ignored, element is NOT_COVERED
+  it("dependency line inside code fence is ignored → NOT_COVERED if only there", async () => {
+    const designDir = await createFixture({ groupElements: ["mod-alpha"] });
+    const baseDir = join(designDir, "..");
+    try {
+      const draftPath = await createDraft(
+        baseDir,
+        [
+          "```",
+          "依存: [[mod-alpha]]",
+          "```",
+          "",
+          "No actual citations here.",
+        ].join("\n")
+      );
+
+      const exitCode = await handleCoverage([
+        "--group", "grp-my-group",
+        "--draft", draftPath,
+        "--request", "my-request",
+        "--dir", designDir,
+      ]);
+
+      // mod-alpha is only in a fenced code block's dependency line → NOT_COVERED
+      expect(exitCode).toBe(1);
+    } finally {
+      await rm(baseDir, { recursive: true });
+    }
+  });
+
+  // Valid dependency line with unknown element does NOT cause input error
+  // (it just contributes nothing to coverage; the existence check is in check --request)
+  it("valid dependency line with known element + full body coverage → exit 0", async () => {
+    const designDir = await createFixture();
+    const baseDir = join(designDir, "..");
+    try {
+      const draftPath = await createDraft(
+        baseDir,
+        [
+          "依存: [[mod-alpha]]",
+          "",
+          "[[mod-alpha]] and [[mod-beta]] are both covered here.",
+        ].join("\n")
+      );
+
+      const exitCode = await handleCoverage([
+        "--group", "grp-my-group",
+        "--draft", draftPath,
+        "--request", "dep-test",
+        "--dir", designDir,
+      ]);
+
+      expect(exitCode).toBe(0);
+    } finally {
+      await rm(baseDir, { recursive: true });
+    }
+  });
+});
