@@ -76,3 +76,4 @@
 {"type":"step-attempt","step":"pr-create","sessionId":null,"outcome":{"verdict":"success","findingsPath":"specrunner/changes/permission-view/pr-create-result.md","error":null,"toolResult":null,"followUpAttempts":0},"startedAt":"2026-07-10T01:13:20.309Z","endedAt":"2026-07-10T01:13:21.802Z"}
 {"type":"lineage","step":"pr-create","ts":"2026-07-10T01:13:21.802Z","outputs":[{"path":"specrunner/changes/permission-view/pr-create-result.md","hash":"sha256:ce39a0fb586eaa6b5903b7c303e40578ed836d5e6c3448a01b16bcc0fdc10c50"}],"inputs":[{"path":"feat/permission-view-b846e389","hash":null}]}
 {"type":"transition","ts":"2026-07-10T01:13:21.811Z","step":"pipeline","status":"ok","message":"running → awaiting-archive: pipeline complete"}
+{"type":"transition","ts":"2026-07-10T01:16:13.209Z","step":"archive","status":"ok","message":"awaiting-archive → archived: change archived"}
