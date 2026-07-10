@@ -245,7 +245,7 @@ topics: [[top-duplicate-slug]]
 ```json
 {
   "ent-order": { "state": "requested", "request": "order-model-rework" },
-  "mod-cli":   { "state": "implemented", "request": "cli-split", "pr": 123 }
+  "mod-cli":   { "state": "implemented", "request": "cli-split", "pr": 123, "hash": "9f86d08..." }
 }
 ```
 
@@ -254,6 +254,8 @@ topics: [[top-duplicate-slug]]
 - **人は編集しない**。coverage / mark / 設計 delta の merge がツール経由で書く。唯一の例外は次項の衝突裁定で、conflict marker の解消は人が直接行う
 - 同一要素への並行更新は git の衝突として表面化させ、機械的な後勝ち解決を行わない（同一要素の並行変更は設計上の真の衝突であり、人が裁く）
 - 削除された要素はエントリごと削除する（C8）。削除要素のトレース（request / PR 対応）は git 履歴が保持する — state.json が持つのは現在形のみ（ADR-0004 と同型の規約）
+- `hash` は mark implemented が遷移時に記録する要素本文の内容ハッシュ（SHA-256 hex。対象はパーサが定める要素範囲 = ID つき見出し行から次要素の直前までの完全一致・正規化なし — ADR-0018 補記）。implemented エントリのみが持つ
+- `hash` を持つ implemented 要素が現物と乖離したら、その要素は **designed 扱いに縮退**する（計算遷移。state.json は書き換えない）。check は warning 診断 **S1** で乖離を報告し、status はフロンティアに再設計対象として表示する。`check --request` の状態判定も縮退後の状態で行う。`hash` の無い implemented エントリは判定対象外（過去互換）
 
 ## 10. 閉包検証規則（check）
 

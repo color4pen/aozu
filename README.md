@@ -106,6 +106,7 @@ curl -fsSL https://raw.githubusercontent.com/color4pen/aozu/main/install.sh | ba
 | [0021](adr/0021-distribution-channels.md) | 配布チャネル — npm + 単一バイナリの二正面、bun-native 維持（Node API 移行は保留） |
 | [0022](adr/0022-view-types-consumer-driven.md) | ビュー型の追補 — named consumer 駆動。prefix 列挙は名前空間の予約であり約束ではない |
 | [0023](adr/0023-permission-view.md) | permission ビューの追補 — 表面非依存の操作 × アクター表・export permissions 突合契約（0022 の機構を一件目で確定） |
+| [0024](adr/0024-dependency-citation.md) | 依存引用 — request の `依存:` 行で被覆と依存の辺を分離（入口ゲートの二種類化） |
 
 未確定の論点は [docs/open-questions.md](docs/open-questions.md)。
 
