@@ -64,6 +64,18 @@ check が検証するのは**閉包**である: ID が一意で、参照が実�
 
 禁じているのは細部を書くことではなく、**検証されない細部を検証されているかのように扱うこと**だけである。screen ビューが有効化されていない（consumer 未特定 — ADR-0022）のは、この判定基準の適用例である。
 
+## 既存ツールとの対応
+
+導入検討時に「何を置き換え、何と併存するか」を誤解しやすいため、対応を明示する。aozu は検査の実行系を持たず、正本と契約成果物（rules.json・permissions JSON・CLI 契約）を供給する側に立つ——多くの既存ツールは競合ではなく**結線先**である。
+
+| 既存のツール・実践 | 関係 | 既に使っている場合 |
+|---|---|---|
+| architecture test（dependency-cruiser / ArchUnit / import-linter 等） | **結線先**。出口ゲートの消費側そのもの（integration.md §3）。aozu は許可依存を rules.json として供給し、検査の実行はこれらの領分 | 手書きの規則定義を rules export からの生成に差し替える（docs/adoption.md Step 1） |
+| ADR 管理（adr-tools / MADR 等） | **併存**。aozu が課すのは frontmatter の `topics:` 引用（C9、loop 有効時）のみで、ADR の書式・運用は制約しない | 既存の adr/ 資産はそのまま。loop 有効化の時点で `topics:` 引用だけ足す |
+| consumer-driven contracts（Pact 等） | **将来の結線先候補**。リポジトリ境界をまたぐ辺の歯の先行例（docs/open-questions.md 論点 14）。現在の aozu の保証はリポジトリ内で閉じている | そのまま併用する。aozu の管理対象外の辺を既にカバーしている |
+| 仕様駆動開発ツール（spec-kit / OpenSpec 等） | **別工程**。これらは変更単位の仕様 → 実装の工程を扱い、aozu は設計正本の構造整合と時間規律を扱う。重なるのは request 文書の受け口だけ | request 文書に引用欄と入口ゲートを結線すれば共存する（integration.md §1・§4、docs/adoption.md Step 2） |
+| アーキテクチャ記述・図（Structurizr / C4 等） | **併存（挿絵扱い）**。aozu は図を検証対象にしない。構造の正本は modules.md / dependencies.md のテキスト | 図は残してよい。正本だけを static 層に移す（docs/adoption.md 原則 3） |
+
 ## 正本ポインタ
 
 - 位置づけと責務境界: [adr/0001](../adr/0001-tool-positioning.md)
