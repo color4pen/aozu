@@ -68,6 +68,18 @@ curl -fsSL https://raw.githubusercontent.com/color4pen/aozu/main/install.sh | ba
 
 インストール先は `~/.local/bin/aozu`（`~/.local/bin` を `$PATH` に追加してください）。macOS と Linux の arm64 / x86\_64 に対応しています。Windows は [GitHub Releases](https://github.com/color4pen/aozu/releases) から手動でダウンロードしてください。
 
+### 5 分で試す
+
+[examples/minimal](examples/minimal) に最小の設計正本（2 モジュール + 小さなドメイン、7 要素）があります。閉包検証・壊して直す・rules export までを [examples/minimal/README.md](examples/minimal/README.md) の手順で体験できます:
+
+```sh
+git clone https://github.com/color4pen/aozu && cd aozu/examples/minimal
+bunx @color4pen/aozu check --dir design        # 閉包検証（exit 0 = 合格）
+bunx @color4pen/aozu export rules --dir design # architecture test に食わせる ruleset
+```
+
+このサンプルは CI で check exit 0 と rules 同期が強制されており、仕様の変更に置き去りにされません。
+
 ## 使い方
 
 - **動詞体系**: ADR-0008。実装状況は下記ステータス参照

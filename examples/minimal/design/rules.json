@@ -1,0 +1,21 @@
+{
+  "format-version": 0,
+  "modules": [
+    "mod-api",
+    "mod-domain"
+  ],
+  "paths": {
+    "mod-api": [
+      "src/api/"
+    ],
+    "mod-domain": [
+      "src/domain/"
+    ]
+  },
+  "allowed": [
+    [
+      "mod-api",
+      "mod-domain"
+    ]
+  ]
+}
