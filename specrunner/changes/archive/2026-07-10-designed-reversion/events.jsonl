@@ -82,3 +82,4 @@
 {"type":"step-attempt","step":"pr-create","sessionId":null,"outcome":{"verdict":"success","findingsPath":"specrunner/changes/designed-reversion/pr-create-result.md","error":null,"toolResult":null,"followUpAttempts":0},"startedAt":"2026-07-10T04:33:50.896Z","endedAt":"2026-07-10T04:33:52.489Z"}
 {"type":"lineage","step":"pr-create","ts":"2026-07-10T04:33:52.489Z","outputs":[{"path":"specrunner/changes/designed-reversion/pr-create-result.md","hash":"sha256:bac394cc4535f47399f75a3eba6707cede953b14b4339f2d06f9f03ea08f61e4"}],"inputs":[{"path":"feat/designed-reversion-d99c25ac","hash":null}]}
 {"type":"transition","ts":"2026-07-10T04:33:52.504Z","step":"pipeline","status":"ok","message":"running → awaiting-archive: pipeline complete"}
+{"type":"transition","ts":"2026-07-10T04:39:55.241Z","step":"archive","status":"ok","message":"awaiting-archive → archived: change archived"}
