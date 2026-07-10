@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.1.3](https://github.com/color4pen/aozu/compare/v0.1.2...v0.1.3) (2026-07-10)
+
+
+### Features
+
+* designed への戻りの実装 — mark の本文ハッシュ記録と乖離の計算縮退（ADR-0018 補記） ([#35](https://github.com/color4pen/aozu/issues/35)) ([bee95ab](https://github.com/color4pen/aozu/commit/bee95abe1c24e1774801038b0d23cf20518f5c0a))
+* permission ビューの実装 — perm スキーマ・C6 二相化・export permissions（ADR-0023） ([#29](https://github.com/color4pen/aozu/issues/29)) ([85e2878](https://github.com/color4pen/aozu/commit/85e2878b6d73563a50ca3733da1a87517d94e531))
+* 依存行の実装 — check --request の依存引用対応と coverage の被覆除外（ADR-0024） ([#34](https://github.com/color4pen/aozu/issues/34)) ([25a0af3](https://github.com/color4pen/aozu/commit/25a0af3a804b220bcaa2c79a3304ee9b2142aaf1))
+
+
+### Bug Fixes
+
+* aosora findings の即修正群 — format-version フェンス・topics 書式の統一・CLI ergonomics ([#18](https://github.com/color4pen/aozu/issues/18)) ([a084aa3](https://github.com/color4pen/aozu/commit/a084aa3d494f90d3d29a1928bee6986f428711be))
+
 ## [0.1.2](https://github.com/color4pen/aozu/compare/v0.1.1...v0.1.2) (2026-07-04)
 
 
