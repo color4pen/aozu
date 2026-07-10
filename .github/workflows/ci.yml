@@ -30,6 +30,12 @@ jobs:
       - name: Self-check (rules sync verification)
         run: bun src/cli/main.ts export rules --dir design --verify
 
+      - name: Example check (closure verification)
+        run: bun src/cli/main.ts check --dir examples/minimal/design
+
+      - name: Example rules sync verification
+        run: bun src/cli/main.ts export rules --dir examples/minimal/design --verify
+
   binary-smoke:
     runs-on: ubuntu-latest
     steps:
