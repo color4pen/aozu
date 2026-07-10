@@ -2,7 +2,7 @@
   "version": 2,
   "jobId": "1cd20177-c2b3-4c73-be7e-90401c80cab7",
   "createdAt": "2026-07-10T03:11:57.075Z",
-  "updatedAt": "2026-07-10T03:41:44.426Z",
+  "updatedAt": "2026-07-10T03:42:12.971Z",
   "request": {
     "title": "依存行の実装 — check --request の依存引用対応と coverage の被覆除外（ADR-0024）",
     "type": "new-feature",
@@ -12,7 +12,7 @@
     "owner": "color4pen",
     "name": "aozu"
   },
-  "step": "regression-gate",
+  "step": "conformance",
   "status": "running",
   "branch": "feat/dependency-citation-1cd20177",
   "error": null,
@@ -48,7 +48,7 @@
     }
   ],
   "_journal": {
-    "historyCount": 35,
+    "historyCount": 40,
     "stepCounts": {
       "request-review": 1,
       "design": 1,
@@ -58,7 +58,8 @@
       "verification": 1,
       "code-review": 1,
       "adversarial-consistency": 1,
-      "custom-reviewers": 1
+      "custom-reviewers": 1,
+      "regression-gate": 1
     }
   }
 }
