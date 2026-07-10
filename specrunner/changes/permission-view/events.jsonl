@@ -68,3 +68,11 @@
 {"type":"transition","ts":"2026-07-10T01:12:54.819Z","step":"conformance","status":"ok","message":"conformance iteration 1 completed with verdict: approved"}
 {"type":"transition","ts":"2026-07-10T01:12:54.819Z","step":"step-transition","status":"ok","message":"conformance → adr-gen"}
 {"type":"transition","ts":"2026-07-10T01:12:54.820Z","step":"adr-gen-started","status":"started","message":"Starting adr-gen step"}
+{"type":"transition","ts":"2026-07-10T01:13:20.298Z","step":"adr-gen-verdict","status":"ok","message":"adr-gen verdict: success"}
+{"type":"step-attempt","step":"adr-gen","sessionId":"dfe19fcc-0e32-447d-b604-ac12e4a54b3b","outcome":{"verdict":"success","findingsPath":null,"error":null,"toolResult":{"ok":true,"status":"success"},"followUpAttempts":1,"transientRetryAttempts":0},"startedAt":"2026-07-10T01:12:54.827Z","endedAt":"2026-07-10T01:13:18.901Z"}
+{"type":"transition","ts":"2026-07-10T01:13:20.304Z","step":"step-transition","status":"ok","message":"adr-gen → pr-create"}
+{"type":"transition","ts":"2026-07-10T01:13:20.307Z","step":"step-transition","status":"ok","message":"Transitioning to pr-create step"}
+{"type":"transition","ts":"2026-07-10T01:13:21.804Z","step":"pr-create-verdict","status":"ok","message":"pr-create verdict: success"}
+{"type":"step-attempt","step":"pr-create","sessionId":null,"outcome":{"verdict":"success","findingsPath":"specrunner/changes/permission-view/pr-create-result.md","error":null,"toolResult":null,"followUpAttempts":0},"startedAt":"2026-07-10T01:13:20.309Z","endedAt":"2026-07-10T01:13:21.802Z"}
+{"type":"lineage","step":"pr-create","ts":"2026-07-10T01:13:21.802Z","outputs":[{"path":"specrunner/changes/permission-view/pr-create-result.md","hash":"sha256:ce39a0fb586eaa6b5903b7c303e40578ed836d5e6c3448a01b16bcc0fdc10c50"}],"inputs":[{"path":"feat/permission-view-b846e389","hash":null}]}
+{"type":"transition","ts":"2026-07-10T01:13:21.811Z","step":"pipeline","status":"ok","message":"running → awaiting-archive: pipeline complete"}
