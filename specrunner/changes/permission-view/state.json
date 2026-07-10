@@ -2,7 +2,7 @@
   "version": 2,
   "jobId": "b846e389-cc40-4af0-a5e5-474c50defac4",
   "createdAt": "2026-07-10T00:09:23.965Z",
-  "updatedAt": "2026-07-10T00:09:24.990Z",
+  "updatedAt": "2026-07-10T00:14:28.023Z",
   "request": {
     "title": "permission ビューの実装 — perm スキーマ・C6 二相化・export permissions（ADR-0023）",
     "type": "new-feature",
@@ -12,7 +12,7 @@
     "owner": "color4pen",
     "name": "aozu"
   },
-  "step": "request-review",
+  "step": "design",
   "status": "running",
   "branch": "feat/permission-view-b846e389",
   "error": null,
@@ -34,7 +34,9 @@
     }
   ],
   "_journal": {
-    "historyCount": 2,
-    "stepCounts": {}
+    "historyCount": 5,
+    "stepCounts": {
+      "request-review": 1
+    }
   }
 }
