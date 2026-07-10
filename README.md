@@ -119,7 +119,8 @@ curl -fsSL https://raw.githubusercontent.com/color4pen/aozu/main/install.sh | ba
 
 実装中。動詞の実装状況:
 
-- **実装済み**: `init` / `scaffold` / `check`（`--request` 含む）/ `status` / `export rules`（`--verify` 含む）/ `plan` / `prompt derive` / `coverage` / `mark implemented` / `prompt session` / `prompt propagate` / `prompt review`（prompt 群完成）
+- **実装済み**: `init` / `scaffold` / `check`（`--request` 含む）/ `status` / `export rules`（`--verify` 含む）/ `export permissions` / `plan` / `prompt derive` / `coverage` / `mark implemented` / `prompt session` / `prompt propagate` / `prompt review`（prompt 群完成）
 - **未実装**: `diff` / `trace`
+- **ビュー型**: permission をサポート（perm スキーマ・C6 検証・export permissions — ADR-0023。他のビュー型は未サポートのまま fail-closed）
 
 検証状況: 自己記述ドッグフード（design/ 26 要素）と業務 SaaS の書き起こし（74 要素）で check exit 0。**実地フルループは greenfield SNS（aosora）で検証済み**（2026-07-05: topic → 設計 → plan → derive → coverage → 実装パイプライン → mark implemented の一周 ×2、設計 11 要素すべて implemented。入口ゲート・出口 hook が実地稼働、設計〜merge まで自律運用で完走）。不変条件の歯は tests/invariants.test.ts（PR #8）。CI（4 ゲート + binary-smoke）と release 基盤（release-please → npm + 単一バイナリ）は稼働中（npm: `@color4pen/aozu`）。brownfield 導入経路（docs/adoption.md）も clearflow で実地検証済み（2026-07-06、Step 0〜3）。残りは実装パイプラインプロジェクト自身での段階①検証。
