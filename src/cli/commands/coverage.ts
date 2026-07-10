@@ -20,7 +20,7 @@ import { parseFiles } from "../../parse/parser.ts";
 import { parseManifest, isLayerEnabled, validateFormatVersion } from "../../check/manifest.ts";
 import { buildGraph } from "../../graph/builder.ts";
 import { computeAllHashes } from "../../graph/body.ts";
-import { extractReferences } from "../../parse/references.ts";
+import { extractRequestCitations } from "../../parse/request-citations.ts";
 import { readDesignState } from "../../state/reader.ts";
 import { writeDesignState } from "../../state/writer.ts";
 import { computeEffectiveStates } from "../../state/effective.ts";
@@ -211,10 +211,22 @@ export async function handleCoverage(args: string[]): Promise<number> {
     return 2;
   }
 
-  // Extract references from the draft document (spec §6 code exclusion rules)
+  // Extract and classify references from the draft document (spec §6 + ADR-0024)
   const draftContent = await Bun.file(draftPath).text();
-  const draftReferenceList = extractReferences(draftContent, draftPath);
-  const draftRefs = new Set(draftReferenceList.map((r) => r.targetId));
+  const citations = extractRequestCitations(draftContent, draftPath);
+
+  // R3: malformed dependency lines are a hard error (fail-closed)
+  if (citations.malformedLines.length > 0) {
+    for (const ml of citations.malformedLines) {
+      process.stderr.write(
+        `COVERAGE ERROR R3 - malformed dependency line: '${ml.text}' (${draftPath}:${ml.line})\n`
+      );
+    }
+    return 1;
+  }
+
+  // Dependency refs are excluded from coverage (spec/integration.md §1)
+  const draftRefs = new Set(citations.coverageRefs.map((r) => r.targetId));
 
   // Read current state
   const stateMap = await readDesignState(designDir);

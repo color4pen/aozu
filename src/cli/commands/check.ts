@@ -23,7 +23,7 @@ import { computeAllHashes, computeElementHash } from "../../graph/body.ts";
 import { runCheck } from "../../check/checker.ts";
 import { readState } from "../../state/reader.ts";
 import { getEffectiveState } from "../../state/effective.ts";
-import { extractReferences } from "../../parse/references.ts";
+import { extractRequestCitations } from "../../parse/request-citations.ts";
 import { formatDiagnostic, writeDiagnostics } from "../format.ts";
 import type { CheckDiagnostic } from "../../check/types.ts";
 import type { FileInput } from "../../parse/types.ts";
@@ -113,24 +113,36 @@ export async function handleCheckRequest(
   // Read state.json
   const stateMap = await readState(join(designDir, "state.json"));
 
-  // Read and parse request document
+  // Read and parse request document, classifying citations
   const content = await Bun.file(requestPath).text();
-  const allRefs = extractReferences(content, requestPath);
-
-  // Deduplicate by targetId
-  const seen = new Set<string>();
-  const uniqueIds: string[] = [];
-  for (const ref of allRefs) {
-    if (!seen.has(ref.targetId)) {
-      seen.add(ref.targetId);
-      uniqueIds.push(ref.targetId);
-    }
-  }
+  const citations = extractRequestCitations(content, requestPath);
 
   const diagnostics: CheckDiagnostic[] = [];
 
-  // --require-citation: 0 citations is a failure
-  if (requireCitation && uniqueIds.length === 0) {
+  // R3: malformed dependency lines (fail-closed — cannot silently misclassify)
+  for (const ml of citations.malformedLines) {
+    diagnostics.push({
+      level: "error",
+      code: "R3",
+      elementId: null,
+      message: `malformed dependency line: '${ml.text}'`,
+      file: requestPath,
+      line: ml.line,
+    });
+  }
+
+  // Deduplicate coverage refs by targetId
+  const seenCoverage = new Set<string>();
+  const uniqueCoverageIds: string[] = [];
+  for (const ref of citations.coverageRefs) {
+    if (!seenCoverage.has(ref.targetId)) {
+      seenCoverage.add(ref.targetId);
+      uniqueCoverageIds.push(ref.targetId);
+    }
+  }
+
+  // R0: --require-citation counts only coverage refs (dependency refs do not satisfy it)
+  if (requireCitation && uniqueCoverageIds.length === 0) {
     diagnostics.push({
       level: "error",
       code: "R0",
@@ -141,9 +153,8 @@ export async function handleCheckRequest(
     });
   }
 
-  // Validate each cited ID
-  for (const id of uniqueIds) {
-    // (a) element must exist in the graph
+  // R1 (coverage refs): element must exist in the graph
+  for (const id of uniqueCoverageIds) {
     if (!graph.elements.has(id)) {
       diagnostics.push({
         level: "error",
@@ -156,8 +167,8 @@ export async function handleCheckRequest(
       continue;
     }
 
-    // (b) element state must be 'designed' or 'requested' (not effectively 'implemented')
-    // Use effective state so that drifted implemented elements (hash mismatch) pass R2.
+    // R2: coverage refs must not be effectively implemented.
+    // Uses effective state so that drifted implemented elements (hash mismatch) pass R2.
     const entry = stateMap[id];
     if (entry === undefined) {
       // Absence of entry = designed → pass R2
@@ -182,6 +193,23 @@ export async function handleCheckRequest(
         });
       }
     }
+  }
+
+  // R1 (dependency refs): element must exist in the graph; state is not checked
+  // Skip IDs already validated as coverage refs to avoid duplicate R1 diagnostics
+  for (const id of citations.dependencyIds) {
+    if (seenCoverage.has(id)) continue; // already covered by coverage-ref R1 check
+    if (!graph.elements.has(id)) {
+      diagnostics.push({
+        level: "error",
+        code: "R1",
+        elementId: id,
+        message: `citation references unknown element '${id}'`,
+        file: requestPath,
+        line: 1,
+      });
+    }
+    // No R2 check for dependency refs — state is intentionally not verified
   }
 
   writeDiagnostics(diagnostics);
