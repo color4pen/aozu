@@ -16,3 +16,6 @@ export type { ParseResult, Element, FileInput } from "../parse/types.ts";
 
 // Re-export attribution utility so mod-plan / mod-prompt can use it via mod-graph
 export { findOwningElement } from "./attribution.ts";
+
+// Re-export hash computation helpers (used by mark and check for designed-reversion, ADR-0018 補記)
+export { extractElementRange, computeElementHash, computeAllHashes } from "./body.ts";

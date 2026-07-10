@@ -13,7 +13,25 @@
  *     default to "designed" without a state.json present)
  */
 
-import type { StateMap } from "./types.ts";
+import type { StateEntry, StateMap } from "./types.ts";
+
+/**
+ * Serialize a single StateEntry to a JSON string with guaranteed field order.
+ *
+ * Field order: state, request, pr, hash (spec §9 example order).
+ * Absent optional fields are omitted (not written as null/undefined).
+ *
+ * This helper ensures the output is deterministic regardless of the object's
+ * property enumeration order — important for idempotent no-op detection and
+ * round-trip stability.
+ */
+export function serializeEntry(entry: StateEntry): string {
+  const obj: Record<string, unknown> = { state: entry.state };
+  if (entry.request !== undefined) obj.request = entry.request;
+  if (entry.pr !== undefined) obj.pr = entry.pr;
+  if (entry.hash !== undefined) obj.hash = entry.hash;
+  return JSON.stringify(obj);
+}
 
 /**
  * Write the state map for a design directory.
@@ -51,7 +69,7 @@ export async function writeDesignState(
     const key = keys[i]!;
     const value = stateMap[key]!;
     const comma = i < keys.length - 1 ? "," : "";
-    lines.push(`  "${key}": ${JSON.stringify(value)}${comma}`);
+    lines.push(`  "${key}": ${serializeEntry(value as StateEntry)}${comma}`);
   }
   lines.push("}");
 

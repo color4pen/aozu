@@ -902,3 +902,191 @@ describe("coverage — dependency citations (ADR-0024)", () => {
     }
   });
 });
+
+// ---------------------------------------------------------------------------
+// T-08: coverage with effective state (hash drift)
+// ---------------------------------------------------------------------------
+
+/**
+ * Create a fixture where mod-alpha has a recorded hash and the body is then
+ * modified so that the hash drifts.
+ */
+async function createCoverageDriftFixture(): Promise<{ designDir: string; baseDir: string }> {
+  const baseDir = await mkdtemp(join(tmpdir(), "aozu-coverage-drift-"));
+  const designDir = join(baseDir, "design");
+
+  await mkdir(join(designDir, "static"), { recursive: true });
+  await mkdir(join(designDir, "plans"), { recursive: true });
+
+  await writeFile(
+    join(designDir, "manifest.md"),
+    ["---", "format-version: 0", "enabled: static, loop", "---"].join("\n")
+  );
+
+  // Original body for mod-alpha
+  const originalBody = [
+    "# モジュール",
+    "",
+    "## Alpha {#mod-alpha}",
+    "責務: alpha (original)",
+    "実装: src/alpha/",
+    "",
+    "## Beta {#mod-beta}",
+    "責務: beta",
+    "実装: src/beta/",
+  ].join("\n");
+
+  await writeFile(join(designDir, "static", "modules.md"), originalBody);
+  await writeFile(join(designDir, "static", "dependencies.md"), "# 許可依存\n");
+
+  // Plan with a single group containing mod-alpha and mod-beta
+  await writeFile(
+    join(designDir, "plans", "my-plan.md"),
+    [
+      "---",
+      "id: plan-my-plan",
+      "status: open",
+      "---",
+      "## My Group {#grp-my-group}",
+      "- elements: [[mod-alpha]], [[mod-beta]]",
+      "- after: (none)",
+      "- parallel: no",
+    ].join("\n")
+  );
+
+  // Compute hash of mod-alpha with original content
+  const { buildGraph } = await import("../../graph/builder.ts");
+  const { parseFiles } = await import("../../parse/parser.ts");
+  const { computeElementHash } = await import("../../graph/body.ts");
+  const { readMarkdownFiles } = await import("../../fs/reader.ts");
+
+  const files = await readMarkdownFiles(designDir);
+  const parsed = parseFiles(files);
+  const graph = buildGraph(parsed, join(designDir, "manifest.md"));
+  const recordedHash = computeElementHash("mod-alpha", graph, files)!;
+
+  // state.json: mod-alpha implemented with recorded hash; mod-beta is designed (no entry)
+  await writeFile(
+    join(designDir, "state.json"),
+    JSON.stringify({ "mod-alpha": { state: "implemented", request: "prev", hash: recordedHash } })
+  );
+
+  // Modify mod-alpha body to create drift
+  const modifiedBody = [
+    "# モジュール",
+    "",
+    "## Alpha {#mod-alpha}",
+    "責務: alpha (modified — drift)",
+    "実装: src/alpha/",
+    "",
+    "## Beta {#mod-beta}",
+    "責務: beta",
+    "実装: src/beta/",
+  ].join("\n");
+  await writeFile(join(designDir, "static", "modules.md"), modifiedBody);
+
+  return { designDir, baseDir };
+}
+
+describe("coverage — drifted element passes WRONG_STATE (T-08)", () => {
+  it("drifted implemented element can be transitioned to requested", async () => {
+    const { designDir, baseDir } = await createCoverageDriftFixture();
+    try {
+      const draftPath = join(baseDir, "draft.md");
+      await writeFile(draftPath, "Covers [[mod-alpha]] and [[mod-beta]].\n");
+
+      const exitCode = await handleCoverage([
+        "--group", "grp-my-group",
+        "--draft", draftPath,
+        "--request", "re-impl",
+        "--dir", designDir,
+      ]);
+
+      expect(exitCode).toBe(0); // drifted mod-alpha passes as designed
+    } finally {
+      await rm(baseDir, { recursive: true });
+    }
+  });
+
+  it("transition drops old hash from drifted element", async () => {
+    const { designDir, baseDir } = await createCoverageDriftFixture();
+    try {
+      const draftPath = join(baseDir, "draft.md");
+      await writeFile(draftPath, "Covers [[mod-alpha]] and [[mod-beta]].\n");
+
+      await handleCoverage([
+        "--group", "grp-my-group",
+        "--draft", draftPath,
+        "--request", "re-impl",
+        "--dir", designDir,
+      ]);
+
+      const state = JSON.parse(await readFile(join(designDir, "state.json"), "utf-8"));
+      const entry = state["mod-alpha"];
+      expect(entry.state).toBe("requested");
+      expect(entry.request).toBe("re-impl");
+      // Old hash must NOT be carried forward
+      expect(entry.hash).toBeUndefined();
+    } finally {
+      await rm(baseDir, { recursive: true });
+    }
+  });
+
+  it("hash-less implemented element is still blocked by WRONG_STATE", async () => {
+    const baseDir = await mkdtemp(join(tmpdir(), "aozu-coverage-nohash-"));
+    const designDir = join(baseDir, "design");
+
+    await mkdir(join(designDir, "static"), { recursive: true });
+    await mkdir(join(designDir, "plans"), { recursive: true });
+
+    await writeFile(
+      join(designDir, "manifest.md"),
+      ["---", "format-version: 0", "enabled: static, loop", "---"].join("\n")
+    );
+    await writeFile(
+      join(designDir, "static", "modules.md"),
+      [
+        "# モジュール",
+        "",
+        "## Alpha {#mod-alpha}",
+        "責務: alpha",
+        "実装: src/alpha/",
+      ].join("\n")
+    );
+    await writeFile(join(designDir, "static", "dependencies.md"), "# 許可依存\n");
+    await writeFile(
+      join(designDir, "plans", "my-plan.md"),
+      [
+        "---",
+        "id: plan-my-plan",
+        "status: open",
+        "---",
+        "## My Group {#grp-my-group}",
+        "- elements: [[mod-alpha]]",
+        "- after: (none)",
+        "- parallel: no",
+      ].join("\n")
+    );
+    // No hash in state entry
+    await writeFile(
+      join(designDir, "state.json"),
+      JSON.stringify({ "mod-alpha": { state: "implemented", request: "prev" } })
+    );
+
+    try {
+      const draftPath = join(baseDir, "draft.md");
+      await writeFile(draftPath, "Covers [[mod-alpha]].\n");
+
+      const exitCode = await handleCoverage([
+        "--group", "grp-my-group",
+        "--draft", draftPath,
+        "--request", "re-impl",
+        "--dir", designDir,
+      ]);
+
+      expect(exitCode).toBe(1); // no hash → WRONG_STATE blocks
+    } finally {
+      await rm(baseDir, { recursive: true });
+    }
+  });
+});

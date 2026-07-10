@@ -18,6 +18,8 @@ import { stat } from "fs/promises";
 import { readMarkdownFiles } from "../../fs/reader.ts";
 import { parseFiles } from "../../parse/parser.ts";
 import { parseManifest, isLayerEnabled, validateFormatVersion } from "../../check/manifest.ts";
+import { buildGraph } from "../../graph/builder.ts";
+import { computeAllHashes } from "../../graph/body.ts";
 import { readDesignState } from "../../state/reader.ts";
 import { writeDesignState } from "../../state/writer.ts";
 import type { StateMap } from "../../state/types.ts";
@@ -185,7 +187,7 @@ export async function handleMarkImplemented(args: string[]): Promise<number> {
     return 2;
   }
 
-  // Build pipeline (minimal: only need manifest for loop check)
+  // Build pipeline
   const files = await readMarkdownFiles(designDir);
   const parsed = parseFiles(files);
   const manifestPath = join(designDir, "manifest.md");
@@ -214,6 +216,9 @@ export async function handleMarkImplemented(args: string[]): Promise<number> {
     return 1;
   }
 
+  // Build graph for hash computation (needed for hash recording)
+  const graph = buildGraph(parsed, manifestPath);
+
   // Read current state
   const stateMap = await readDesignState(designDir);
 
@@ -234,21 +239,28 @@ export async function handleMarkImplemented(args: string[]): Promise<number> {
   );
 
   if (requestedIds.length === 0) {
-    // All already implemented → no-op, exit 0
+    // All already implemented → no-op, exit 0 (do NOT write state.json)
     process.stderr.write(
       `mark implemented: all ${matchingIds.length} element(s) with request "${slug}" are already implemented — no-op\n`
     );
     return 0;
   }
 
+  // Compute current body hashes for the elements to be transitioned.
+  // Elements whose body cannot be resolved (deleted, missing file, etc.) are omitted
+  // from the map and will have no hash recorded — transition continues regardless.
+  const hashes = computeAllHashes(requestedIds, graph, files);
+
   // Build new stateMap: transition requested → implemented (atomic copy)
   const newStateMap: StateMap = { ...stateMap };
   for (const id of requestedIds) {
     const entry = newStateMap[id]!;
+    const hash = hashes.get(id);
     newStateMap[id] = {
       state: "implemented",
       request: entry.request ?? slug,
       ...(prNumber !== undefined ? { pr: prNumber } : {}),
+      ...(hash !== undefined ? { hash } : {}),
     };
   }
 

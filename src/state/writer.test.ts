@@ -10,7 +10,7 @@
  */
 
 import { describe, it, expect } from "bun:test";
-import { writeDesignState } from "./writer.ts";
+import { writeDesignState, serializeEntry } from "./writer.ts";
 import { readDesignState } from "./reader.ts";
 import { join } from "path";
 import { mkdtemp, rm, writeFile, readFile } from "fs/promises";
@@ -212,5 +212,91 @@ describe("writeDesignState — output format", () => {
     } finally {
       await rm(dir, { recursive: true });
     }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// T-01: hash field tests
+// ---------------------------------------------------------------------------
+
+describe("writeDesignState — hash field (T-01)", () => {
+  it("round-trip: hash is preserved through write → read", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "aozu-writer-hash-rt-"));
+    try {
+      const hash = "a".repeat(64);
+      const stateMap: StateMap = {
+        "mod-cli": { state: "implemented", request: "r1", pr: 1, hash },
+      };
+
+      await writeDesignState(dir, stateMap);
+      const result = await readDesignState(dir);
+
+      expect(result["mod-cli"]).toEqual({ state: "implemented", request: "r1", pr: 1, hash });
+    } finally {
+      await rm(dir, { recursive: true });
+    }
+  });
+
+  it("field order is state, request, pr, hash", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "aozu-writer-hash-order-"));
+    try {
+      const hash = "b".repeat(64);
+      const stateMap: StateMap = {
+        "ent-order": { state: "implemented", request: "req1", pr: 42, hash },
+      };
+
+      await writeDesignState(dir, stateMap);
+      const content = await readFile(join(dir, "state.json"), "utf-8");
+
+      // Find the entry line
+      const line = content.split("\n").find(l => l.includes('"ent-order"'))!;
+      // Extract the JSON object from the line
+      const match = /^\s+"ent-order": (\{.+\})/.exec(line);
+      expect(match).not.toBeNull();
+
+      const parsed = JSON.parse(match![1]!);
+      const keys = Object.keys(parsed);
+      expect(keys).toEqual(["state", "request", "pr", "hash"]);
+    } finally {
+      await rm(dir, { recursive: true });
+    }
+  });
+
+  it("hash-less entry does not contain hash key", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "aozu-writer-no-hash-"));
+    try {
+      const stateMap: StateMap = {
+        "mod-parse": { state: "requested", request: "r1" },
+      };
+
+      await writeDesignState(dir, stateMap);
+      const content = await readFile(join(dir, "state.json"), "utf-8");
+
+      expect(content).not.toContain('"hash"');
+    } finally {
+      await rm(dir, { recursive: true });
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// T-01: serializeEntry unit tests
+// ---------------------------------------------------------------------------
+
+describe("serializeEntry (T-01)", () => {
+  it("serializes full entry with state, request, pr, hash in that order", () => {
+    const hash = "c".repeat(64);
+    const result = serializeEntry({ state: "implemented", request: "slug", pr: 10, hash });
+    expect(result).toBe(`{"state":"implemented","request":"slug","pr":10,"hash":"${hash}"}`);
+  });
+
+  it("omits pr and hash when absent", () => {
+    const result = serializeEntry({ state: "requested", request: "slug" });
+    expect(result).toBe('{"state":"requested","request":"slug"}');
+  });
+
+  it("omits hash when only pr is present", () => {
+    const result = serializeEntry({ state: "implemented", request: "slug", pr: 5 });
+    expect(result).toBe('{"state":"implemented","request":"slug","pr":5}');
   });
 });

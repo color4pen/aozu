@@ -123,7 +123,8 @@ describe("mark implemented — normal transition", () => {
       expect(exitCode).toBe(0);
 
       const state = JSON.parse(await readFile(join(designDir, "state.json"), "utf-8"));
-      expect(state["mod-alpha"]).toEqual({
+      // Use toMatchObject to allow for the hash field added by the designed-reversion feature
+      expect(state["mod-alpha"]).toMatchObject({
         state: "implemented",
         request: "pr-req",
         pr: 42,
@@ -505,6 +506,117 @@ describe("mark implemented — positional slug", () => {
 
       const state = JSON.parse(await readFile(join(designDir, "state.json"), "utf-8"));
       expect(state["mod-alpha"].state).toBe("implemented");
+    } finally {
+      await rm(baseDir, { recursive: true });
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// T-04: hash recording tests
+// ---------------------------------------------------------------------------
+
+describe("mark implemented — hash recording (T-04)", () => {
+  it("records a 64-char hex hash in state.json after transition", async () => {
+    const designDir = await createFixture({
+      stateJson: {
+        "mod-alpha": { state: "requested", request: "hash-test" },
+      },
+    });
+    const baseDir = join(designDir, "..");
+    try {
+      const exitCode = await handleMarkImplemented([
+        "--request", "hash-test",
+        "--dir", designDir,
+      ]);
+
+      expect(exitCode).toBe(0);
+
+      const state = JSON.parse(await readFile(join(designDir, "state.json"), "utf-8"));
+      const entry = state["mod-alpha"];
+      expect(entry.state).toBe("implemented");
+      expect(typeof entry.hash).toBe("string");
+      expect(entry.hash).toMatch(/^[0-9a-f]{64}$/);
+    } finally {
+      await rm(baseDir, { recursive: true });
+    }
+  });
+
+  it("field order is state, request, pr, hash", async () => {
+    const designDir = await createFixture({
+      stateJson: {
+        "mod-alpha": { state: "requested", request: "field-order-test" },
+      },
+    });
+    const baseDir = join(designDir, "..");
+    try {
+      await handleMarkImplemented([
+        "--request", "field-order-test",
+        "--pr", "7",
+        "--dir", designDir,
+      ]);
+
+      const content = await readFile(join(designDir, "state.json"), "utf-8");
+      const line = content.split("\n").find(l => l.includes('"mod-alpha"'))!;
+      const match = /^\s+"mod-alpha": (\{.+\})/.exec(line);
+      expect(match).not.toBeNull();
+
+      const parsed = JSON.parse(match![1]!);
+      const keys = Object.keys(parsed);
+      // hash comes after pr
+      expect(keys.indexOf("state")).toBeLessThan(keys.indexOf("pr"));
+      expect(keys.indexOf("pr")).toBeLessThan(keys.indexOf("hash"));
+    } finally {
+      await rm(baseDir, { recursive: true });
+    }
+  });
+
+  it("element not in graph (ID only in state.json) has no hash, transition continues", async () => {
+    // ghost-elem exists in state.json but not in any design file
+    const designDir = await createFixture({
+      stateJson: {
+        "ghost-elem": { state: "requested", request: "ghost-req" },
+      },
+    });
+    const baseDir = join(designDir, "..");
+    try {
+      const exitCode = await handleMarkImplemented([
+        "--request", "ghost-req",
+        "--dir", designDir,
+      ]);
+
+      expect(exitCode).toBe(0);
+
+      const state = JSON.parse(await readFile(join(designDir, "state.json"), "utf-8"));
+      const entry = state["ghost-elem"];
+      expect(entry.state).toBe("implemented");
+      // No hash because the element is not in the graph
+      expect(entry.hash).toBeUndefined();
+    } finally {
+      await rm(baseDir, { recursive: true });
+    }
+  });
+
+  it("idempotent no-op does not change state.json (byte-identical)", async () => {
+    const designDir = await createFixture({
+      stateJson: {
+        "mod-alpha": { state: "implemented", request: "noop-test", pr: 3, hash: "a".repeat(64) },
+        "mod-beta": { state: "implemented", request: "noop-test" },
+      },
+    });
+    const baseDir = join(designDir, "..");
+    try {
+      const before = await readFile(join(designDir, "state.json"), "utf-8");
+
+      const exitCode = await handleMarkImplemented([
+        "--request", "noop-test",
+        "--dir", designDir,
+      ]);
+
+      expect(exitCode).toBe(0);
+
+      const after = await readFile(join(designDir, "state.json"), "utf-8");
+      expect(after).toBe(before); // byte-identical
     } finally {
       await rm(baseDir, { recursive: true });
     }

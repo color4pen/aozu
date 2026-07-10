@@ -383,3 +383,144 @@ describe("handleCheck --request — dependency citations (ADR-0024)", () => {
     }
   });
 });
+
+// ---------------------------------------------------------------------------
+// T-06: R2 with effective state (hash drift)
+// ---------------------------------------------------------------------------
+
+/**
+ * Create a design fixture with loop enabled and a single element that can be
+ * in various states.  Returns designDir.
+ */
+async function createLoopDesignFixture(options: {
+  elementBody: string;   // current body of mod-cli in the design file
+  stateEntry?: Record<string, unknown>; // state.json entry for mod-cli
+}): Promise<string> {
+  const designDir = await mkdtemp(join(tmpdir(), "aozu-r2-test-"));
+  await mkdir(join(designDir, "static"), { recursive: true });
+
+  await writeFile(
+    join(designDir, "manifest.md"),
+    ["---", "format-version: 0", "enabled: static, loop", "---", "", "# manifest"].join("\n")
+  );
+
+  await writeFile(
+    join(designDir, "static", "modules.md"),
+    [
+      "# モジュール",
+      "",
+      "## CLI {#mod-cli}",
+      options.elementBody,
+    ].join("\n")
+  );
+
+  await writeFile(join(designDir, "static", "dependencies.md"), "# 許可依存\n");
+
+  if (options.stateEntry) {
+    await writeFile(
+      join(designDir, "state.json"),
+      JSON.stringify({ "mod-cli": options.stateEntry })
+    );
+  }
+
+  return designDir;
+}
+
+describe("handleCheck --request — R2 with effective state (T-06)", () => {
+  it("drifted implemented element passes R2 (exit 0)", async () => {
+    // Compute the hash of the original body, then change the body to create drift
+    const { buildGraph } = await import("../../graph/builder.ts");
+    const { parseFiles } = await import("../../parse/parser.ts");
+    const { computeElementHash } = await import("../../graph/body.ts");
+    const { readMarkdownFiles } = await import("../../fs/reader.ts");
+
+    // Step 1: create fixture with "original" body and record hash
+    const designDir = await createLoopDesignFixture({ elementBody: "責務: CLI (original)" });
+    const baseDir = designDir;
+    try {
+      // Compute hash from original content
+      const files = await readMarkdownFiles(designDir);
+      const parsed = parseFiles(files);
+      const graph = buildGraph(parsed, join(designDir, "manifest.md"));
+      const recordedHash = computeElementHash("mod-cli", graph, files)!;
+
+      // Step 2: write state.json with recorded hash
+      await writeFile(
+        join(designDir, "state.json"),
+        JSON.stringify({ "mod-cli": { state: "implemented", request: "prev", hash: recordedHash } })
+      );
+
+      // Step 3: modify the body to create drift
+      await writeFile(
+        join(designDir, "static", "modules.md"),
+        ["# モジュール", "", "## CLI {#mod-cli}", "責務: CLI (modified — drift)"].join("\n")
+      );
+
+      // Step 4: check --request should pass (drifted → effective state = designed)
+      const tmpDir = await mkdtemp(join(tmpdir(), "aozu-r2-req-"));
+      try {
+        const reqPath = join(tmpDir, "req.md");
+        await writeFile(reqPath, "This request concerns [[mod-cli]].");
+
+        const exitCode = await handleCheck(["--request", reqPath, "--dir", designDir]);
+        expect(exitCode).toBe(0); // R2 re-opened: drifted element is effectively designed
+      } finally {
+        await rm(tmpDir, { recursive: true });
+      }
+    } finally {
+      await rm(baseDir, { recursive: true });
+    }
+  });
+
+  it("hash-less implemented element still blocks R2 (backward compat)", async () => {
+    const designDir = await createLoopDesignFixture({
+      elementBody: "責務: CLI",
+      stateEntry: { state: "implemented", request: "prev" },  // no hash
+    });
+    const tmpDir = await mkdtemp(join(tmpdir(), "aozu-r2-nohash-"));
+    try {
+      const reqPath = join(tmpDir, "req.md");
+      await writeFile(reqPath, "This request concerns [[mod-cli]].");
+
+      const exitCode = await handleCheck(["--request", reqPath, "--dir", designDir]);
+      expect(exitCode).toBe(1); // hash-less implemented = R2 error
+    } finally {
+      await rm(tmpDir, { recursive: true });
+      await rm(designDir, { recursive: true });
+    }
+  });
+
+  it("non-drifted implemented element (hash matches) still blocks R2", async () => {
+    const { buildGraph } = await import("../../graph/builder.ts");
+    const { parseFiles } = await import("../../parse/parser.ts");
+    const { computeElementHash } = await import("../../graph/body.ts");
+    const { readMarkdownFiles } = await import("../../fs/reader.ts");
+
+    const designDir = await createLoopDesignFixture({ elementBody: "責務: CLI (stable)" });
+    try {
+      // Compute current hash (no drift)
+      const files = await readMarkdownFiles(designDir);
+      const parsed = parseFiles(files);
+      const graph = buildGraph(parsed, join(designDir, "manifest.md"));
+      const hash = computeElementHash("mod-cli", graph, files)!;
+
+      await writeFile(
+        join(designDir, "state.json"),
+        JSON.stringify({ "mod-cli": { state: "implemented", request: "prev", hash } })
+      );
+
+      const tmpDir = await mkdtemp(join(tmpdir(), "aozu-r2-match-"));
+      try {
+        const reqPath = join(tmpDir, "req.md");
+        await writeFile(reqPath, "This request concerns [[mod-cli]].");
+
+        const exitCode = await handleCheck(["--request", reqPath, "--dir", designDir]);
+        expect(exitCode).toBe(1); // matching hash = implemented → R2 error
+      } finally {
+        await rm(tmpDir, { recursive: true });
+      }
+    } finally {
+      await rm(designDir, { recursive: true });
+    }
+  });
+});
