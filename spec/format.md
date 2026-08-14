@@ -252,7 +252,7 @@ topics: [[top-duplicate-slug]]
 - 1 見出し 1 perm 要素 = 1 つの保護対象の操作 × アクター表（粒度は ADR-0017 / ADR-0023 D1）
 - **機械の読む正本は操作行**: `- [[op-id]]: [[act-id]](, [[act-id]])*`。操作は op 要素への参照であり、同一 perm 内で一意（ADR-0025。自由トークンは廃止）。操作行が 1 本も無い perm は違反（非空義務、C6）
 - 操作行の参照はすべて **op / act 要素**に解決されること（C6。C5 の主語義務と同型）。未定義操作・削除済み操作への参照はここで検出される
-- `対象:` 行は任意。書く場合は実在要素への参照（解決は C3 の一般規則）
+- `対象:` 行は任意。書く場合は単一参照。複数参照は C6 違反。参照は C3 の一般規則で解決される
 - 表面 → 操作の対応はコード側の関心事（表面非依存は op が引き継ぐ — ADR-0023 D2 / ADR-0025）
 - ファイル配置は `views/permission/` 配下の任意の `.md`
 
@@ -284,12 +284,12 @@ topics: [[top-duplicate-slug]]
 | C3 | すべての `[[id]]` が有効な型の実在要素に解決される。ただし**参照元・参照先のどちらか**の型が無効な参照は評価しない（無効な型の義務は評価しない、の一貫適用）。縮退による評価除外は**既知だが無効な型**に限る——**未知の prefix**（§4 に無い型）を持つ参照は縮退の対象外で、常に違反として診断する（typo の fail-open を許さない） |
 | C4 | dependencies の辺の両端が mod 要素に解決される。この規則は static アーティファクトの構造義務であり **C3 の縮退スキップの対象外**（端点が mod 以外なら、その型の有効・無効によらず常に違反） |
 | C5 | seq の登場要素リストが空でなく（**非空義務は縮退に依らず常に評価する**）、すべてのエントリの prefix が mod または act である（prefix 適格性も常時評価）。エントリの**解決**は C3 に従う — domain 無効時の act 参照は既知だが無効な型として解決検証のみ縮退スキップされる。act のみの登場要素リストも非空義務を満たす |
-| C6 | ビューのリンク義務が充足される。サポート済みの型はスキーマのリンク義務を検証する（perm の操作行 → op / act への解決・非空・op 参照の perm 内一意）。**未サポートのビュー型が enabled に現れたら常に違反**（fail-closed。サポート済みは現在 permission のみ） |
+| C6 | ビューのリンク義務が充足される。サポート済みの型はスキーマのリンク義務を検証する（perm の操作行 → op / act への解決・非空・op 参照の perm 内一意・perm `対象:` 行の単一参照制約）。**未サポートのビュー型が enabled に現れたら常に違反**（fail-closed。サポート済みは現在 permission のみ） |
 | C7 | manifest の enabled 組み合わせが型の前提関係を満たす |
 | C8 | state.json の全キーが実在要素（削除要素の残骸検出） |
 | C9 | adr が top を引用している（loop 有効時） |
 | C10 | plan の elements がすべて実在し、after の grp が実在する |
-| C11 | 層間参照方向: domain の要素は domain（term / ent / inv / act）のみを参照できる。static は static と domain、dynamic は dynamic・static・domain を参照できる。views は views・static・domain・dynamic を参照できる（コア層 → views の参照は禁止 — ADR-0023 D6）。loop と adr は制限なし |
+| C11 | 層間参照方向: domain の要素は domain（term / ent / inv / act / op）のみを参照できる。static は static と domain、dynamic は dynamic・static・domain を参照できる。views は views・static・domain・dynamic を参照できる（コア層 → views の参照は禁止 — ADR-0023 D6）。loop と adr は制限なし |
 | C12 | manifest の `format-version` が対応集合に属する（現在 `{"0"}`）。欠落も違反 |
 
 ## 11. rules export
@@ -315,8 +315,8 @@ topics: [[top-duplicate-slug]]
       "id": "perm-deal",
       "target": "ent-deal",
       "operations": {
-        "create": ["act-admin", "act-manager"],
-        "list": ["act-admin", "act-finance", "act-manager", "act-member"]
+        "op-create-deal": ["act-admin", "act-manager"],
+        "op-list-deals": ["act-admin", "act-finance", "act-manager", "act-member"]
       }
     }
   ]

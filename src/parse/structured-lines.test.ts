@@ -94,37 +94,45 @@ describe("extractStructuredLines", () => {
 // ---------------------------------------------------------------------------
 
 describe("extractStructuredLines: perm operation lines and target lines", () => {
-  it("parses operation line with multiple actorIds", () => {
-    const content = "- create: [[act-admin]], [[act-manager]]";
+  it("parses operation line (new [[op-id]] format) with multiple actorIds", () => {
+    const content = "- [[op-create-deal]]: [[act-admin]], [[act-manager]]";
     const result = extractStructuredLines(content, "test.md");
     expect(result.permOperations).toHaveLength(1);
-    expect(result.permOperations[0]!.operation).toBe("create");
+    expect(result.permOperations[0]!.operation).toBe("op-create-deal");
     expect(result.permOperations[0]!.actorIds).toEqual(["act-admin", "act-manager"]);
     expect(result.permOperations[0]!.file).toBe("test.md");
     expect(result.permOperations[0]!.line).toBe(1);
   });
 
-  it("parses operation line with single actorId", () => {
-    const content = "- list: [[act-admin]]";
+  it("parses operation line (new [[op-id]] format) with single actorId", () => {
+    const content = "- [[op-list-deals]]: [[act-admin]]";
     const result = extractStructuredLines(content, "test.md");
     expect(result.permOperations).toHaveLength(1);
-    expect(result.permOperations[0]!.operation).toBe("list");
+    expect(result.permOperations[0]!.operation).toBe("op-list-deals");
     expect(result.permOperations[0]!.actorIds).toEqual(["act-admin"]);
+  });
+
+  it("free-token operation line goes to malformedPermOperations, not permOperations", () => {
+    const content = "- create: [[act-admin]]";
+    const result = extractStructuredLines(content, "test.md");
+    expect(result.permOperations).toHaveLength(0);
+    expect(result.malformedPermOperations).toHaveLength(1);
+    expect(result.malformedPermOperations[0]!.line).toBe(1);
   });
 
   it("parses target line (対象:)", () => {
     const content = "対象: [[ent-deal]]";
     const result = extractStructuredLines(content, "test.md");
-    expect(result.permTargets).toHaveLength(1);
-    expect(result.permTargets[0]!.targetId).toBe("ent-deal");
-    expect(result.permTargets[0]!.file).toBe("test.md");
-    expect(result.permTargets[0]!.line).toBe(1);
+    expect(result.targetLines).toHaveLength(1);
+    expect(result.targetLines[0]!.targetIds).toEqual(["ent-deal"]);
+    expect(result.targetLines[0]!.file).toBe("test.md");
+    expect(result.targetLines[0]!.line).toBe(1);
   });
 
   it("ignores operation lines inside code fence", () => {
     const content = [
       "```",
-      "- create: [[act-admin]]",
+      "- [[op-create-deal]]: [[act-admin]]",
       "```",
     ].join("\n");
     const result = extractStructuredLines(content, "test.md");
@@ -138,55 +146,52 @@ describe("extractStructuredLines: perm operation lines and target lines", () => 
       "```",
     ].join("\n");
     const result = extractStructuredLines(content, "test.md");
-    expect(result.permTargets).toHaveLength(0);
+    expect(result.targetLines).toHaveLength(0);
   });
 
   it("plain bullet point is not recognized as operation line", () => {
     const content = "- some text without brackets";
     const result = extractStructuredLines(content, "test.md");
     expect(result.permOperations).toHaveLength(0);
+    expect(result.malformedPermOperations).toHaveLength(0);
   });
 
   it("operation line with colon in operation token is not recognized", () => {
-    // A line like `- foo:bar: [[act-admin]]` — the operation cannot contain `:`
-    // so this should not match the operation line pattern
-    // (the regex requires `[^\s:]+` before the first `:`)
-    // Actually `foo` would be the operation and `bar: [[act-admin]]` the rest
-    // but `bar: [[act-admin]]` doesn't start with `[[`, so no match
+    // A line like `- foo:bar: [[act-admin]]` — `foo` is the token before first `:`,
+    // rest is `bar: [[act-admin]]` which doesn't start with `[[`, so no match.
     const content = "- foo:bar: [[act-admin]]";
     const result = extractStructuredLines(content, "test.md");
-    // operation `foo` with rest `bar: [[act-admin]]` — doesn't start with [[
-    // so this is NOT matched as an operation line
     expect(result.permOperations).toHaveLength(0);
+    expect(result.malformedPermOperations).toHaveLength(0);
   });
 
-  it("parses multiple operation lines for a perm element", () => {
+  it("parses multiple operation lines (new [[op-id]] format) for a perm element", () => {
     const content = [
       "## Deal Permissions {#perm-deal}",
       "対象: [[ent-deal]]",
       "",
-      "- list: [[act-admin]], [[act-manager]], [[act-member]], [[act-finance]]",
-      "- create: [[act-admin]], [[act-manager]]",
+      "- [[op-list-deals]]: [[act-admin]], [[act-manager]], [[act-member]], [[act-finance]]",
+      "- [[op-create-deal]]: [[act-admin]], [[act-manager]]",
     ].join("\n");
     const result = extractStructuredLines(content, "perm.md");
     expect(result.permOperations).toHaveLength(2);
-    expect(result.permOperations[0]!.operation).toBe("list");
+    expect(result.permOperations[0]!.operation).toBe("op-list-deals");
     expect(result.permOperations[0]!.actorIds).toEqual(["act-admin", "act-manager", "act-member", "act-finance"]);
-    expect(result.permOperations[1]!.operation).toBe("create");
+    expect(result.permOperations[1]!.operation).toBe("op-create-deal");
     expect(result.permOperations[1]!.actorIds).toEqual(["act-admin", "act-manager"]);
-    expect(result.permTargets).toHaveLength(1);
-    expect(result.permTargets[0]!.targetId).toBe("ent-deal");
+    expect(result.targetLines).toHaveLength(1);
+    expect(result.targetLines[0]!.targetIds).toEqual(["ent-deal"]);
   });
 
   it("existing structured lines (dep edge) are still recognized alongside perm lines", () => {
     const content = [
       "- [[mod-cli]] -> [[mod-parse]]",
-      "- create: [[act-admin]]",
+      "- [[op-create-deal]]: [[act-admin]]",
     ].join("\n");
     const result = extractStructuredLines(content, "test.md");
     expect(result.dependencyEdges).toHaveLength(1);
     expect(result.dependencyEdges[0]!.from).toBe("mod-cli");
     expect(result.permOperations).toHaveLength(1);
-    expect(result.permOperations[0]!.operation).toBe("create");
+    expect(result.permOperations[0]!.operation).toBe("op-create-deal");
   });
 });

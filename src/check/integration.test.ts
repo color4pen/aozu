@@ -72,16 +72,21 @@ describe("check integration: spec §8 conformance fixture (T-14)", () => {
         { id: "act-finance", prefix: "act", displayName: "Finance", file: "domain/actors.md", line: 13 },
         // domain — entity
         { id: "ent-deal", prefix: "ent", displayName: "Deal", file: "domain/model.md", line: 1 },
+        // domain — operations (op elements, per ADR-0025)
+        { id: "op-list-deals", prefix: "op", displayName: "List Deals", file: "domain/operations.md", line: 1 },
+        { id: "op-create-deal", prefix: "op", displayName: "Create Deal", file: "domain/operations.md", line: 5 },
         // views — perm
         { id: "perm-deal", prefix: "perm", displayName: "Deal Permissions", file: "views/permission/deal.md", line: 1 },
       ],
       references: [
-        // References from operation lines (- list: [[act-*]]) and target (対象: [[ent-deal]])
+        // References from operation lines and target (対象: [[ent-deal]])
         { targetId: "ent-deal", file: "views/permission/deal.md", line: 2 },
+        { targetId: "op-list-deals", file: "views/permission/deal.md", line: 4 },
         { targetId: "act-admin", file: "views/permission/deal.md", line: 4 },
         { targetId: "act-manager", file: "views/permission/deal.md", line: 4 },
         { targetId: "act-member", file: "views/permission/deal.md", line: 4 },
         { targetId: "act-finance", file: "views/permission/deal.md", line: 4 },
+        { targetId: "op-create-deal", file: "views/permission/deal.md", line: 5 },
         { targetId: "act-admin", file: "views/permission/deal.md", line: 5 },
         { targetId: "act-manager", file: "views/permission/deal.md", line: 5 },
       ],
@@ -95,21 +100,22 @@ describe("check integration: spec §8 conformance fixture (T-14)", () => {
       ],
       permOperations: [
         {
-          operation: "list",
+          operation: "op-list-deals",
           actorIds: ["act-admin", "act-manager", "act-member", "act-finance"],
           file: "views/permission/deal.md",
           line: 4,
         },
         {
-          operation: "create",
+          operation: "op-create-deal",
           actorIds: ["act-admin", "act-manager"],
           file: "views/permission/deal.md",
           line: 5,
         },
       ],
-      permTargets: [
-        { targetId: "ent-deal", file: "views/permission/deal.md", line: 2 },
+      targetLines: [
+        { targetIds: ["ent-deal"], file: "views/permission/deal.md", line: 2 },
       ],
+      malformedPermOperations: [],
     };
 
     const graph = buildGraph(parsed);
@@ -156,7 +162,8 @@ describe("check integration: act elements with seq actors", () => {
       elementItems: [],
       implementations: [],
       permOperations: [],
-      permTargets: [],
+      targetLines: [],
+      malformedPermOperations: [],
     };
 
     const graph = buildGraph(parsed);

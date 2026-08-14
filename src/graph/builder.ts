@@ -53,7 +53,8 @@ export function buildGraph(parsed: ParseResult, manifestPath: string | null = nu
     elementItems: [...parsed.elementItems],
     implementations: [...(parsed.implementations ?? [])],
     permOperations: [...(parsed.permOperations ?? [])],
-    permTargets: [...(parsed.permTargets ?? [])],
+    targetLines: [...(parsed.targetLines ?? [])],
+    malformedPermOperations: [...(parsed.malformedPermOperations ?? [])],
     manifestPath,
   };
 }

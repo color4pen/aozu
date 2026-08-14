@@ -13,6 +13,7 @@ export const KNOWN_PREFIXES = new Set([
   "ent",
   "inv",
   "act",
+  "op",
   "seq",
   "top",
   "plan",

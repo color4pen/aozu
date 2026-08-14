@@ -337,6 +337,17 @@ async function createValidPermissionDesignFixture(): Promise<string> {
   );
 
   await writeFile(
+    join(dir, "domain", "operations.md"),
+    [
+      "# Operations",
+      "",
+      "## 案件リスト {#op-list-deals}",
+      "",
+      "## 案件作成 {#op-create-deal}",
+    ].join("\n")
+  );
+
+  await writeFile(
     join(dir, "views", "permission", "deal.md"),
     [
       "# Deal Permissions",
@@ -344,8 +355,8 @@ async function createValidPermissionDesignFixture(): Promise<string> {
       "## 案件の権限 {#perm-deal}",
       "対象: [[ent-deal]]",
       "",
-      "- list: [[act-admin]], [[act-manager]], [[act-member]], [[act-finance]]",
-      "- create: [[act-admin]], [[act-manager]]",
+      "- [[op-list-deals]]: [[act-admin]], [[act-manager]], [[act-member]], [[act-finance]]",
+      "- [[op-create-deal]]: [[act-admin]], [[act-manager]]",
     ].join("\n")
   );
 
@@ -482,10 +493,10 @@ describe("handleExport permissions — JSON output", () => {
       const content = await readFile(outPath, "utf-8");
       const output = JSON.parse(content);
       const perm = output.permissions[0];
-      // list: act-admin, act-finance, act-manager, act-member (sorted)
-      expect(perm.operations.list).toEqual(["act-admin", "act-finance", "act-manager", "act-member"]);
-      // create: act-admin, act-manager (sorted)
-      expect(perm.operations.create).toEqual(["act-admin", "act-manager"]);
+      // op-create-deal: act-admin, act-manager (sorted)
+      expect(perm.operations["op-create-deal"]).toEqual(["act-admin", "act-manager"]);
+      // op-list-deals: act-admin, act-finance, act-manager, act-member (sorted)
+      expect(perm.operations["op-list-deals"]).toEqual(["act-admin", "act-finance", "act-manager", "act-member"]);
     } finally {
       await rm(dir, { recursive: true });
     }

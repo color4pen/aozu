@@ -1,0 +1,24 @@
+{
+  "requestHash": "sha256:89d385daac649285cda9a72a5310bb7b782ddaa5b0b0961f3798ed9de3c0eff8",
+  "codeAssertionsVerified": true,
+  "verifiedAssertions": [
+    "src/parse/id.ts:10 KNOWN_PREFIXES does not contain 'op'",
+    "src/check/manifest.ts:62 LAYER_MAP does not contain 'op'",
+    "src/check/manifest.ts:149 LAYER_TO_PREFIXES.domain is ['term','ent','inv','act'] without 'op'",
+    "src/check/manifest.ts:89 LAYER_PREREQUISITES exists (no change needed for op in domain layer)",
+    "src/parse/declarations.ts:16 HEADING_ELEMENT_RE is prefix-independent /^(#{2,3}) (.+) \\{#([^}]+)\\}$/",
+    "src/parse/structured-lines.ts:33 PERM_OPERATION_LINE_RE is /^- ([^\\s:]+): (\\[\\[.+)$/ (free token, captures [[op-id]] with brackets)",
+    "src/parse/structured-lines.ts:39 PERM_TARGET_LINE_RE is /^対象: \\[\\[([a-z0-9-]+)\\]\\]$/ (single reference only)",
+    "src/check/rules/c06-view-links.ts checkPermission uses op.operation string key (free token, no op-reference resolution)",
+    "src/check/rules/c11-layer-direction.ts:22 LAYER_ALLOWED_TARGET_PREFIXES domain set is ['term','ent','inv','act'] without 'op'",
+    "src/plan/frontier.ts:43 IMPLEMENTATION_PREFIXES is new Set(['mod','term','ent','inv','act','seq']) without 'op'",
+    "src/parse/request-citations.ts malformedLines pattern exists as the model for structured-lines malformed data storage",
+    "src/parse/references.ts extractReferences extracts all [[id]] from non-code-fence content including 対象: lines",
+    "spec/format.md §10 C11 domain entry still reads 'domain（term / ent / inv / act）' without 'op'",
+    "spec/format.md §11 permissions export example still uses free-token keys 'create'/'list' not op IDs",
+    "spec/format.md §8 perm 対象: description has no single-reference constraint",
+    "spec/format.md §10 C6 entry has no 'perm 対象行の単一制約'",
+    "spec/format.md §2/§4/§5/§8(op schema)/§8(perm op line)/§11(operations export) are already updated"
+  ],
+  "sourceRevision": "35a881715c9f8e873b30f8f222b20d023a1452a2"
+}

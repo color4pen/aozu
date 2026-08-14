@@ -14,7 +14,8 @@ function makeGraph(elements: ParseResult["elements"]) {
     elementItems: [],
     implementations: [],
     permOperations: [],
-    permTargets: [],
+    targetLines: [],
+    malformedPermOperations: [],
   };
   return buildGraph(parsed);
 }

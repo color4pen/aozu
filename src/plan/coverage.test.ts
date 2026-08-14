@@ -61,7 +61,8 @@ function makeGraph(
     elementItems: [],
     implementations: [],
     permOperations: [],
-    permTargets: [],
+    targetLines: [],
+    malformedPermOperations: [],
     manifestPath: null,
   };
 }

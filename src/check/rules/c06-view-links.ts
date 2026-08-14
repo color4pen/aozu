@@ -57,9 +57,13 @@ export function checkC6(manifest: Manifest, graph: Graph): CheckDiagnostic[] {
  * Validate perm elements when permission view is enabled.
  *
  * Checks per perm element:
- * (a) Non-empty: at least one operation line must exist.
- * (b) Unique: operation names must be unique within a perm element.
- * (c) Act prefix: all actor references must have the "act" prefix.
+ * (a) Malformed operation lines: `- <token>: [[...]]` where token is not `[[op-id]]`.
+ * (b) Non-empty: at least one valid operation line must exist.
+ * (c) Op reference: operation field must resolve to an existing op element.
+ * (d) Op prefix: operation element must have prefix "op".
+ * (e) Unique: op references must be unique within a perm element.
+ * (f) Act prefix: all actor references must have the "act" prefix.
+ * (g) Perm target single-reference: `対象:` lines on perms must have exactly one reference.
  *
  * Reference resolution (whether act elements actually exist) is C3's
  * responsibility — matching C5's division of labour.
@@ -70,12 +74,11 @@ function checkPermission(graph: Graph): CheckDiagnostic[] {
   // Collect all perm elements
   const permElements = graph.rawElements.filter((el) => el.prefix === "perm");
 
-  // Group operation lines by owning perm element using findOwningElement
+  // Group valid operation lines by owning perm element
   const opsByPermId = new Map<string, typeof graph.permOperations[number][]>();
   for (const el of permElements) {
     opsByPermId.set(el.id, []);
   }
-
   for (const op of graph.permOperations) {
     const owner = findOwningElement(graph.rawElements, op.file, op.line);
     if (owner && owner.prefix === "perm" && opsByPermId.has(owner.id)) {
@@ -83,11 +86,35 @@ function checkPermission(graph: Graph): CheckDiagnostic[] {
     }
   }
 
+  // Group malformed operation lines by owning perm element
+  const malformedByPermId = new Map<string, typeof graph.malformedPermOperations[number][]>();
+  for (const el of permElements) {
+    malformedByPermId.set(el.id, []);
+  }
+  for (const m of graph.malformedPermOperations) {
+    const owner = findOwningElement(graph.rawElements, m.file, m.line);
+    if (owner && owner.prefix === "perm" && malformedByPermId.has(owner.id)) {
+      malformedByPermId.get(owner.id)!.push(m);
+    }
+  }
+
   // Validate each perm element
   for (const permEl of permElements) {
+    // (a) Malformed operation lines
+    for (const m of malformedByPermId.get(permEl.id) ?? []) {
+      diagnostics.push({
+        level: "error",
+        code: "C6",
+        elementId: permEl.id,
+        message: `perm element "${permEl.id}" has malformed operation line at line ${m.line}: expected "- [[op-id]]: [[act-id]]..." format`,
+        file: m.file,
+        line: m.line,
+      });
+    }
+
     const ops = opsByPermId.get(permEl.id) ?? [];
 
-    // (a) Non-empty obligation
+    // (b) Non-empty obligation (valid ops only; malformed don't count)
     if (ops.length === 0) {
       diagnostics.push({
         level: "error",
@@ -97,28 +124,53 @@ function checkPermission(graph: Graph): CheckDiagnostic[] {
         file: permEl.file,
         line: permEl.line,
       });
+      // skip per-op checks since there are no valid ops
       continue;
     }
 
-    // (b) Unique operation names within this perm element
+    // (c)-(f) Per-operation checks
     const seenOps = new Set<string>();
     for (const op of ops) {
-      if (seenOps.has(op.operation)) {
+      // (c) Op reference resolution
+      const opEl = graph.elements.get(op.operation);
+      if (!opEl) {
         diagnostics.push({
           level: "error",
           code: "C6",
           elementId: permEl.id,
-          message: `perm element "${permEl.id}" has duplicate operation "${op.operation}"`,
+          message: `perm element "${permEl.id}" operation line references unresolved op "${op.operation}"`,
           file: op.file,
           line: op.line,
         });
+        // Still check actor prefixes below
+      } else if (extractPrefix(op.operation) !== "op") {
+        // (d) Op prefix check
+        diagnostics.push({
+          level: "error",
+          code: "C6",
+          elementId: permEl.id,
+          message: `perm element "${permEl.id}" operation reference "${op.operation}" is not an op element (prefix: "${extractPrefix(op.operation)}")`,
+          file: op.file,
+          line: op.line,
+        });
+        // Still check actor prefixes below
       } else {
-        seenOps.add(op.operation);
+        // (e) Uniqueness (only for valid op references)
+        if (seenOps.has(op.operation)) {
+          diagnostics.push({
+            level: "error",
+            code: "C6",
+            elementId: permEl.id,
+            message: `perm element "${permEl.id}" has duplicate operation "${op.operation}"`,
+            file: op.file,
+            line: op.line,
+          });
+        } else {
+          seenOps.add(op.operation);
+        }
       }
-    }
 
-    // (c) Actor reference prefix must be "act"
-    for (const op of ops) {
+      // (f) Actor reference prefix must be "act"
       for (const actorId of op.actorIds) {
         const prefix = extractPrefix(actorId);
         if (prefix !== "act") {
@@ -133,6 +185,21 @@ function checkPermission(graph: Graph): CheckDiagnostic[] {
         }
       }
     }
+  }
+
+  // (g) Perm target single-reference constraint
+  for (const tl of graph.targetLines) {
+    if (tl.targetIds.length <= 1) continue;
+    const owner = findOwningElement(graph.rawElements, tl.file, tl.line);
+    if (!owner || owner.prefix !== "perm") continue;
+    diagnostics.push({
+      level: "error",
+      code: "C6",
+      elementId: owner.id,
+      message: `perm element "${owner.id}" target line at line ${tl.line} must contain exactly one reference (found ${tl.targetIds.length})`,
+      file: tl.file,
+      line: tl.line,
+    });
   }
 
   return diagnostics;

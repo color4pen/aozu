@@ -12,8 +12,8 @@
  *       "id": "perm-deal",
  *       "target": "ent-deal",   // omitted when no 対象: line
  *       "operations": {
- *         "create": ["act-admin", "act-manager"],
- *         "list": ["act-admin", "act-finance", "act-manager", "act-member"]
+ *         "op-create-deal": ["act-admin", "act-manager"],
+ *         "op-list-deals": ["act-admin", "act-finance", "act-manager", "act-member"]
  *       }
  *     }
  *   ]
@@ -64,12 +64,12 @@ export function generatePermissions(graph: Graph): { json: string } {
     }
   }
 
-  // 3b. Group target lines by owning perm element (take first target per perm)
+  // 3b. Group target lines by owning perm element (take first target per perm, single-ref)
   const targetByPermId = new Map<string, string>();
-  for (const tgt of graph.permTargets) {
-    const owner = findOwningElement(graph.rawElements, tgt.file, tgt.line);
-    if (owner && owner.prefix === "perm" && !targetByPermId.has(owner.id)) {
-      targetByPermId.set(owner.id, tgt.targetId);
+  for (const tl of graph.targetLines) {
+    const owner = findOwningElement(graph.rawElements, tl.file, tl.line);
+    if (owner && owner.prefix === "perm" && !targetByPermId.has(owner.id) && tl.targetIds.length > 0) {
+      targetByPermId.set(owner.id, tl.targetIds[0]!);
     }
   }
 

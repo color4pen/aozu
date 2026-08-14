@@ -22,7 +22,8 @@ function makeParseResult(overrides: Partial<ParseResult> = {}): ParseResult {
     elementItems: [],
     implementations: [],
     permOperations: [],
-    permTargets: [],
+    targetLines: [],
+    malformedPermOperations: [],
     ...overrides,
   };
 }
