@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.4](https://github.com/color4pen/aozu/compare/v0.1.3...v0.1.4) (2026-08-14)
+
+
+### Features
+
+* export operations の実装 — 操作境界の実行時交換面（ADR-0025） ([#40](https://github.com/color4pen/aozu/issues/40)) ([41c1fbc](https://github.com/color4pen/aozu/commit/41c1fbc4146769f384c6e1c370ed610c547476f9))
+* op 要素の実装 — op 型の追加と perm 操作行の op 参照化（ADR-0025） ([#38](https://github.com/color4pen/aozu/issues/38)) ([cb56a92](https://github.com/color4pen/aozu/commit/cb56a9291c59ec0b9e7c6915771fb28610df1ae1))
+
 ## [0.1.3](https://github.com/color4pen/aozu/compare/v0.1.2...v0.1.3) (2026-07-10)
 
 
