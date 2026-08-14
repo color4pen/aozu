@@ -2,7 +2,7 @@
   "version": 2,
   "jobId": "0e22b134-6f24-4759-8ec9-f0477daff169",
   "createdAt": "2026-08-14T05:25:04.247Z",
-  "updatedAt": "2026-08-14T07:06:29.008Z",
+  "updatedAt": "2026-08-14T07:12:37.803Z",
   "request": {
     "title": "op 要素の実装 — op 型の追加と perm 操作行の op 参照化（ADR-0025）",
     "type": "new-feature",
@@ -12,8 +12,8 @@
     "owner": "color4pen",
     "name": "aozu"
   },
-  "step": "conformance",
-  "status": "running",
+  "step": "pr-create",
+  "status": "awaiting-archive",
   "branch": "feat/op-element-0e22b134",
   "error": null,
   "pipelineId": "standard",
@@ -61,7 +61,8 @@
     "4e2a89ece218ee04b1740a7d73ccfe4ec854c8b3",
     "48ca235bf4a3064bb26d64fe5c9ef7bc7eec3372",
     "62260d83bb4e8e3065db800b7954db280fcff147",
-    "3e026a8b3479dac421a2879b1d590b56e17f6d39"
+    "3e026a8b3479dac421a2879b1d590b56e17f6d39",
+    "f23d1f334e63fe2364e3aa1d1b613d5aa02169ee"
   ],
   "touchedFiles": {
     "request-review": [
@@ -215,6 +216,26 @@
     "regression-gate": [
       "spec/format.md",
       "src/export/permissions.test.ts"
+    ],
+    "conformance": [
+      "src/parse/id.ts",
+      "src/check/manifest.ts",
+      "src/check/rules/c11-layer-direction.ts",
+      "src/plan/frontier.ts",
+      "src/parse/structured-lines.ts",
+      "src/parse/types.ts",
+      "src/check/rules/c06-view-links.ts",
+      "src/export/permissions.ts",
+      "src/graph/types.ts",
+      "src/graph/builder.ts",
+      "src/parse/parser.ts",
+      "src/check/rules/op-element.test.ts",
+      "src/export/permissions.test.ts",
+      "src/export/op-element.test.ts",
+      "src/plan/op-element.test.ts",
+      "src/parse/op-element.test.ts",
+      "src/check/op-spec-docs.test.ts",
+      "src/check/rules/c06-view-links.test.ts"
     ]
   },
   "biteEvidence": [
@@ -286,8 +307,13 @@
   ],
   "resumePoint": null,
   "mainCheckoutDrift": null,
+  "pullRequest": {
+    "url": "https://github.com/color4pen/aozu/pull/38",
+    "number": 38,
+    "createdAt": "2026-08-14T07:12:36.957Z"
+  },
   "_journal": {
-    "historyCount": 63,
+    "historyCount": 77,
     "stepCounts": {
       "request-review": 1,
       "design": 1,
@@ -297,12 +323,15 @@
       "test-materialize": 1,
       "implementer": 1,
       "bite-evidence": 1,
-      "verification": 1,
+      "verification": 2,
       "code-review": 1,
       "adversarial-consistency": 3,
       "custom-reviewers": 3,
       "code-fixer": 1,
-      "regression-gate": 1
+      "regression-gate": 1,
+      "conformance": 1,
+      "adr-gen": 1,
+      "pr-create": 1
     }
   }
 }
