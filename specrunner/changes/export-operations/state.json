@@ -2,7 +2,7 @@
   "version": 2,
   "jobId": "840c5f6a-5ee5-4c52-97c5-ce772acd23a1",
   "createdAt": "2026-08-14T07:17:10.664Z",
-  "updatedAt": "2026-08-14T07:33:33.852Z",
+  "updatedAt": "2026-08-14T07:34:00.182Z",
   "request": {
     "title": "export operations の実装 — 操作境界の実行時交換面（ADR-0025）",
     "type": "new-feature",
@@ -12,7 +12,7 @@
     "owner": "color4pen",
     "name": "aozu"
   },
-  "step": "spec-fixer",
+  "step": "test-case-gen",
   "status": "running",
   "branch": "feat/export-operations-840c5f6a",
   "error": null,
@@ -48,7 +48,8 @@
     "af1e5d499331a71daed6bc654633b11e952b2559",
     "07ebc4428f314b009881f6b939e0acbe1df10877",
     "4281f7e4e0b93ee4e4ea28c3e7d4edc958318609",
-    "458e25ba5013faee326c0acb3abfa8689f92ab07"
+    "458e25ba5013faee326c0acb3abfa8689f92ab07",
+    "57621ad827722bf0657d80916e605c47ae8370a5"
   ],
   "touchedFiles": {
     "request-review": [
@@ -95,14 +96,16 @@
       "src/check/manifest.ts",
       "src/export/op-element.test.ts",
       "src/cli/commands/export.test.ts"
-    ]
+    ],
+    "spec-fixer": []
   },
   "_journal": {
-    "historyCount": 13,
+    "historyCount": 16,
     "stepCounts": {
       "request-review": 1,
       "design": 1,
-      "spec-review": 1
+      "spec-review": 1,
+      "spec-fixer": 1
     }
   }
 }
