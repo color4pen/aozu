@@ -2,7 +2,7 @@
   "version": 2,
   "jobId": "840c5f6a-5ee5-4c52-97c5-ce772acd23a1",
   "createdAt": "2026-08-14T07:17:10.664Z",
-  "updatedAt": "2026-08-14T07:43:21.286Z",
+  "updatedAt": "2026-08-14T07:48:24.921Z",
   "request": {
     "title": "export operations の実装 — 操作境界の実行時交換面（ADR-0025）",
     "type": "new-feature",
@@ -12,7 +12,7 @@
     "owner": "color4pen",
     "name": "aozu"
   },
-  "step": "code-review",
+  "step": "code-fixer",
   "status": "running",
   "branch": "feat/export-operations-840c5f6a",
   "error": null,
@@ -53,7 +53,8 @@
     "5fca1c10580634b73dd336dd6a6a6fd6e944dd01",
     "190a3d61085eb442f710f4415153cd0ba9e006ef",
     "7bcab3421c37d7221f83468c7693057447a1c10a",
-    "ccaca28672daa6a3c6d80392a53ee4051a4ff612"
+    "ccaca28672daa6a3c6d80392a53ee4051a4ff612",
+    "272c9a5ec8701dd57434ed1d141305995ee131ed"
   ],
   "touchedFiles": {
     "request-review": [
@@ -127,6 +128,19 @@
       "src/cli/commands/export.ts",
       "src/graph/attribution.ts",
       "src/export/operations.ts"
+    ],
+    "code-review": [
+      "src/export/operations.ts",
+      "src/cli/commands/export.ts",
+      "src/export/operations.test.ts",
+      "src/cli/commands/export.test.ts",
+      "src/export/index.ts",
+      "src/export/permissions.ts",
+      "src/graph/attribution.ts",
+      "src/graph/types.ts",
+      "src/parse/types.ts",
+      "src/graph/builder.ts",
+      "spec/format.md"
     ]
   },
   "biteEvidence": [
@@ -152,7 +166,7 @@
     }
   ],
   "_journal": {
-    "historyCount": 34,
+    "historyCount": 38,
     "stepCounts": {
       "request-review": 1,
       "design": 1,
@@ -162,7 +176,8 @@
       "test-materialize": 1,
       "implementer": 1,
       "bite-evidence": 1,
-      "verification": 1
+      "verification": 1,
+      "code-review": 1
     }
   }
 }
