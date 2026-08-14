@@ -2,7 +2,7 @@
   "version": 2,
   "jobId": "840c5f6a-5ee5-4c52-97c5-ce772acd23a1",
   "createdAt": "2026-08-14T07:17:10.664Z",
-  "updatedAt": "2026-08-14T07:40:57.633Z",
+  "updatedAt": "2026-08-14T07:43:21.286Z",
   "request": {
     "title": "export operations の実装 — 操作境界の実行時交換面（ADR-0025）",
     "type": "new-feature",
@@ -12,7 +12,7 @@
     "owner": "color4pen",
     "name": "aozu"
   },
-  "step": "implementer",
+  "step": "code-review",
   "status": "running",
   "branch": "feat/export-operations-840c5f6a",
   "error": null,
@@ -51,7 +51,9 @@
     "458e25ba5013faee326c0acb3abfa8689f92ab07",
     "57621ad827722bf0657d80916e605c47ae8370a5",
     "5fca1c10580634b73dd336dd6a6a6fd6e944dd01",
-    "190a3d61085eb442f710f4415153cd0ba9e006ef"
+    "190a3d61085eb442f710f4415153cd0ba9e006ef",
+    "7bcab3421c37d7221f83468c7693057447a1c10a",
+    "ccaca28672daa6a3c6d80392a53ee4051a4ff612"
   ],
   "touchedFiles": {
     "request-review": [
@@ -116,17 +118,51 @@
       "src/export/op-element.test.ts",
       "src/graph/builder.ts",
       "src/export/operations.test.ts"
+    ],
+    "implementer": [
+      "src/export/operations.test.ts",
+      "src/cli/commands/export.test.ts",
+      "src/export/permissions.ts",
+      "src/export/index.ts",
+      "src/cli/commands/export.ts",
+      "src/graph/attribution.ts",
+      "src/export/operations.ts"
     ]
   },
+  "biteEvidence": [
+    {
+      "testId": "src/cli/commands/export.test.ts",
+      "strategy": "forward",
+      "baseResult": "red",
+      "candidateResult": "green",
+      "verified": true,
+      "baseOid": "190a3d61085eb442f710f4415153cd0ba9e006ef",
+      "candidateOid": "7bcab3421c37d7221f83468c7693057447a1c10a",
+      "testHash": "sha256:5a529b1a83aa8fc17995c2bcc3f0ba55b1920ee9330e2e632bb8cab23a833b95"
+    },
+    {
+      "testId": "src/export/operations.test.ts",
+      "strategy": "forward",
+      "baseResult": "red",
+      "candidateResult": "green",
+      "verified": true,
+      "baseOid": "190a3d61085eb442f710f4415153cd0ba9e006ef",
+      "candidateOid": "7bcab3421c37d7221f83468c7693057447a1c10a",
+      "testHash": "sha256:3793b0da658a943e4d046622bce165e26c8715fd7dc71828d79b2eb7d1d6d6a9"
+    }
+  ],
   "_journal": {
-    "historyCount": 22,
+    "historyCount": 34,
     "stepCounts": {
       "request-review": 1,
       "design": 1,
       "spec-review": 1,
       "spec-fixer": 1,
       "test-case-gen": 1,
-      "test-materialize": 1
+      "test-materialize": 1,
+      "implementer": 1,
+      "bite-evidence": 1,
+      "verification": 1
     }
   }
 }
