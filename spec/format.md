@@ -25,6 +25,7 @@ design/
     model.md           # ent 要素
     invariants.md      # inv 要素
     actors.md          # act 要素（任意）
+    operations.md      # op 要素（任意）
   dynamic/
     <slug>.md          # 1 ファイル 1 seq 要素
   topics/<slug>.md     # top 要素
@@ -85,6 +86,7 @@ slug    = [a-z0-9]+ ("-" [a-z0-9]+)*
 | `ent` | エンティティ | domain |
 | `inv` | 不変条件 | domain |
 | `act` | アクター（ロール・主体） | domain |
+| `op` | 操作（システムが提供する操作の境界） | domain |
 | `seq` | シーケンス | dynamic |
 | `top` | topic | loop |
 | `plan` | plan | loop |
@@ -108,7 +110,7 @@ slug    = [a-z0-9]+ ("-" [a-z0-9]+)*
 
 ## 5. 宣言構文
 
-**見出し要素**（1 ファイルに複数置ける型: term / ent / inv / mod / uc 等）:
+**見出し要素**（1 ファイルに複数置ける型: term / ent / inv / mod / op / uc 等）:
 
 ```markdown
 ## 受注 {#ent-order}
@@ -166,6 +168,20 @@ id: seq-order-intake
 - ent: 見出し + 本文（属性の箇条書き、関係は `[[ent-*]]` 参照で表す）
 - inv: **1 見出し 1 本**。個別引用される粒度（ADR-0017 — inv の主たる引用文脈は個別引用）
 - act: 見出し + 本文（誰であるか・何に責任を持つかの散文）。シナリオ（seq）の主語として登場要素から参照される。**操作権限の詳細（act × 操作のマトリクス）は permission ビューの領分**であり、act はその土台となる宣言のみ
+
+### domain/operations.md — op
+
+```markdown
+## 受注を確定する {#op-confirm-order}
+対象: [[ent-order]]
+実装: src/application/confirm-order.ts
+```
+
+- op は「システムが提供する操作の境界」の宣言。機械が読むのは **ID・表示名（見出し）・`対象:` 行・`実装:` 行**のみ（ADR-0025）
+- `対象:` 行は任意。書く場合は参照のカンマ区切り。op は domain 要素なので参照先も domain 要素（C11）、解決は C3 の一般規則
+- `実装:` 行は任意（mod と同じ文法。実装ファイル / ディレクトリのカンマ区切り）
+- 入出力・事前条件・処理の流れは書かない——**振る舞いの内容は op の語彙に含めない**（ADR-0025）。補足の散文は自由（ツールは無視する）
+- 操作は表面非依存の動詞（どの画面・API・MCP ツールから呼ばれるかを設計は知らない — ADR-0023 D2）
 
 ### dynamic/<slug>.md — seq
 
@@ -229,15 +245,15 @@ topics: [[top-duplicate-slug]]
 ## 案件の権限 {#perm-deal}
 対象: [[ent-deal]]
 
-- list: [[act-admin]], [[act-manager]], [[act-member]], [[act-finance]]
-- create: [[act-admin]], [[act-manager]]
+- [[op-list-deals]]: [[act-admin]], [[act-manager]], [[act-member]], [[act-finance]]
+- [[op-create-deal]]: [[act-admin]], [[act-manager]]
 ```
 
 - 1 見出し 1 perm 要素 = 1 つの保護対象の操作 × アクター表（粒度は ADR-0017 / ADR-0023 D1）
-- **機械の読む正本は操作行**: `- <operation>: [[act-id]](, [[act-id]])*`。operation は空白と `:` を含まない自由トークンで、同一 perm 内で一意。操作行が 1 本も無い perm は違反（非空義務、C6）
-- 操作行の参照はすべて **act 要素**に解決されること（C6。C5 の主語義務と同型）
+- **機械の読む正本は操作行**: `- [[op-id]]: [[act-id]](, [[act-id]])*`。操作は op 要素への参照であり、同一 perm 内で一意（ADR-0025。自由トークンは廃止）。操作行が 1 本も無い perm は違反（非空義務、C6）
+- 操作行の参照はすべて **op / act 要素**に解決されること（C6。C5 の主語義務と同型）。未定義操作・削除済み操作への参照はここで検出される
 - `対象:` 行は任意。書く場合は実在要素への参照（解決は C3 の一般規則）
-- 操作は**表面非依存**の動詞（画面・API・MCP ツールのどれから呼ばれるかを perm は知らない — ADR-0023 D2）。表面 → 操作の対応はコード側の関心事
+- 表面 → 操作の対応はコード側の関心事（表面非依存は op が引き継ぐ — ADR-0023 D2 / ADR-0025）
 - ファイル配置は `views/permission/` 配下の任意の `.md`
 
 ## 9. 状態マップ — state.json
@@ -268,7 +284,7 @@ topics: [[top-duplicate-slug]]
 | C3 | すべての `[[id]]` が有効な型の実在要素に解決される。ただし**参照元・参照先のどちらか**の型が無効な参照は評価しない（無効な型の義務は評価しない、の一貫適用）。縮退による評価除外は**既知だが無効な型**に限る——**未知の prefix**（§4 に無い型）を持つ参照は縮退の対象外で、常に違反として診断する（typo の fail-open を許さない） |
 | C4 | dependencies の辺の両端が mod 要素に解決される。この規則は static アーティファクトの構造義務であり **C3 の縮退スキップの対象外**（端点が mod 以外なら、その型の有効・無効によらず常に違反） |
 | C5 | seq の登場要素リストが空でなく（**非空義務は縮退に依らず常に評価する**）、すべてのエントリの prefix が mod または act である（prefix 適格性も常時評価）。エントリの**解決**は C3 に従う — domain 無効時の act 参照は既知だが無効な型として解決検証のみ縮退スキップされる。act のみの登場要素リストも非空義務を満たす |
-| C6 | ビューのリンク義務が充足される。サポート済みの型はスキーマのリンク義務を検証する（perm → act・操作行の非空と一意）。**未サポートのビュー型が enabled に現れたら常に違反**（fail-closed。サポート済みは現在 permission のみ） |
+| C6 | ビューのリンク義務が充足される。サポート済みの型はスキーマのリンク義務を検証する（perm の操作行 → op / act への解決・非空・op 参照の perm 内一意）。**未サポートのビュー型が enabled に現れたら常に違反**（fail-closed。サポート済みは現在 permission のみ） |
 | C7 | manifest の enabled 組み合わせが型の前提関係を満たす |
 | C8 | state.json の全キーが実在要素（削除要素の残骸検出） |
 | C9 | adr が top を引用している（loop 有効時） |
@@ -313,6 +329,30 @@ topics: [[top-duplicate-slug]]
 - 出力順は決定的: `permissions` は id 昇順、`operations` のキーは辞書順、act 配列は ID 昇順（diff の安定性）
 - コミット済み成果物と `--verify` は持たない。突合の比較対象はコード側の権限定義そのものであり、中間成果物を挟まない（ADR-0023 D4）
 - permission ビューが enabled でない design に対しては exit 1（この design は権限を aozu の管理下に置いていない、の宣言）
+
+### operations export
+
+```json
+{
+  "format-version": 0,
+  "operations": [
+    {
+      "id": "op-confirm-order",
+      "name": "受注を確定する",
+      "target": ["ent-order"],
+      "implementation": ["src/application/confirm-order.ts"]
+    }
+  ]
+}
+```
+
+`export operations` が排出する。操作境界から実装骨格（interface・認可結線・テストハーネス等）を静的生成する後段ツールが消費する中立形式（ADR-0025）。
+
+- `name` は op の表示名（見出し）。`target` / `implementation` は該当行が無ければ省略
+- 出力順は決定的: `operations` は id 昇順、`target` / `implementation` は宣言順（diff の安定性）
+- コミット済み成果物と `--verify` は持たない。消費者は export を直接呼ぶ（permissions export と同じ判断 — ADR-0023 D4）
+- seq 等の相互作用情報は含めない（op の語彙は境界のみ — ADR-0025）
+- domain が enabled でない design に対しては exit 1。domain 有効で op が 0 件なら空リストを排出する
 
 ## 12. 本仕様内の未決
 
