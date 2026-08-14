@@ -98,7 +98,7 @@ manifest で domain が有効だが op 要素が 0 件の場合、`"operations":
 
 **Given** domain が有効な design
 **When** `export operations --out /tmp/ops.json` を実行する
-**Then** `/tmp/ops.json` に JSON が書き出され、stdout には何も出力されない
+**Then** `/tmp/ops.json` に JSON が書き出され、stdout には何も出力されず、exit code は 0 である
 
 #### Scenario: --out without path argument
 
