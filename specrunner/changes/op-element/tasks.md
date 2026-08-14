@@ -117,8 +117,9 @@
 
 ## T-09: 既存テストの新文法への書き換えと回帰テスト
 
-- [ ] `src/check/rules/c06-view-links.test.ts` の perm 操作行テストを新文法（`- [[op-id]]: [[act-id]]`）に書き換える。テスト中の PermOperation の operation フィールドを op ID に変更する
-- [ ] `src/export/permissions.test.ts` の PermOperation の operation フィールドを op ID に変更する（直接構築テスト。generatePermissions 自体は不変なのでキーが op ID に変わる）
+- [ ] `src/check/rules/c06-view-links.test.ts` の perm 操作行テストを新文法（`- [[op-id]]: [[act-id]]`）に書き換える（PermOperation の operation フィールドを op ID に変更する）
+- [ ] `src/check/rules/c06-view-links.test.ts` および `src/export/permissions.test.ts` の makeGraph ヘルパーで `permTargets: []` を `targetLines: []` に置換する（T-02 の ParseResult 型変更によるコンパイルエラー解消）
+- [ ] `src/export/permissions.test.ts` の変更スコープはテスト名のみ（T-07 委譲）。PermOperation の operation フィールドは自由トークンのまま残す（generatePermissions は文法非依存の純関数であり、直接構築では旧実装と区別できない — design D5）
 - [ ] perm 文法テスト以外の既存テストが無変更で green であることを確認する
 - [ ] aozu 自身の design/ の `check` 結果が不変であることを確認する（design/ は op / perm を使用していない）
 - [ ] `bunx tsc --noEmit` && `bun test` が green であることを確認する
