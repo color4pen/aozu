@@ -2,7 +2,7 @@
   "version": 2,
   "jobId": "840c5f6a-5ee5-4c52-97c5-ce772acd23a1",
   "createdAt": "2026-08-14T07:17:10.664Z",
-  "updatedAt": "2026-08-14T07:36:48.853Z",
+  "updatedAt": "2026-08-14T07:40:57.633Z",
   "request": {
     "title": "export operations の実装 — 操作境界の実行時交換面（ADR-0025）",
     "type": "new-feature",
@@ -12,7 +12,7 @@
     "owner": "color4pen",
     "name": "aozu"
   },
-  "step": "test-materialize",
+  "step": "implementer",
   "status": "running",
   "branch": "feat/export-operations-840c5f6a",
   "error": null,
@@ -50,7 +50,8 @@
     "4281f7e4e0b93ee4e4ea28c3e7d4edc958318609",
     "458e25ba5013faee326c0acb3abfa8689f92ab07",
     "57621ad827722bf0657d80916e605c47ae8370a5",
-    "5fca1c10580634b73dd336dd6a6a6fd6e944dd01"
+    "5fca1c10580634b73dd336dd6a6a6fd6e944dd01",
+    "190a3d61085eb442f710f4415153cd0ba9e006ef"
   ],
   "touchedFiles": {
     "request-review": [
@@ -102,16 +103,30 @@
     "test-case-gen": [
       "src/export/permissions.test.ts",
       "src/cli/commands/export.test.ts"
+    ],
+    "test-materialize": [
+      "src/export/permissions.test.ts",
+      "src/cli/commands/export.test.ts",
+      "src/parse/types.ts",
+      "src/graph/types.ts",
+      "src/export/permissions.ts",
+      "src/graph/attribution.ts",
+      "src/cli/commands/export.ts",
+      "src/export/index.ts",
+      "src/export/op-element.test.ts",
+      "src/graph/builder.ts",
+      "src/export/operations.test.ts"
     ]
   },
   "_journal": {
-    "historyCount": 19,
+    "historyCount": 22,
     "stepCounts": {
       "request-review": 1,
       "design": 1,
       "spec-review": 1,
       "spec-fixer": 1,
-      "test-case-gen": 1
+      "test-case-gen": 1,
+      "test-materialize": 1
     }
   }
 }
