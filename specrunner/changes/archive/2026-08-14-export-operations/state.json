@@ -1,0 +1,225 @@
+{
+  "version": 2,
+  "jobId": "840c5f6a-5ee5-4c52-97c5-ce772acd23a1",
+  "createdAt": "2026-08-14T07:17:10.664Z",
+  "updatedAt": "2026-08-14T07:55:02.845Z",
+  "request": {
+    "title": "export operations の実装 — 操作境界の実行時交換面（ADR-0025）",
+    "type": "new-feature",
+    "baseBranch": "main"
+  },
+  "repository": {
+    "owner": "color4pen",
+    "name": "aozu"
+  },
+  "step": "pr-create",
+  "status": "awaiting-archive",
+  "branch": "feat/export-operations-840c5f6a",
+  "error": null,
+  "pipelineId": "standard",
+  "profile": {
+    "id": "standard",
+    "schemaVersion": 1,
+    "budget": {},
+    "assurance": {
+      "testDerivation": "frozen",
+      "biteEvidence": "required",
+      "specReview": "required"
+    },
+    "policyDigest": "sha256:5051d71394c2f1522ccb3b0fd60de008b17e10e2ac1930597961e995a5eb1d1d"
+  },
+  "reviewers": [
+    {
+      "name": "adversarial-consistency",
+      "maxIterations": 3,
+      "purpose": "設計記録（ADR・形式仕様・設計文書・未決論点）に触れる変更が、既存の記録済み原理・決定と矛盾していないかを敵対的に検証する。改善提案ではなく反証に徹する。正典は docs/review/adversarial-consistency.md であり、観点の改訂はそちらと同期する。",
+      "criteria": "指摘には「根拠となる記述の引用（ファイル + 原文）」と「矛盾する記述の引用または構成した反例」の**両方**を必須とする。引用も反例も構成できない違和感は報告しない。\n\n1. **原理間矛盾**: 変更が別の記録済み原理・決定（adr/ 全件・spec/）と両立しない\n2. **消費者不在の形式化**: 文書化・形式化・移行・追補の提案に「読む機械（または強制力）」が名指しされていない。未決・計画（docs/open-questions.md）も対象であり、「未決だから」は免除理由にならない\n3. **エレガント統合型の断定**: 一般化された主張のうち、具体例を歩くと崩れるもの。反例シナリオを最低 1 つ構成して示す\n4. **段階・縮退の穴**: manifest の enabled 組み合わせによって意味論が壊れる・未定義になるケース\n5. **決定と未決の食い違い**: 決定済み事項と open-questions の記述の矛盾、決定に必要な前提の未決放置",
+      "judgment": "- 引用可能な矛盾または構成できた反例が 1 件でも成立する: **needs-fix**（findings に引用を含めて列挙）\n- すべての観点で反証を試みて不能だった: **approved**（反証不能だった観点を列挙する）",
+      "freeText": "",
+      "paths": [
+        "adr/**",
+        "spec/**",
+        "design/**",
+        "docs/open-questions.md"
+      ]
+    }
+  ],
+  "synthesizedCommits": [
+    "af1e5d499331a71daed6bc654633b11e952b2559",
+    "07ebc4428f314b009881f6b939e0acbe1df10877",
+    "4281f7e4e0b93ee4e4ea28c3e7d4edc958318609",
+    "458e25ba5013faee326c0acb3abfa8689f92ab07",
+    "57621ad827722bf0657d80916e605c47ae8370a5",
+    "5fca1c10580634b73dd336dd6a6a6fd6e944dd01",
+    "190a3d61085eb442f710f4415153cd0ba9e006ef",
+    "7bcab3421c37d7221f83468c7693057447a1c10a",
+    "ccaca28672daa6a3c6d80392a53ee4051a4ff612",
+    "272c9a5ec8701dd57434ed1d141305995ee131ed",
+    "9eb87b0324c525a2967cef3ede797961b593b6fd",
+    "7af58c7db0454cb0f3f4b484dcbe4c3bc17d6215",
+    "b243ea72ff3eedce5cb76885cb5f00a7c64057cf",
+    "fdbdf7c3cddc69e9eaf77dd93046254a6f139272"
+  ],
+  "touchedFiles": {
+    "request-review": [
+      "src/parse/types.ts",
+      "src/export/permissions.ts",
+      "src/cli/commands/export.ts",
+      "src/graph/types.ts",
+      "src/graph/attribution.ts",
+      "spec/format.md",
+      "src/export/op-element.test.ts",
+      "src/check/manifest.ts",
+      "src/export/permissions.test.ts",
+      "src/export/types.ts",
+      "src/export/index.ts",
+      "design/manifest.md",
+      "design/static/modules.md",
+      "adr/0025-operation-element.md",
+      "design/static/dependencies.md",
+      "src/export/generator.ts"
+    ],
+    "design": [
+      "src/cli/commands/export.ts",
+      "src/export/permissions.ts",
+      "src/graph/types.ts",
+      "src/graph/attribution.ts",
+      "src/parse/types.ts",
+      "src/check/manifest.ts",
+      "src/export/permissions.test.ts",
+      "spec/format.md",
+      "src/export/index.ts",
+      "src/export/types.ts",
+      "design/static/dependencies.md",
+      "src/export/op-element.test.ts"
+    ],
+    "spec-review": [
+      "src/export/permissions.ts",
+      "src/cli/commands/export.ts",
+      "src/graph/types.ts",
+      "src/parse/types.ts",
+      "src/graph/attribution.ts",
+      "src/export/index.ts",
+      "spec/format.md",
+      "src/export/permissions.test.ts",
+      "src/check/manifest.ts",
+      "src/export/op-element.test.ts",
+      "src/cli/commands/export.test.ts"
+    ],
+    "spec-fixer": [],
+    "test-case-gen": [
+      "src/export/permissions.test.ts",
+      "src/cli/commands/export.test.ts"
+    ],
+    "test-materialize": [
+      "src/export/permissions.test.ts",
+      "src/cli/commands/export.test.ts",
+      "src/parse/types.ts",
+      "src/graph/types.ts",
+      "src/export/permissions.ts",
+      "src/graph/attribution.ts",
+      "src/cli/commands/export.ts",
+      "src/export/index.ts",
+      "src/export/op-element.test.ts",
+      "src/graph/builder.ts",
+      "src/export/operations.test.ts"
+    ],
+    "implementer": [
+      "src/export/operations.test.ts",
+      "src/cli/commands/export.test.ts",
+      "src/export/permissions.ts",
+      "src/export/index.ts",
+      "src/cli/commands/export.ts",
+      "src/graph/attribution.ts",
+      "src/export/operations.ts"
+    ],
+    "code-review": [
+      "src/export/operations.ts",
+      "src/cli/commands/export.ts",
+      "src/export/operations.test.ts",
+      "src/cli/commands/export.test.ts",
+      "src/export/index.ts",
+      "src/export/permissions.ts",
+      "src/graph/attribution.ts",
+      "src/graph/types.ts",
+      "src/parse/types.ts",
+      "src/graph/builder.ts",
+      "spec/format.md"
+    ],
+    "code-fixer": [],
+    "regression-gate": [
+      "src/cli/commands/export.test.ts"
+    ],
+    "conformance": [
+      "src/export/operations.ts",
+      "src/cli/commands/export.ts",
+      "src/export/index.ts",
+      "src/export/operations.test.ts",
+      "src/cli/commands/export.test.ts",
+      "spec/format.md"
+    ]
+  },
+  "biteEvidence": [
+    {
+      "testId": "src/cli/commands/export.test.ts",
+      "strategy": "forward",
+      "baseResult": "red",
+      "candidateResult": "green",
+      "verified": true,
+      "baseOid": "190a3d61085eb442f710f4415153cd0ba9e006ef",
+      "candidateOid": "7bcab3421c37d7221f83468c7693057447a1c10a",
+      "testHash": "sha256:5a529b1a83aa8fc17995c2bcc3f0ba55b1920ee9330e2e632bb8cab23a833b95"
+    },
+    {
+      "testId": "src/export/operations.test.ts",
+      "strategy": "forward",
+      "baseResult": "red",
+      "candidateResult": "green",
+      "verified": true,
+      "baseOid": "190a3d61085eb442f710f4415153cd0ba9e006ef",
+      "candidateOid": "7bcab3421c37d7221f83468c7693057447a1c10a",
+      "testHash": "sha256:3793b0da658a943e4d046622bce165e26c8715fd7dc71828d79b2eb7d1d6d6a9"
+    }
+  ],
+  "reviewerStatuses": [
+    {
+      "name": "adversarial-consistency",
+      "status": "pending",
+      "approvedAtCommit": null,
+      "activationPaths": [
+        "adr/**",
+        "spec/**",
+        "design/**",
+        "docs/open-questions.md"
+      ],
+      "invalidatedByCommit": null
+    }
+  ],
+  "pullRequest": {
+    "url": "https://github.com/color4pen/aozu/pull/40",
+    "number": 40,
+    "createdAt": "2026-08-14T07:55:01.969Z"
+  },
+  "_journal": {
+    "historyCount": 66,
+    "stepCounts": {
+      "request-review": 1,
+      "design": 1,
+      "spec-review": 1,
+      "spec-fixer": 1,
+      "test-case-gen": 1,
+      "test-materialize": 1,
+      "implementer": 1,
+      "bite-evidence": 1,
+      "verification": 2,
+      "code-review": 1,
+      "code-fixer": 1,
+      "adversarial-consistency": 1,
+      "custom-reviewers": 1,
+      "regression-gate": 1,
+      "conformance": 1,
+      "adr-gen": 1,
+      "pr-create": 1
+    }
+  }
+}

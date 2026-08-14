@@ -1,0 +1,23 @@
+{
+  "requestHash": "sha256:211aae2a14341dc6baec900d9ad5fc928ed330950819c56df133874d8739c6aa",
+  "codeAssertionsVerified": true,
+  "verifiedAssertions": [
+    "src/parse/types.ts:77 — TargetLine interface (targetIds: string[], file, line)",
+    "src/export/permissions.ts:69 — graph.targetLines loop with owner.prefix === 'perm' filter at line 71",
+    "src/parse/types.ts:56 — ImplementationEntry (paths: string[], file, line)",
+    "src/graph/types.ts:49 — Graph.implementations: ImplementationEntry[]",
+    "src/graph/attribution.ts — findOwningElement pure function",
+    "src/cli/commands/export.ts — export subcommand branching (rules / permissions), USAGE string",
+    "src/export/permissions.ts — generatePermissions pure function",
+    "src/cli/commands/export.ts comments — permissions exit codes: 0=success / 1=permission not enabled / 2=input error",
+    "src/check/manifest.ts LAYER_MAP — op: 'domain'",
+    "design/static/dependencies.md:19 — [[mod-export]] -> [[mod-graph]] permitted",
+    "design/static/dependencies.md:10 — [[mod-cli]] -> [[mod-export]] permitted",
+    "spec/format.md §11 operations export — JSON schema (format-version, operations[], id, name, target[], implementation[])",
+    "spec/format.md §11 — target/implementation omitted when absent",
+    "spec/format.md §11 — deterministic order: operations id ascending, target/implementation declaration order",
+    "spec/format.md §11 — domain not enabled → exit 1; domain enabled 0 ops → empty list exit 0",
+    "adr/0025-operation-element.md D3 — export operations / no --verify / consumer calls directly"
+  ],
+  "sourceRevision": "cb56a9291c59ec0b9e7c6915771fb28610df1ae1"
+}
