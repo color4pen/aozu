@@ -2,7 +2,7 @@
   "version": 2,
   "jobId": "840c5f6a-5ee5-4c52-97c5-ce772acd23a1",
   "createdAt": "2026-08-14T07:17:10.664Z",
-  "updatedAt": "2026-08-14T07:21:04.670Z",
+  "updatedAt": "2026-08-14T07:26:24.808Z",
   "request": {
     "title": "export operations の実装 — 操作境界の実行時交換面（ADR-0025）",
     "type": "new-feature",
@@ -12,7 +12,7 @@
     "owner": "color4pen",
     "name": "aozu"
   },
-  "step": "design",
+  "step": "spec-review",
   "status": "running",
   "branch": "feat/export-operations-840c5f6a",
   "error": null,
@@ -46,7 +46,8 @@
   ],
   "synthesizedCommits": [
     "af1e5d499331a71daed6bc654633b11e952b2559",
-    "07ebc4428f314b009881f6b939e0acbe1df10877"
+    "07ebc4428f314b009881f6b939e0acbe1df10877",
+    "4281f7e4e0b93ee4e4ea28c3e7d4edc958318609"
   ],
   "touchedFiles": {
     "request-review": [
@@ -66,12 +67,27 @@
       "adr/0025-operation-element.md",
       "design/static/dependencies.md",
       "src/export/generator.ts"
+    ],
+    "design": [
+      "src/cli/commands/export.ts",
+      "src/export/permissions.ts",
+      "src/graph/types.ts",
+      "src/graph/attribution.ts",
+      "src/parse/types.ts",
+      "src/check/manifest.ts",
+      "src/export/permissions.test.ts",
+      "spec/format.md",
+      "src/export/index.ts",
+      "src/export/types.ts",
+      "design/static/dependencies.md",
+      "src/export/op-element.test.ts"
     ]
   },
   "_journal": {
-    "historyCount": 5,
+    "historyCount": 9,
     "stepCounts": {
-      "request-review": 1
+      "request-review": 1,
+      "design": 1
     }
   }
 }
