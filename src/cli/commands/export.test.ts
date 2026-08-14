@@ -266,6 +266,224 @@ describe("handleExport rules --verify", () => {
 });
 
 // ---------------------------------------------------------------------------
+// export operations tests
+// TC-009: domain not in enabled list causes exit 1
+// TC-010: domain enabled with no op elements produces empty list and exit 0
+// TC-011: --out writes JSON to file and suppresses stdout
+// TC-012: --out without path argument causes exit 2
+// TC-019: generateOperations is accessible via src/export/index.ts re-export
+// ---------------------------------------------------------------------------
+
+/** Create a design fixture where domain is NOT in enabled list. */
+async function createNoDomainDesignFixture(): Promise<string> {
+  const dir = await mkdtemp(join(tmpdir(), "aozu-export-nodomain-test-"));
+  await mkdir(join(dir, "static"), { recursive: true });
+
+  await writeFile(
+    join(dir, "manifest.md"),
+    [
+      "---",
+      "format-version: 0",
+      "enabled: static",
+      "---",
+      "",
+      "# manifest",
+    ].join("\n")
+  );
+
+  await writeFile(
+    join(dir, "static", "modules.md"),
+    [
+      "# Modules",
+      "",
+      "## Workflow {#mod-workflow}",
+      "責務: ワークフロー.",
+      "実装: src/workflow/",
+    ].join("\n")
+  );
+
+  await writeFile(
+    join(dir, "static", "dependencies.md"),
+    "# Dependencies\n"
+  );
+
+  return dir;
+}
+
+/** Create a design fixture with domain enabled but no op elements. */
+async function createDomainNoOpFixture(): Promise<string> {
+  const dir = await mkdtemp(join(tmpdir(), "aozu-export-noop-test-"));
+  await mkdir(join(dir, "static"), { recursive: true });
+  await mkdir(join(dir, "domain"), { recursive: true });
+
+  await writeFile(
+    join(dir, "manifest.md"),
+    [
+      "---",
+      "format-version: 0",
+      "enabled: static, domain",
+      "---",
+      "",
+      "# manifest",
+    ].join("\n")
+  );
+
+  await writeFile(
+    join(dir, "static", "modules.md"),
+    [
+      "# Modules",
+      "",
+      "## Workflow {#mod-workflow}",
+      "責務: ワークフロー.",
+      "実装: src/workflow/",
+    ].join("\n")
+  );
+
+  await writeFile(
+    join(dir, "static", "dependencies.md"),
+    "# Dependencies\n"
+  );
+
+  await writeFile(
+    join(dir, "domain", "model.md"),
+    [
+      "# Model",
+      "",
+      "## Order {#ent-order}",
+    ].join("\n")
+  );
+
+  return dir;
+}
+
+/** Create a design fixture with domain enabled and one op element with target and implementation. */
+async function createDomainWithOpFixture(): Promise<string> {
+  const dir = await mkdtemp(join(tmpdir(), "aozu-export-ops-test-"));
+  await mkdir(join(dir, "static"), { recursive: true });
+  await mkdir(join(dir, "domain"), { recursive: true });
+
+  await writeFile(
+    join(dir, "manifest.md"),
+    [
+      "---",
+      "format-version: 0",
+      "enabled: static, domain",
+      "---",
+      "",
+      "# manifest",
+    ].join("\n")
+  );
+
+  await writeFile(
+    join(dir, "static", "modules.md"),
+    [
+      "# Modules",
+      "",
+      "## Workflow {#mod-workflow}",
+      "責務: ワークフロー.",
+      "実装: src/workflow/",
+    ].join("\n")
+  );
+
+  await writeFile(
+    join(dir, "static", "dependencies.md"),
+    "# Dependencies\n"
+  );
+
+  await writeFile(
+    join(dir, "domain", "model.md"),
+    [
+      "# Model",
+      "",
+      "## Order {#ent-order}",
+    ].join("\n")
+  );
+
+  await writeFile(
+    join(dir, "domain", "operations.md"),
+    [
+      "# Operations",
+      "",
+      "## 受注を確定する {#op-confirm-order}",
+      "対象: [[ent-order]]",
+      "実装: src/application/confirm-order.ts",
+    ].join("\n")
+  );
+
+  return dir;
+}
+
+describe("handleExport operations — TC-009: domain not in enabled causes exit 1", () => {
+  it("TC-009: domain not in enabled list → exit 1", async () => {
+    const dir = await createNoDomainDesignFixture();
+    try {
+      const exitCode = await handleExport(["operations", "--dir", dir]);
+      expect(exitCode).toBe(1);
+    } finally {
+      await rm(dir, { recursive: true });
+    }
+  });
+});
+
+describe("handleExport operations — TC-010: domain enabled with no op elements → empty list exit 0", () => {
+  it("TC-010: domain enabled, no op elements → operations: [] and exit 0", async () => {
+    const dir = await createDomainNoOpFixture();
+    try {
+      const outPath = join(dir, "operations.json");
+      const exitCode = await handleExport(["operations", "--dir", dir, "--out", outPath]);
+      expect(exitCode).toBe(0);
+
+      const content = await readFile(outPath, "utf-8");
+      const output = JSON.parse(content);
+      expect(output["format-version"]).toBe(0);
+      expect(output.operations).toEqual([]);
+    } finally {
+      await rm(dir, { recursive: true });
+    }
+  });
+});
+
+describe("handleExport operations — TC-011: --out writes JSON to file", () => {
+  it("TC-011: --out writes valid operations JSON to file", async () => {
+    const dir = await createDomainWithOpFixture();
+    try {
+      const outPath = join(dir, "operations.json");
+      const exitCode = await handleExport(["operations", "--dir", dir, "--out", outPath]);
+      expect(exitCode).toBe(0);
+
+      const content = await readFile(outPath, "utf-8");
+      const output = JSON.parse(content);
+      expect(output["format-version"]).toBe(0);
+      expect(Array.isArray(output.operations)).toBe(true);
+      expect(output.operations.length).toBeGreaterThan(0);
+      expect(output.operations[0].id).toBe("op-confirm-order");
+    } finally {
+      await rm(dir, { recursive: true });
+    }
+  });
+});
+
+describe("handleExport operations — TC-012: --out without path causes exit 2", () => {
+  it("TC-012: --out with no path argument → exit 2", async () => {
+    const dir = await createDomainWithOpFixture();
+    try {
+      const exitCode = await handleExport(["operations", "--dir", dir, "--out"]);
+      expect(exitCode).toBe(2);
+    } finally {
+      await rm(dir, { recursive: true });
+    }
+  });
+});
+
+describe("TC-019: generateOperations accessible via src/export/index.ts re-export", () => {
+  it("TC-019: import { generateOperations } from export/index.ts resolves and is callable", async () => {
+    // Dynamic import so the test is isolated from static import failures
+    const exportIndex = await import("../../export/index.ts") as Record<string, unknown>;
+    expect(typeof exportIndex["generateOperations"]).toBe("function");
+  });
+});
+
+// ---------------------------------------------------------------------------
 // T-13: export permissions tests
 // ---------------------------------------------------------------------------
 
