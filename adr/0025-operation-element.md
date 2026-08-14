@@ -30,4 +30,5 @@ permission ビューの操作は自由トークンである（ADR-0023 D2: `- <o
 - spec/format.md 改訂: §2 配置・§4 型表・§5 見出し要素・§8 op スキーマと perm 操作行・C6・§11 operations export
 - 実装触点: parser（op 宣言・`対象:`・`実装:`）、check（C6 の perm 操作行 → op / act 義務）、`export operations`
 - perm 操作行の旧文法（自由トークン）は不合法になる。移行対象の corpus は存在しない
+- export の対象は操作に止まらない。generator は ent / inv / perm も読む想定であり、要求された型から順に同型の per-type export（rules / permissions / operations と同じ契約形）を需要駆動で追補する。複数型を単一の統合 export に束ねるかは消費者の実形が決める（論点 17）
 - dogfooding（aozu 自身・clearflow の permission 有効化）で最小スキーマの十分性を実測する。入出力の要否・seq の意味論と登場要素への op 追加（C5）・利用文脈（uc）の去就は、実測後の論点として open-questions 論点 17 に置く
