@@ -2,7 +2,7 @@
   "version": 2,
   "jobId": "840c5f6a-5ee5-4c52-97c5-ce772acd23a1",
   "createdAt": "2026-08-14T07:17:10.664Z",
-  "updatedAt": "2026-08-14T07:48:24.921Z",
+  "updatedAt": "2026-08-14T07:49:00.167Z",
   "request": {
     "title": "export operations の実装 — 操作境界の実行時交換面（ADR-0025）",
     "type": "new-feature",
@@ -12,7 +12,7 @@
     "owner": "color4pen",
     "name": "aozu"
   },
-  "step": "code-fixer",
+  "step": "regression-gate",
   "status": "running",
   "branch": "feat/export-operations-840c5f6a",
   "error": null,
@@ -54,7 +54,8 @@
     "190a3d61085eb442f710f4415153cd0ba9e006ef",
     "7bcab3421c37d7221f83468c7693057447a1c10a",
     "ccaca28672daa6a3c6d80392a53ee4051a4ff612",
-    "272c9a5ec8701dd57434ed1d141305995ee131ed"
+    "272c9a5ec8701dd57434ed1d141305995ee131ed",
+    "9eb87b0324c525a2967cef3ede797961b593b6fd"
   ],
   "touchedFiles": {
     "request-review": [
@@ -141,7 +142,8 @@
       "src/parse/types.ts",
       "src/graph/builder.ts",
       "spec/format.md"
-    ]
+    ],
+    "code-fixer": []
   },
   "biteEvidence": [
     {
@@ -165,8 +167,22 @@
       "testHash": "sha256:3793b0da658a943e4d046622bce165e26c8715fd7dc71828d79b2eb7d1d6d6a9"
     }
   ],
+  "reviewerStatuses": [
+    {
+      "name": "adversarial-consistency",
+      "status": "pending",
+      "approvedAtCommit": null,
+      "activationPaths": [
+        "adr/**",
+        "spec/**",
+        "design/**",
+        "docs/open-questions.md"
+      ],
+      "invalidatedByCommit": null
+    }
+  ],
   "_journal": {
-    "historyCount": 38,
+    "historyCount": 47,
     "stepCounts": {
       "request-review": 1,
       "design": 1,
@@ -177,7 +193,10 @@
       "implementer": 1,
       "bite-evidence": 1,
       "verification": 1,
-      "code-review": 1
+      "code-review": 1,
+      "code-fixer": 1,
+      "adversarial-consistency": 1,
+      "custom-reviewers": 1
     }
   }
 }
