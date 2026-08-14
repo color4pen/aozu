@@ -252,7 +252,7 @@ topics: [[top-duplicate-slug]]
 - 1 見出し 1 perm 要素 = 1 つの保護対象の操作 × アクター表（粒度は ADR-0017 / ADR-0023 D1）
 - **機械の読む正本は操作行**: `- [[op-id]]: [[act-id]](, [[act-id]])*`。操作は op 要素への参照であり、同一 perm 内で一意（ADR-0025。自由トークンは廃止）。操作行が 1 本も無い perm は違反（非空義務、C6）
 - 操作行の参照はすべて **op / act 要素**に解決されること（C6。C5 の主語義務と同型）。未定義操作・削除済み操作への参照はここで検出される
-- `対象:` 行は任意。書く場合は単一参照。複数参照は C6 違反（ADR-0023 D2）。参照は C3 の一般規則で解決される
+- `対象:` 行は任意。書く場合は単一参照。複数参照は C6 違反。参照は C3 の一般規則で解決される
 - 表面 → 操作の対応はコード側の関心事（表面非依存は op が引き継ぐ — ADR-0023 D2 / ADR-0025）
 - ファイル配置は `views/permission/` 配下の任意の `.md`
 
@@ -315,8 +315,8 @@ topics: [[top-duplicate-slug]]
       "id": "perm-deal",
       "target": "ent-deal",
       "operations": {
-        "create": ["act-admin", "act-manager"],
-        "list": ["act-admin", "act-finance", "act-manager", "act-member"]
+        "op-create-deal": ["act-admin", "act-manager"],
+        "op-list-deals": ["act-admin", "act-finance", "act-manager", "act-member"]
       }
     }
   ]
