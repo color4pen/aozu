@@ -2,7 +2,7 @@
   "version": 2,
   "jobId": "0e22b134-6f24-4759-8ec9-f0477daff169",
   "createdAt": "2026-08-14T05:25:04.247Z",
-  "updatedAt": "2026-08-14T05:48:52.698Z",
+  "updatedAt": "2026-08-14T06:06:33.124Z",
   "request": {
     "title": "op 要素の実装 — op 型の追加と perm 操作行の op 参照化（ADR-0025）",
     "type": "new-feature",
@@ -12,7 +12,7 @@
     "owner": "color4pen",
     "name": "aozu"
   },
-  "step": "test-materialize",
+  "step": "implementer",
   "status": "running",
   "branch": "feat/op-element-0e22b134",
   "error": null,
@@ -50,7 +50,8 @@
     "8d5d2f7f7ea033c9d47d8a598e80ca0af193dc01",
     "ba3aad732603f04de1a9e3a98e51b1d792b5127e",
     "25d895b6a700833407ba3f8a55c7293c04d1d9f7",
-    "85ecd21bd2824a88a69a51a2501e6a9b7b28167d"
+    "85ecd21bd2824a88a69a51a2501e6a9b7b28167d",
+    "56a04cecd7ead95c5c0ff24ccd46fcd8e8d6e8e0"
   ],
   "touchedFiles": {
     "request-review": [
@@ -109,16 +110,50 @@
       "src/graph/builder.ts"
     ],
     "spec-fixer": [],
-    "test-case-gen": []
+    "test-case-gen": [],
+    "test-materialize": [
+      "src/check/rules/c06-view-links.test.ts",
+      "src/check/rules/c11-layer-direction.test.ts",
+      "src/parse/types.ts",
+      "src/graph/types.ts",
+      "src/parse/structured-lines.ts",
+      "src/parse/structured-lines.test.ts",
+      "src/parse/integration.test.ts",
+      "src/export/permissions.test.ts",
+      "src/check/rules/c03-ref-resolved.test.ts",
+      "src/check/rules/c01-id-grammar.test.ts",
+      "src/check/rules/c06-view-links.ts",
+      "src/plan/frontier.ts",
+      "src/graph/attribution.ts",
+      "src/check/integration.test.ts",
+      "src/check/index.ts",
+      "src/check/manifest.ts",
+      "src/parse/parser.ts",
+      "src/export/permissions.ts",
+      "src/check/checker.ts",
+      "src/check/rules/c11-layer-direction.ts",
+      "src/graph/builder.ts",
+      "src/graph/index.ts",
+      "src/check/rules/c03-ref-resolved.ts",
+      "src/parse/id.ts",
+      "src/parse/frontmatter.ts",
+      "src/plan/coverage.test.ts",
+      "src/check/rules/op-element.test.ts",
+      "src/plan/op-element.test.ts",
+      "src/export/op-element.test.ts",
+      "src/parse/op-element.test.ts",
+      "src/check/op-spec-docs.test.ts"
+    ]
   },
   "_journal": {
-    "historyCount": 19,
+    "historyCount": 22,
     "stepCounts": {
       "request-review": 1,
       "design": 1,
       "spec-review": 1,
       "spec-fixer": 1,
-      "test-case-gen": 1
+      "test-case-gen": 1,
+      "test-materialize": 1
     }
   }
 }

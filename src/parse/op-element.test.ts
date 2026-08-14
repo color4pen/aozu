@@ -25,7 +25,7 @@ describe("TC-021: TargetLine stores single reference as one-element targetIds ar
     const result = extractStructuredLines("対象: [[ent-order]]", "test.md");
 
     // Access the new field (post-implementation only)
-    const targetLines = (result as Record<string, unknown>)["targetLines"] as
+    const targetLines = (result as unknown as Record<string, unknown>)["targetLines"] as
       | Array<{ targetIds: string[]; file: string; line: number }>
       | undefined;
 
@@ -46,7 +46,7 @@ describe("TC-022: TargetLine stores multiple references as multi-element targetI
       "test.md"
     );
 
-    const targetLines = (result as Record<string, unknown>)["targetLines"] as
+    const targetLines = (result as unknown as Record<string, unknown>)["targetLines"] as
       | Array<{ targetIds: string[]; file: string; line: number }>
       | undefined;
 
@@ -75,7 +75,7 @@ describe("TC-023: valid [[op-id]] operation line stored with op ID as operation 
     expect(result.permOperations[0]!.line).toBe(1);
 
     // Also verify it is NOT in malformedPermOperations
-    const malformed = (result as Record<string, unknown>)[
+    const malformed = (result as unknown as Record<string, unknown>)[
       "malformedPermOperations"
     ] as Array<unknown> | undefined;
     expect(malformed ?? []).toHaveLength(0);
@@ -94,7 +94,7 @@ describe("TC-024: free-token operation line stored as MalformedPermOperation, no
     expect(result.permOperations).toHaveLength(0);
 
     // malformedPermOperations must have the line
-    const malformed = (result as Record<string, unknown>)[
+    const malformed = (result as unknown as Record<string, unknown>)[
       "malformedPermOperations"
     ] as
       | Array<{ file: string; line: number; text: string }>

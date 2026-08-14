@@ -20,11 +20,11 @@ import { findOwningElement } from "../attribution.ts";
  * Unlisted layers (loop, adr) have no restriction.
  */
 const LAYER_ALLOWED_TARGET_PREFIXES: Record<string, Set<string>> = {
-  domain: new Set(["term", "ent", "inv", "act"]),
-  static: new Set(["mod", "term", "ent", "inv", "act"]),
-  dynamic: new Set(["seq", "mod", "term", "ent", "inv", "act"]),
+  domain: new Set(["term", "ent", "inv", "act", "op"]),
+  static: new Set(["mod", "term", "ent", "inv", "act", "op"]),
+  dynamic: new Set(["seq", "mod", "term", "ent", "inv", "act", "op"]),
   // views may reference views (self) + static + domain + dynamic (spec §10 C11, ADR-0023 D6)
-  views: new Set(["uc", "scr", "api", "dat", "flow", "evt", "ext", "perm", "dpl", "mod", "term", "ent", "inv", "act", "seq"]),
+  views: new Set(["uc", "scr", "api", "dat", "flow", "evt", "ext", "perm", "dpl", "mod", "term", "ent", "inv", "act", "op", "seq"]),
 };
 
 /**

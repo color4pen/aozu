@@ -62,7 +62,7 @@ export interface ImplementationEntry {
   line: number;
 }
 
-/** An operation line in a perm element: `- <operation>: [[act-id]](, [[act-id]])*` */
+/** An operation line in a perm element: `- [[op-id]]: [[act-id]](, [[act-id]])*` */
 export interface PermOperation {
   operation: string;
   actorIds: string[];
@@ -70,11 +70,21 @@ export interface PermOperation {
   line: number;
 }
 
-/** A target line in a perm element: `対象: [[<id>]]` */
-export interface PermTarget {
-  targetId: string;
+/**
+ * A `対象:` line carrying one or more `[[id]]` references.
+ * Used for both perm (single-ref enforced by C6) and op (multiple refs allowed).
+ */
+export interface TargetLine {
+  targetIds: string[];
   file: string;
   line: number;
+}
+
+/** A malformed perm operation line: `- <token>: [[...]]` where token is not `[[op-id]]`. */
+export interface MalformedPermOperation {
+  file: string;
+  line: number;
+  text: string;
 }
 
 /** Aggregated result of parsing one or more files. */
@@ -93,6 +103,8 @@ export interface ParseResult {
   implementations: ImplementationEntry[];
   /** Operation lines from perm elements. */
   permOperations: PermOperation[];
-  /** Target lines from perm elements (`対象:` lines). */
-  permTargets: PermTarget[];
+  /** `対象:` lines (perm single-ref enforced by C6; op multiple-refs allowed). */
+  targetLines: TargetLine[];
+  /** Malformed perm operation lines (token is not `[[op-id]]`). Diagnostics emitted by C6. */
+  malformedPermOperations: MalformedPermOperation[];
 }

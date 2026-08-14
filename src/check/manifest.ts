@@ -65,6 +65,7 @@ export const LAYER_MAP: Record<string, string> = {
   ent: "domain",
   inv: "domain",
   act: "domain",
+  op: "domain",
   seq: "dynamic",
   top: "loop",
   plan: "loop",
@@ -148,7 +149,7 @@ export const LAYER_ENABLED_NAMES: Set<string> = new Set([
  */
 const LAYER_TO_PREFIXES: Record<string, string[]> = {
   static: ["mod"],
-  domain: ["term", "ent", "inv", "act"],
+  domain: ["term", "ent", "inv", "act", "op"],
   dynamic: ["seq"],
   loop: ["top", "plan", "grp"],
   always: ["adr"],

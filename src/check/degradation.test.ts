@@ -22,7 +22,8 @@ function makeGraph(overrides: Partial<ParseResult> = {}) {
     elementItems: [],
     implementations: [],
     permOperations: [],
-    permTargets: [],
+    targetLines: [],
+    malformedPermOperations: [],
     ...overrides,
   };
   return buildGraph(parsed);

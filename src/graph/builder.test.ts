@@ -13,7 +13,8 @@ function makeEmptyParseResult(): ParseResult {
     elementItems: [],
     implementations: [],
     permOperations: [],
-    permTargets: [],
+    targetLines: [],
+    malformedPermOperations: [],
   };
 }
 

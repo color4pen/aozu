@@ -5,7 +5,7 @@
  * providing efficient ID resolution and reference lookup for the check module.
  */
 
-import type { Element, Reference, DependencyEdge, ParseResult, ImplementationEntry } from "../parse/types.ts";
+import type { Element, Reference, DependencyEdge, ParseResult, ImplementationEntry, TargetLine, MalformedPermOperation } from "../parse/types.ts";
 
 /** Map from element ID to Element. Built from ParseResult.elements. */
 export type ElementTable = Map<string, Element>;
@@ -47,10 +47,12 @@ export interface Graph {
   elementItems: ParseResult["elementItems"];
   /** Implementation path entries from `実装:` lines. */
   implementations: ImplementationEntry[];
-  /** Operation lines from perm elements. */
+  /** Operation lines from perm elements (op-id references). */
   permOperations: ParseResult["permOperations"];
-  /** Target lines from perm elements (`対象:` lines). */
-  permTargets: ParseResult["permTargets"];
+  /** `対象:` lines (perm single-ref enforced by C6; op multiple-refs allowed). */
+  targetLines: TargetLine[];
+  /** Malformed perm operation lines. Diagnostics emitted by C6. */
+  malformedPermOperations: MalformedPermOperation[];
   /** Path to the manifest file, or null if not found. */
   manifestPath: string | null;
 }

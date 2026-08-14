@@ -17,7 +17,8 @@ function makeGraph(overrides: Partial<ParseResult> = {}) {
     elementItems: [],
     implementations: [],
     permOperations: [],
-    permTargets: [],
+    targetLines: [],
+    malformedPermOperations: [],
     ...overrides,
   };
   return buildGraph(parsed);
@@ -78,15 +79,17 @@ describe("checkC6: perm validation when permission enabled", () => {
     expect(diags).toHaveLength(0);
   });
 
-  it("permission enabled + valid perm element (operation with act prefix) → C6 pass", () => {
+  it("permission enabled + valid perm element (operation with op + act prefix) → C6 pass", () => {
     const graph = makeGraph({
       elements: [
         { id: "perm-deal", prefix: "perm", displayName: "Deal Permissions", file: "views/permission/deal.md", line: 1 },
+        { id: "op-create-deal", prefix: "op", displayName: "Create Deal", file: "domain/operations.md", line: 1 },
+        { id: "op-list-deals", prefix: "op", displayName: "List Deals", file: "domain/operations.md", line: 5 },
         { id: "act-admin", prefix: "act", displayName: "Admin", file: "domain/actors.md", line: 1 },
       ],
       permOperations: [
-        { operation: "create", actorIds: ["act-admin"], file: "views/permission/deal.md", line: 3 },
-        { operation: "list", actorIds: ["act-admin"], file: "views/permission/deal.md", line: 4 },
+        { operation: "op-create-deal", actorIds: ["act-admin"], file: "views/permission/deal.md", line: 3 },
+        { operation: "op-list-deals", actorIds: ["act-admin"], file: "views/permission/deal.md", line: 4 },
       ],
     });
     const diags = checkC6(manifest(["static", "domain", "permission"]), graph);
@@ -112,24 +115,26 @@ describe("checkC6: perm validation when permission enabled", () => {
     const graph = makeGraph({
       elements: [
         { id: "perm-deal", prefix: "perm", displayName: "Deal", file: "views/permission/deal.md", line: 1 },
+        { id: "op-create-deal", prefix: "op", displayName: "Create Deal", file: "domain/operations.md", line: 1 },
       ],
       permOperations: [
-        { operation: "create", actorIds: ["act-admin"], file: "views/permission/deal.md", line: 3 },
-        { operation: "create", actorIds: ["act-manager"], file: "views/permission/deal.md", line: 4 },
+        { operation: "op-create-deal", actorIds: ["act-admin"], file: "views/permission/deal.md", line: 3 },
+        { operation: "op-create-deal", actorIds: ["act-manager"], file: "views/permission/deal.md", line: 4 },
       ],
     });
     const diags = checkC6(manifest(["static", "domain", "permission"]), graph);
     expect(diags.some((d) => d.code === "C6" && d.message.includes("duplicate operation"))).toBe(true);
-    expect(diags.some((d) => d.message.includes("create"))).toBe(true);
+    expect(diags.some((d) => d.message.includes("op-create-deal"))).toBe(true);
   });
 
   it("permission enabled + non-act prefix reference → C6 error", () => {
     const graph = makeGraph({
       elements: [
         { id: "perm-deal", prefix: "perm", displayName: "Deal", file: "views/permission/deal.md", line: 1 },
+        { id: "op-create-deal", prefix: "op", displayName: "Create Deal", file: "domain/operations.md", line: 1 },
       ],
       permOperations: [
-        { operation: "create", actorIds: ["ent-order"], file: "views/permission/deal.md", line: 3 },
+        { operation: "op-create-deal", actorIds: ["ent-order"], file: "views/permission/deal.md", line: 3 },
       ],
     });
     const diags = checkC6(manifest(["static", "domain", "permission"]), graph);
@@ -143,14 +148,15 @@ describe("checkC6: perm validation when permission enabled", () => {
     const graph = makeGraph({
       elements: [
         { id: "perm-deal", prefix: "perm", displayName: "Deal", file: "views/permission/deal.md", line: 1 },
+        { id: "op-create-deal", prefix: "op", displayName: "Create Deal", file: "domain/operations.md", line: 1 },
         // act-nonexistent is NOT declared — C6 should not check resolution
       ],
       permOperations: [
-        { operation: "create", actorIds: ["act-nonexistent"], file: "views/permission/deal.md", line: 3 },
+        { operation: "op-create-deal", actorIds: ["act-nonexistent"], file: "views/permission/deal.md", line: 3 },
       ],
     });
     const diags = checkC6(manifest(["static", "domain", "permission"]), graph);
-    // C6 should pass (prefix is "act" — that's all C6 checks)
+    // C6 should pass (prefix is "act" — that's all C6 checks for actors)
     expect(diags).toHaveLength(0);
   });
 
@@ -158,9 +164,11 @@ describe("checkC6: perm validation when permission enabled", () => {
     const graph = makeGraph({
       elements: [
         { id: "perm-deal", prefix: "perm", displayName: "Deal", file: "views/permission/deal.md", line: 1 },
+        { id: "op-create-deal", prefix: "op", displayName: "Create Deal", file: "domain/operations.md", line: 1 },
+        { id: "act-admin", prefix: "act", displayName: "Admin", file: "domain/actors.md", line: 1 },
       ],
       permOperations: [
-        { operation: "create", actorIds: ["act-admin"], file: "views/permission/deal.md", line: 3 },
+        { operation: "op-create-deal", actorIds: ["act-admin"], file: "views/permission/deal.md", line: 3 },
       ],
     });
     const diags = checkC6(manifest(["static", "domain", "permission", "screen"]), graph);

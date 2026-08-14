@@ -31,7 +31,8 @@ export function parseFiles(files: FileInput[]): ParseResult {
     elementItems: [],
     implementations: [],
     permOperations: [],
-    permTargets: [],
+    targetLines: [],
+    malformedPermOperations: [],
   };
 
   for (const file of files) {
@@ -66,7 +67,8 @@ export function parseFiles(files: FileInput[]): ParseResult {
     result.elementItems.push(...structured.elementItems);
     result.implementations.push(...structured.implementations);
     result.permOperations.push(...structured.permOperations);
-    result.permTargets.push(...structured.permTargets);
+    result.targetLines.push(...structured.targetLines);
+    result.malformedPermOperations.push(...structured.malformedPermOperations);
   }
 
   return result;

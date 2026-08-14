@@ -40,7 +40,7 @@ export interface Frontier {
  * "designed" frontier since they are planning/decision artifacts, not
  * implementation targets.
  */
-export const IMPLEMENTATION_PREFIXES = new Set(["mod", "term", "ent", "inv", "act", "seq"]);
+export const IMPLEMENTATION_PREFIXES = new Set(["mod", "term", "ent", "inv", "act", "op", "seq"]);
 
 // ---------------------------------------------------------------------------
 // Frontier computation (pure function)

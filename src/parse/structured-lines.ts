@@ -7,11 +7,11 @@
  *   - Dependency edges: `- [[a]] -> [[b]]`
  *   - `## 登場要素` section: `- [[id]]` list items
  *   - `elements:` lines (plan group element lists)
- *   - Perm operation lines: `- <operation>: [[act-id]](, [[act-id]])*`
- *   - Perm target lines: `対象: [[<id>]]`
+ *   - Perm operation lines: `- [[op-id]]: [[act-id]](, [[act-id]])*`
+ *   - `対象:` lines (target reference lists; perm=single, op=multiple)
  */
 
-import type { DependencyEdge, PermOperation, PermTarget } from "./types.ts";
+import type { DependencyEdge, PermOperation, TargetLine, MalformedPermOperation } from "./types.ts";
 
 /** Pattern for dependency edge: `- [[from]] -> [[to]]` */
 const DEP_EDGE_RE = /^- \[\[([a-z0-9-]+)\]\] -> \[\[([a-z0-9-]+)\]\]$/;
@@ -26,17 +26,25 @@ const ELEMENTS_LINE_RE = /^- elements:\s*(.+)$/;
 const ELEMENTS_LIST_RE = /\[\[([a-z0-9-]+)\]\]/g;
 
 /**
- * Pattern for perm operation line: `- <operation>: [[act-id]](, [[act-id]])*`
- * operation is a token without whitespace or `:`.
- * The actor list must start with `[[` to distinguish from plain bullet points.
+ * New pattern for perm operation line: `- [[op-id]]: [[act-id]](, [[act-id]])*`
+ * Requires the operation to be a `[[id]]` reference (brackets included).
  */
-const PERM_OPERATION_LINE_RE = /^- ([^\s:]+): (\[\[.+)$/;
+const PERM_OPERATION_LINE_RE = /^- \[\[([a-z0-9-]+)\]\]: (\[\[.+)$/;
+
+/**
+ * Legacy (catch-all) pattern for old-style operation lines: `- <token>: [[...]]`
+ * Lines matching this but NOT PERM_OPERATION_LINE_RE are malformed.
+ */
+const PERM_OPERATION_LINE_RE_LEGACY = /^- ([^\s:]+): (\[\[.+)$/;
 
 /** Extract `[[id]]` actor references from an operation actor list string. */
 const PERM_ACTOR_REF_RE = /\[\[([a-z0-9-]+)\]\]/g;
 
-/** Pattern for perm target line: `対象: [[id]]` */
-const PERM_TARGET_LINE_RE = /^対象: \[\[([a-z0-9-]+)\]\]$/;
+/** Pattern for `対象:` line (any content after the prefix). */
+const TARGET_LINE_RE = /^対象: (.+)$/;
+
+/** Extract `[[id]]` references from a target line value string. */
+const TARGET_REF_RE = /\[\[([a-z0-9-]+)\]\]/g;
 
 export interface StructuredLineResult {
   dependencyEdges: DependencyEdge[];
@@ -48,10 +56,12 @@ export interface StructuredLineResult {
   implementations: { paths: string[]; file: string; line: number }[];
   /** IDs from `elements:` lines. */
   elementItems: { id: string; file: string; line: number }[];
-  /** Operation lines from perm elements. */
+  /** Valid operation lines from perm elements (op-id references). */
   permOperations: PermOperation[];
-  /** Target lines from perm elements (`対象:` lines). */
-  permTargets: PermTarget[];
+  /** `対象:` lines carrying one or more [[id]] references. */
+  targetLines: TargetLine[];
+  /** Malformed operation lines (token is not [[op-id]]). Diagnostics emitted by C6. */
+  malformedPermOperations: MalformedPermOperation[];
 }
 
 /**
@@ -71,7 +81,8 @@ export function extractStructuredLines(
   const implementations: StructuredLineResult["implementations"] = [];
   const elementItems: StructuredLineResult["elementItems"] = [];
   const permOperations: PermOperation[] = [];
-  const permTargets: PermTarget[] = [];
+  const targetLines: TargetLine[] = [];
+  const malformedPermOperations: MalformedPermOperation[] = [];
 
   let inCodeFence = false;
   let inActorsSection = false;
@@ -152,25 +163,41 @@ export function extractStructuredLines(
       continue;
     }
 
-    // Perm operation line: `- <operation>: [[act-id]](, [[act-id]])*`
-    const permOpMatch = PERM_OPERATION_LINE_RE.exec(line);
-    if (permOpMatch) {
-      const operation = permOpMatch[1]!;
-      const actorList = permOpMatch[2]!;
-      const actorIds: string[] = [];
+    // `対象:` line — extract all [[id]] references
+    const targetMatch = TARGET_LINE_RE.exec(line);
+    if (targetMatch) {
+      const valueStr = targetMatch[1]!;
+      const ids: string[] = [];
       let m: RegExpExecArray | null;
-      PERM_ACTOR_REF_RE.lastIndex = 0;
-      while ((m = PERM_ACTOR_REF_RE.exec(actorList)) !== null) {
-        actorIds.push(m[1]!);
+      TARGET_REF_RE.lastIndex = 0;
+      while ((m = TARGET_REF_RE.exec(valueStr)) !== null) {
+        ids.push(m[1]!);
       }
-      permOperations.push({ operation, actorIds, file: filePath, line: lineNumber });
+      if (ids.length > 0) {
+        targetLines.push({ targetIds: ids, file: filePath, line: lineNumber });
+      }
       continue;
     }
 
-    // Perm target line: `対象: [[id]]`
-    const permTargetMatch = PERM_TARGET_LINE_RE.exec(line);
-    if (permTargetMatch) {
-      permTargets.push({ targetId: permTargetMatch[1]!, file: filePath, line: lineNumber });
+    // Perm operation line — try new RE first, then legacy RE for malformed detection
+    const newOpMatch = PERM_OPERATION_LINE_RE.exec(line);
+    if (newOpMatch) {
+      const operation = newOpMatch[1]!;
+      const actorList = newOpMatch[2]!;
+      const opActorIds: string[] = [];
+      let m: RegExpExecArray | null;
+      PERM_ACTOR_REF_RE.lastIndex = 0;
+      while ((m = PERM_ACTOR_REF_RE.exec(actorList)) !== null) {
+        opActorIds.push(m[1]!);
+      }
+      permOperations.push({ operation, actorIds: opActorIds, file: filePath, line: lineNumber });
+      continue;
+    }
+
+    const legacyOpMatch = PERM_OPERATION_LINE_RE_LEGACY.exec(line);
+    if (legacyOpMatch) {
+      // Matched old-style `- token: [[...]]` but not new-style `- [[id]]: [[...]]`
+      malformedPermOperations.push({ file: filePath, line: lineNumber, text: line });
       continue;
     }
   }
@@ -182,6 +209,7 @@ export function extractStructuredLines(
     implementations,
     elementItems,
     permOperations,
-    permTargets,
+    targetLines,
+    malformedPermOperations,
   };
 }

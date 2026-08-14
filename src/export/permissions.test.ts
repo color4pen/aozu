@@ -18,7 +18,8 @@ function makeGraph(overrides: Partial<ParseResult> = {}) {
     elementItems: [],
     implementations: [],
     permOperations: [],
-    permTargets: [],
+    targetLines: [],
+    malformedPermOperations: [],
     ...overrides,
   };
   return buildGraph(parsed);
@@ -61,8 +62,8 @@ describe("generatePermissions: basic output", () => {
       permOperations: [
         { operation: "list", actorIds: ["act-admin"], file: "views/permission/deal.md", line: 4 },
       ],
-      permTargets: [
-        { targetId: "ent-deal", file: "views/permission/deal.md", line: 2 },
+      targetLines: [
+        { targetIds: ["ent-deal"], file: "views/permission/deal.md", line: 2 },
       ],
     });
     const { json } = generatePermissions(graph);
@@ -142,7 +143,7 @@ describe("generatePermissions: deterministic ordering", () => {
     expect(output.permissions[0].operations.list).toEqual(["act-admin", "act-finance", "act-manager", "act-member"]);
   });
 
-  it("spec §8 example: perm-deal with list and create", () => {
+  it("perm-deal with list and create", () => {
     const graph = makeGraph({
       elements: [
         { id: "perm-deal", prefix: "perm", displayName: "Deal Permissions", file: "views/permission/deal.md", line: 1 },
@@ -166,8 +167,8 @@ describe("generatePermissions: deterministic ordering", () => {
           line: 5,
         },
       ],
-      permTargets: [
-        { targetId: "ent-deal", file: "views/permission/deal.md", line: 2 },
+      targetLines: [
+        { targetIds: ["ent-deal"], file: "views/permission/deal.md", line: 2 },
       ],
     });
     const { json } = generatePermissions(graph);
