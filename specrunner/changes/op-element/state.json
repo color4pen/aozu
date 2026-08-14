@@ -2,7 +2,7 @@
   "version": 2,
   "jobId": "0e22b134-6f24-4759-8ec9-f0477daff169",
   "createdAt": "2026-08-14T05:25:04.247Z",
-  "updatedAt": "2026-08-14T06:06:33.124Z",
+  "updatedAt": "2026-08-14T06:22:50.492Z",
   "request": {
     "title": "op 要素の実装 — op 型の追加と perm 操作行の op 参照化（ADR-0025）",
     "type": "new-feature",
@@ -12,7 +12,7 @@
     "owner": "color4pen",
     "name": "aozu"
   },
-  "step": "implementer",
+  "step": "code-review",
   "status": "running",
   "branch": "feat/op-element-0e22b134",
   "error": null,
@@ -51,7 +51,9 @@
     "ba3aad732603f04de1a9e3a98e51b1d792b5127e",
     "25d895b6a700833407ba3f8a55c7293c04d1d9f7",
     "85ecd21bd2824a88a69a51a2501e6a9b7b28167d",
-    "56a04cecd7ead95c5c0ff24ccd46fcd8e8d6e8e0"
+    "56a04cecd7ead95c5c0ff24ccd46fcd8e8d6e8e0",
+    "98137c956da740878d605e9534cb5c37b870f2c6",
+    "277a608b1e3f29259a7c7216e87104b20839421a"
   ],
   "touchedFiles": {
     "request-review": [
@@ -143,17 +145,101 @@
       "src/export/op-element.test.ts",
       "src/parse/op-element.test.ts",
       "src/check/op-spec-docs.test.ts"
+    ],
+    "implementer": [
+      "src/parse/id.ts",
+      "src/parse/types.ts",
+      "src/parse/structured-lines.ts",
+      "src/check/manifest.ts",
+      "src/check/rules/c11-layer-direction.ts",
+      "src/check/rules/c06-view-links.ts",
+      "src/graph/types.ts",
+      "src/graph/builder.ts",
+      "src/parse/parser.ts",
+      "src/plan/frontier.ts",
+      "src/check/rules/op-element.test.ts",
+      "src/parse/op-element.test.ts",
+      "src/plan/op-element.test.ts",
+      "src/export/op-element.test.ts",
+      "src/check/op-spec-docs.test.ts",
+      "src/export/permissions.ts",
+      "src/export/permissions.test.ts",
+      "src/check/rules/c06-view-links.test.ts",
+      "src/check/rules/c11-layer-direction.test.ts",
+      "src/graph/attribution.ts",
+      "src/check/index.ts",
+      "src/parse/structured-lines.test.ts",
+      "src/parse/integration.test.ts",
+      "spec/format.md",
+      "src/check/integration.test.ts",
+      "src/plan/coverage.test.ts",
+      "src/cli/commands/export.test.ts"
     ]
   },
+  "biteEvidence": [
+    {
+      "testId": "src/check/op-spec-docs.test.ts",
+      "strategy": "forward",
+      "baseResult": "red",
+      "candidateResult": "green",
+      "verified": true,
+      "baseOid": "56a04cecd7ead95c5c0ff24ccd46fcd8e8d6e8e0",
+      "candidateOid": "98137c956da740878d605e9534cb5c37b870f2c6",
+      "testHash": "sha256:36c9b6dd677070255ea75520be7e1a3a5e332699989e8cb116821a6cbd5dbba7"
+    },
+    {
+      "testId": "src/check/rules/op-element.test.ts",
+      "strategy": "forward",
+      "baseResult": "red",
+      "candidateResult": "green",
+      "verified": true,
+      "baseOid": "56a04cecd7ead95c5c0ff24ccd46fcd8e8d6e8e0",
+      "candidateOid": "98137c956da740878d605e9534cb5c37b870f2c6",
+      "testHash": "sha256:fa403e18f824bd4bb98f51c6ce807176ed8e4325b283cd4c3fce6404e821deab"
+    },
+    {
+      "testId": "src/export/op-element.test.ts",
+      "strategy": "forward",
+      "baseResult": "red",
+      "candidateResult": "green",
+      "verified": true,
+      "baseOid": "56a04cecd7ead95c5c0ff24ccd46fcd8e8d6e8e0",
+      "candidateOid": "98137c956da740878d605e9534cb5c37b870f2c6",
+      "testHash": "sha256:c3ec9217a97f3dd4c3b7fb9693e813e0c50dcff77a45b18e7857c2dac66a4b03"
+    },
+    {
+      "testId": "src/parse/op-element.test.ts",
+      "strategy": "forward",
+      "baseResult": "red",
+      "candidateResult": "green",
+      "verified": true,
+      "baseOid": "56a04cecd7ead95c5c0ff24ccd46fcd8e8d6e8e0",
+      "candidateOid": "98137c956da740878d605e9534cb5c37b870f2c6",
+      "testHash": "sha256:ab72c76c29d092d69cd01efe5b179db8b2295fad958166356f0fd7fb6e197819"
+    },
+    {
+      "testId": "src/plan/op-element.test.ts",
+      "strategy": "forward",
+      "baseResult": "red",
+      "candidateResult": "green",
+      "verified": true,
+      "baseOid": "56a04cecd7ead95c5c0ff24ccd46fcd8e8d6e8e0",
+      "candidateOid": "98137c956da740878d605e9534cb5c37b870f2c6",
+      "testHash": "sha256:998d6b6a1624761f99acec857e318e33e84bee7fe28198d6a82342f7badadff3"
+    }
+  ],
   "_journal": {
-    "historyCount": 22,
+    "historyCount": 34,
     "stepCounts": {
       "request-review": 1,
       "design": 1,
       "spec-review": 1,
       "spec-fixer": 1,
       "test-case-gen": 1,
-      "test-materialize": 1
+      "test-materialize": 1,
+      "implementer": 1,
+      "bite-evidence": 1,
+      "verification": 1
     }
   }
 }
