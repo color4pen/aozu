@@ -2,7 +2,7 @@
   "version": 2,
   "jobId": "0e22b134-6f24-4759-8ec9-f0477daff169",
   "createdAt": "2026-08-14T05:25:04.247Z",
-  "updatedAt": "2026-08-14T05:44:39.124Z",
+  "updatedAt": "2026-08-14T05:46:43.123Z",
   "request": {
     "title": "op 要素の実装 — op 型の追加と perm 操作行の op 参照化（ADR-0025）",
     "type": "new-feature",
@@ -12,7 +12,7 @@
     "owner": "color4pen",
     "name": "aozu"
   },
-  "step": "spec-fixer",
+  "step": "test-case-gen",
   "status": "running",
   "branch": "feat/op-element-0e22b134",
   "error": null,
@@ -48,7 +48,8 @@
     "536b668ab961b031126fbb8664a2cc066e4c10f1",
     "1ecbf97a4ef819d74912da6bee164a757f242b42",
     "8d5d2f7f7ea033c9d47d8a598e80ca0af193dc01",
-    "ba3aad732603f04de1a9e3a98e51b1d792b5127e"
+    "ba3aad732603f04de1a9e3a98e51b1d792b5127e",
+    "25d895b6a700833407ba3f8a55c7293c04d1d9f7"
   ],
   "touchedFiles": {
     "request-review": [
@@ -105,14 +106,16 @@
       "spec/format.md",
       "src/check/rules/c06-view-links.test.ts",
       "src/graph/builder.ts"
-    ]
+    ],
+    "spec-fixer": []
   },
   "_journal": {
-    "historyCount": 13,
+    "historyCount": 16,
     "stepCounts": {
       "request-review": 1,
       "design": 1,
-      "spec-review": 1
+      "spec-review": 1,
+      "spec-fixer": 1
     }
   }
 }
