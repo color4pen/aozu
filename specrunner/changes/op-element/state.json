@@ -2,7 +2,7 @@
   "version": 2,
   "jobId": "0e22b134-6f24-4759-8ec9-f0477daff169",
   "createdAt": "2026-08-14T05:25:04.247Z",
-  "updatedAt": "2026-08-14T07:03:53.050Z",
+  "updatedAt": "2026-08-14T07:06:29.008Z",
   "request": {
     "title": "op 要素の実装 — op 型の追加と perm 操作行の op 参照化（ADR-0025）",
     "type": "new-feature",
@@ -12,7 +12,7 @@
     "owner": "color4pen",
     "name": "aozu"
   },
-  "step": "regression-gate",
+  "step": "conformance",
   "status": "running",
   "branch": "feat/op-element-0e22b134",
   "error": null,
@@ -60,7 +60,8 @@
     "d15b9933a4e7d66a51ee941ab39f205c0ca13252",
     "4e2a89ece218ee04b1740a7d73ccfe4ec854c8b3",
     "48ca235bf4a3064bb26d64fe5c9ef7bc7eec3372",
-    "62260d83bb4e8e3065db800b7954db280fcff147"
+    "62260d83bb4e8e3065db800b7954db280fcff147",
+    "3e026a8b3479dac421a2879b1d590b56e17f6d39"
   ],
   "touchedFiles": {
     "request-review": [
@@ -210,6 +211,10 @@
     ],
     "code-fixer": [
       "spec/format.md"
+    ],
+    "regression-gate": [
+      "spec/format.md",
+      "src/export/permissions.test.ts"
     ]
   },
   "biteEvidence": [
@@ -282,7 +287,7 @@
   "resumePoint": null,
   "mainCheckoutDrift": null,
   "_journal": {
-    "historyCount": 58,
+    "historyCount": 63,
     "stepCounts": {
       "request-review": 1,
       "design": 1,
@@ -296,7 +301,8 @@
       "code-review": 1,
       "adversarial-consistency": 3,
       "custom-reviewers": 3,
-      "code-fixer": 1
+      "code-fixer": 1,
+      "regression-gate": 1
     }
   }
 }
