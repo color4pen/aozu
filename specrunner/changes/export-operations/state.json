@@ -2,7 +2,7 @@
   "version": 2,
   "jobId": "840c5f6a-5ee5-4c52-97c5-ce772acd23a1",
   "createdAt": "2026-08-14T07:17:10.664Z",
-  "updatedAt": "2026-08-14T07:49:00.167Z",
+  "updatedAt": "2026-08-14T07:50:25.618Z",
   "request": {
     "title": "export operations の実装 — 操作境界の実行時交換面（ADR-0025）",
     "type": "new-feature",
@@ -12,7 +12,7 @@
     "owner": "color4pen",
     "name": "aozu"
   },
-  "step": "regression-gate",
+  "step": "conformance",
   "status": "running",
   "branch": "feat/export-operations-840c5f6a",
   "error": null,
@@ -55,7 +55,8 @@
     "7bcab3421c37d7221f83468c7693057447a1c10a",
     "ccaca28672daa6a3c6d80392a53ee4051a4ff612",
     "272c9a5ec8701dd57434ed1d141305995ee131ed",
-    "9eb87b0324c525a2967cef3ede797961b593b6fd"
+    "9eb87b0324c525a2967cef3ede797961b593b6fd",
+    "7af58c7db0454cb0f3f4b484dcbe4c3bc17d6215"
   ],
   "touchedFiles": {
     "request-review": [
@@ -143,7 +144,10 @@
       "src/graph/builder.ts",
       "spec/format.md"
     ],
-    "code-fixer": []
+    "code-fixer": [],
+    "regression-gate": [
+      "src/cli/commands/export.test.ts"
+    ]
   },
   "biteEvidence": [
     {
@@ -182,7 +186,7 @@
     }
   ],
   "_journal": {
-    "historyCount": 47,
+    "historyCount": 52,
     "stepCounts": {
       "request-review": 1,
       "design": 1,
@@ -196,7 +200,8 @@
       "code-review": 1,
       "code-fixer": 1,
       "adversarial-consistency": 1,
-      "custom-reviewers": 1
+      "custom-reviewers": 1,
+      "regression-gate": 1
     }
   }
 }
