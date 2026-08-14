@@ -2,7 +2,7 @@
   "version": 2,
   "jobId": "0e22b134-6f24-4759-8ec9-f0477daff169",
   "createdAt": "2026-08-14T05:25:04.247Z",
-  "updatedAt": "2026-08-14T06:50:48.081Z",
+  "updatedAt": "2026-08-14T07:03:53.050Z",
   "request": {
     "title": "op 要素の実装 — op 型の追加と perm 操作行の op 参照化（ADR-0025）",
     "type": "new-feature",
@@ -12,8 +12,8 @@
     "owner": "color4pen",
     "name": "aozu"
   },
-  "step": "code-fixer",
-  "status": "awaiting-resume",
+  "step": "regression-gate",
+  "status": "running",
   "branch": "feat/op-element-0e22b134",
   "error": null,
   "pipelineId": "standard",
@@ -57,7 +57,10 @@
     "7bf3bdaab921429aac988f45fc651b735fddae50",
     "ebe204b818984d8a20ed0dffbbe1e2d403377883",
     "9f98ee53a8c8ab5024715b2f621fbd51a23bd135",
-    "d15b9933a4e7d66a51ee941ab39f205c0ca13252"
+    "d15b9933a4e7d66a51ee941ab39f205c0ca13252",
+    "4e2a89ece218ee04b1740a7d73ccfe4ec854c8b3",
+    "48ca235bf4a3064bb26d64fe5c9ef7bc7eec3372",
+    "62260d83bb4e8e3065db800b7954db280fcff147"
   ],
   "touchedFiles": {
     "request-review": [
@@ -264,24 +267,22 @@
   "reviewerStatuses": [
     {
       "name": "adversarial-consistency",
-      "status": "pending",
-      "approvedAtCommit": null,
+      "status": "approved",
+      "approvedAtCommit": "48ca235bf4a3064bb26d64fe5c9ef7bc7eec3372",
       "activationPaths": [
         "adr/**",
         "spec/**",
         "design/**",
         "docs/open-questions.md"
       ],
-      "invalidatedByCommit": null
+      "invalidatedByCommit": null,
+      "canonHash": "specrunner/changes/op-element/design.md:sha256:133245b4f75d67835a869e307472b54f1b78a1845a018025f6ec1b6dfb212a18|specrunner/changes/op-element/request.md:sha256:89d385daac649285cda9a72a5310bb7b782ddaa5b0b0961f3798ed9de3c0eff8|specrunner/changes/op-element/spec.md:sha256:5487d694ec434436f71a7026fd189a1f282c1b119b87146ddb0fc7e684352302|specrunner/changes/op-element/tasks.md:sha256:44bee6c679073164f1ffaa1e1d571039db116a55da13f0f1f41fcbe10d7d6a6a|specrunner/changes/op-element/test-cases.md:sha256:74063fb3eea7096dbec3821a8961a578fc6f623d3bf7d70d4a673b1e60ee6840"
     }
   ],
-  "resumePoint": {
-    "step": "custom-reviewers",
-    "reason": "custom-reviewers escalated",
-    "iterationsExhausted": 2
-  },
+  "resumePoint": null,
+  "mainCheckoutDrift": null,
   "_journal": {
-    "historyCount": 50,
+    "historyCount": 58,
     "stepCounts": {
       "request-review": 1,
       "design": 1,
@@ -293,8 +294,8 @@
       "bite-evidence": 1,
       "verification": 1,
       "code-review": 1,
-      "adversarial-consistency": 2,
-      "custom-reviewers": 2,
+      "adversarial-consistency": 3,
+      "custom-reviewers": 3,
       "code-fixer": 1
     }
   }
