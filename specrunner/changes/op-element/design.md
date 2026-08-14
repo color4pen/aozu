@@ -22,7 +22,7 @@ spec/format.md は ADR-0025 により op 型（domain 層）と perm 操作行�
 1. op prefix を KNOWN_PREFIXES・LAYER_MAP・LAYER_TO_PREFIXES に追加し、既存の層機構に載せる
 2. C11 の LAYER_ALLOWED_TARGET_PREFIXES の domain / static / dynamic / views 全集合に op を追加する
 3. op の `対象:` 行を複数参照で認識する（structured-lines に新パターン追加）
-4. perm の `対象:` 行の複数参照を C6 error にする（perm は単一参照のみ — ADR-0023 D2）
+4. perm の `対象:` 行の複数参照を C6 error にする（perm の対象は単一参照 — spec/format.md §8 の perm スキーマとして本変更で明文化。ADR-0023 は `対象:` 行の参照数を定めていない）
 5. perm 操作行を `- [[op-id]]: [[act-id]]...` に変更し、C6 で op 参照解決・op prefix 検証・一意性を検証する
 6. 自由トークン操作行を malformed として検出し C6 error にする（fail-closed）
 7. IMPLEMENTATION_PREFIXES に op を追加する

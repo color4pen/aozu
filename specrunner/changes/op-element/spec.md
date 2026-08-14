@@ -48,7 +48,7 @@ The system SHALL recognize `対象:` lines under op elements as comma-separated 
 
 ### Requirement: perm target line SHALL reject multiple references as C6 error
 
-The system SHALL enforce perm `対象:` lines to contain exactly one reference (ADR-0023 D2). A perm `対象:` line with multiple references SHALL produce a C6 error diagnostic with line number. The existing single-reference behavior and diagnostics SHALL remain unchanged.
+The system SHALL enforce perm `対象:` lines to contain exactly one reference (perm schema in spec/format.md §8, made explicit by this change; ADR-0023 does not constrain the reference count of `対象:` lines). A perm `対象:` line with multiple references SHALL produce a C6 error diagnostic with line number. The existing single-reference behavior and diagnostics SHALL remain unchanged.
 
 #### Scenario: perm target line with single reference passes
 
