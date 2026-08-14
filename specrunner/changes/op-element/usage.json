@@ -161,6 +161,42 @@
       "durationMs": 606979,
       "durationApiMs": 606030,
       "totalCostUsd": 1.2100232999999998
+    },
+    {
+      "command": "job",
+      "timestamp": "2026-08-14T06:42:05.372Z",
+      "modelUsage": {
+        "claude-sonnet-4-6": {
+          "inputTokens": 7,
+          "outputTokens": 1781,
+          "cacheReadInputTokens": 199498,
+          "cacheCreationInputTokens": 39671
+        }
+      },
+      "jobId": "0e22b134-6f24-4759-8ec9-f0477daff169",
+      "stepName": "code-fixer",
+      "numTurns": 5,
+      "durationMs": 38709,
+      "durationApiMs": 38589,
+      "totalCostUsd": 0.23535165000000005
+    },
+    {
+      "command": "job",
+      "timestamp": "2026-08-14T06:50:46.550Z",
+      "modelUsage": {
+        "claude-sonnet-4-6": {
+          "inputTokens": 3334,
+          "outputTokens": 25034,
+          "cacheReadInputTokens": 1172106,
+          "cacheCreationInputTokens": 100481
+        }
+      },
+      "jobId": "0e22b134-6f24-4759-8ec9-f0477daff169",
+      "stepName": "adversarial-consistency",
+      "numTurns": 24,
+      "durationMs": 513083,
+      "durationApiMs": 512222,
+      "totalCostUsd": 1.11394755
     }
   ]
 }

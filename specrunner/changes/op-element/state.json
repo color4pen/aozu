@@ -2,7 +2,7 @@
   "version": 2,
   "jobId": "0e22b134-6f24-4759-8ec9-f0477daff169",
   "createdAt": "2026-08-14T05:25:04.247Z",
-  "updatedAt": "2026-08-14T06:41:18.330Z",
+  "updatedAt": "2026-08-14T06:50:48.081Z",
   "request": {
     "title": "op 要素の実装 — op 型の追加と perm 操作行の op 参照化（ADR-0025）",
     "type": "new-feature",
@@ -13,7 +13,7 @@
     "name": "aozu"
   },
   "step": "code-fixer",
-  "status": "running",
+  "status": "awaiting-resume",
   "branch": "feat/op-element-0e22b134",
   "error": null,
   "pipelineId": "standard",
@@ -55,7 +55,9 @@
     "98137c956da740878d605e9534cb5c37b870f2c6",
     "277a608b1e3f29259a7c7216e87104b20839421a",
     "7bf3bdaab921429aac988f45fc651b735fddae50",
-    "ebe204b818984d8a20ed0dffbbe1e2d403377883"
+    "ebe204b818984d8a20ed0dffbbe1e2d403377883",
+    "9f98ee53a8c8ab5024715b2f621fbd51a23bd135",
+    "d15b9933a4e7d66a51ee941ab39f205c0ca13252"
   ],
   "touchedFiles": {
     "request-review": [
@@ -202,6 +204,9 @@
       "src/cli/commands/export.test.ts",
       "src/parse/references.ts",
       "src/graph/attribution.ts"
+    ],
+    "code-fixer": [
+      "spec/format.md"
     ]
   },
   "biteEvidence": [
@@ -270,8 +275,13 @@
       "invalidatedByCommit": null
     }
   ],
+  "resumePoint": {
+    "step": "custom-reviewers",
+    "reason": "custom-reviewers escalated",
+    "iterationsExhausted": 2
+  },
   "_journal": {
-    "historyCount": 43,
+    "historyCount": 50,
     "stepCounts": {
       "request-review": 1,
       "design": 1,
@@ -283,8 +293,9 @@
       "bite-evidence": 1,
       "verification": 1,
       "code-review": 1,
-      "adversarial-consistency": 1,
-      "custom-reviewers": 1
+      "adversarial-consistency": 2,
+      "custom-reviewers": 2,
+      "code-fixer": 1
     }
   }
 }
